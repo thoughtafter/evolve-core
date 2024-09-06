@@ -29,14 +29,32 @@
 - https://blog.yoshuawuyts.com/tree-structured-concurrency/
 - https://docs.rs/tokio/latest/tokio/task/struct.JoinSet.html
 - https://docs.rs/async-task-group/latest/async_task_group/
+- perfect hashing
+- libllvm - https://crates.io/crates/llvm-sys
+- sqlite - https://github.com/stainless-steel/sqlite
+- postgres -https://crates.io/crates/postgres
 
 ### Missing
-- sprintf
+- sprintf - gmp et al still rely on libc, so libc still availabe
     - https://doc.rust-lang.org/std/fmt/ - is macros
     - https://crates.io/crates/dynfmt
     - https://github.com/vitiral/strfmt
 - promising: https://github.com/A1-Triard/dyn-fmt
     - https://crates.io/crates/dyn-fmt
+- perfect hashing
 
 extern rust vs c
 c destroy ptr for i64
+
+
+https://mcyoung.xyz/2024/04/17/calling-convention/
+
+
+4 = 4, 4 instane of int
+@int = 3, 0 instance of int-class
+@int-class = xxx, 3, instance of class-class
+@class-class = xxx, xxx ???
+
+### 2 paths
+- gmp-mpfr-sys - build static lib .a files - link to those
+- no-std rust lib - create interface for use through rust calls
