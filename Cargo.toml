@@ -1,0 +1,17 @@
+# cargo-features = ["test-dummy-unstable"]
+# cargo-features = ["set_ptr_value"]
+
+[package]
+name = "evolve-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.81"
+
+[dependencies]
+gmp-mpfr-sys = { version = "1.6.4", default-features = false }
+indexmap = { version = "2.5.0",default-features = false }
+regex = { version = "1.10.6", default-features = false }
+
+# maybe stdlib is fine?
+# rustix = { version = "0.38.36", default-features = false }
+# dispatch = "0.2.0"
