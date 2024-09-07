@@ -5,7 +5,7 @@
 name = "evolve-core"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.81"
+rust-version = "1.80"
 
 [dependencies]
 # no-std
