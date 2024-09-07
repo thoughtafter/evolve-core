@@ -1,12 +1,22 @@
 #![feature(strict_provenance)]
 #![no_std]
 
+use core::cmp::Ordering;
+use core::mem;
 use ahash::RandomState;
 pub use gmp_mpfr_sys::gmp;
 pub use gmp_mpfr_sys::C;
 use indexmap::{IndexMap, IndexSet};
 
+const IntClassId: u16 = 11u16;
+const FloatClassId: u16 = 13u16;
+
+
 type Ptr = *const i64;
+type EvolveClassId = u16;
+type EvolveAuxData = u32;
+
+
 //type Object = (u64, Ptr);
 // #[repr(C)]
 //#[repr(C)]
@@ -16,21 +26,37 @@ struct Object {
     ptr: Ptr,
 }
 
+impl Object {
+    fn new(class_id : EvolveClassId, aux: EvolveAuxData, ptr: Ptr) -> Self {
+        Object { tag: evolve_internal_build_tag(class_id, aux), ptr: ptr, }
+    }
+
+    fn static_class(class_id: EvolveClassId) -> Self {
+        Self::new(class_id, 0, 0 as Ptr)
+    }
+
+    fn null() -> Self {
+        Self::static_class(0)
+    }
+}
+
 type EvolveMap = IndexMap<Object, Object, RandomState>;
 type EvolveSet = IndexSet<Object, RandomState>;
 
 #[no_mangle]
-extern "Rust" fn evolve_extract_i64_rust(o: Object) -> usize {
-    o.ptr.addr()
+extern "Rust" fn evolve_extract_i64(o: Object) -> u64 {
+    o.ptr.addr() as u64
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_build_i64_rust(i: usize) -> Object {
-    Object {
-        tag: 5,
-        ptr: i as Ptr,
-    }
+extern "Rust" fn evolve_build_i64(value: u64) -> Object {
+    evolve_build_ptr(IntClassId, 0, value as Ptr)
 }
+#[no_mangle]
+extern "Rust" fn evolve_build_f64(value: f64) -> Object {
+    evolve_build_ptr(FloatClassId, 0, value.to_bits() as Ptr)
+}
+
 
 #[no_mangle]
 extern "Rust" fn evolve_core_is(a: Object, b: Object) -> bool {
@@ -48,11 +74,18 @@ extern "Rust" fn evolve_core_null(a: Object) -> bool {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_core_make_null() -> Object {
-    Object {
-        tag: 0,
-        ptr: 0 as Ptr,
-    }
+extern "Rust" fn evolve_core_build_null() -> Object {
+    Object::null()
+}
+
+#[no_mangle]
+extern "Rust" fn evolve_build_true() -> Object {
+    Object::static_class(6)
+}
+
+#[no_mangle]
+extern "Rust" fn evolve_build_false() -> Object {
+    Object::static_class(4)
 }
 
 #[no_mangle]
@@ -84,16 +117,33 @@ extern "Rust" fn evolve_core_class(o: Object) -> Object {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_build_ptr_rust(class_id: u32, aux4: u32, ptr: Ptr) -> Object {
+extern "Rust" fn evolve_build_ptr(class_id: EvolveClassId, aux4: EvolveAuxData, ptr: Ptr) -> Object {
     Object {
-        tag: ((class_id as u64) << 32) | (aux4 as u64),
+        tag: evolve_internal_build_tag(class_id, aux4),
         ptr,
     }
+}
+
+fn evolve_internal_build_tag(class_id: EvolveClassId, aux: EvolveAuxData) -> u64
+{
+    let bits = mem::size_of_val(&aux) << 3;
+    ((aux as u64) << bits) | (class_id as u64)
 }
 
 #[no_mangle]
 extern "Rust" fn evolve_core_class_id(o: Object) -> u64 {
     o.tag & (u16::MAX as u64)
+}
+
+#[no_mangle]
+extern "Rust" fn evolve_cmp_i64(value1: i64, value2: i64) -> i64 {
+    value1.cmp(&value2) as i64
+}
+
+#[no_mangle]
+// https://doc.rust-lang.org/std/primitive.f64.html#method.total_cmp
+extern "Rust" fn evolve_cmp_f64(value1: f64, value2: f64) -> i64 {
+    value1.total_cmp(&value2) as i64
 }
 
 // #[no_mangle]
@@ -130,23 +180,23 @@ mod tests {
 
     #[test]
     fn test_evolve_core_class() {
-        let i = evolve_build_i64_rust(42);
-        assert_eq!(5, evolve_core_class_id(i));
+        let i = evolve_build_i64(42);
+        assert_eq!(IntClassId as u64, evolve_core_class_id(i));
 
         let i_class_x1 = evolve_core_class(i);
-        assert_eq!(4, evolve_core_class_id(i_class_x1));
+        assert_eq!((IntClassId - 1) as u64, evolve_core_class_id(i_class_x1));
 
         let i_class_x2 = evolve_core_class(i_class_x1);
         assert_eq!(65534, evolve_core_class_id(i_class_x2));
-        assert_eq!(4, evolve_extract_i64_rust(i_class_x2));
+        assert_eq!((IntClassId - 1) as u64, evolve_extract_i64(i_class_x2));
 
         let i_class_x3 = evolve_core_class(i_class_x2);
         assert_eq!(65534, evolve_core_class_id(i_class_x3));
-        assert_eq!(65534, evolve_extract_i64_rust(i_class_x3));
+        assert_eq!(65534, evolve_extract_i64(i_class_x3));
 
         let i_class_x4 = evolve_core_class(i_class_x3);
         assert_eq!(65534, evolve_core_class_id(i_class_x4));
-        assert_eq!(65534, evolve_extract_i64_rust(i_class_x4));
+        assert_eq!(65534, evolve_extract_i64(i_class_x4));
     }
 
 }
