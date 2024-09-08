@@ -9,10 +9,11 @@ rust-version = "1.80"
 
 [dependencies]
 # no-std
-indexmap = { version = "2.5.0",default-features = false }
-gmp-mpfr-sys = { version = "1.6.4", default-features = false, features = ["mpfr"] }
-regex = { version = "1.10.6", default-features = false }
 ahash = { version = "0.8.11", default-features = false }
+gmp-mpfr-sys = { version = "1.6.4", default-features = false, features = ["mpfr"] }
+indexmap = { version = "2.5.0",default-features = false }
+ordered-float = { version = "4.2.2",  default-features = false }
+regex = { version = "1.10.6", default-features = false }
 
 # std
 # llvm-sys = { version = "191.0.0-rc1", default-features = false }

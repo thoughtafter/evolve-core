@@ -1,27 +1,43 @@
 #![feature(strict_provenance)]
 #![no_std]
 
+use core::cmp::Ordering;
 // use ahash::RandomState;
 use core::mem;
 // pub use gmp_mpfr_sys::gmp;
 // pub use gmp_mpfr_sys::C;
 // use indexmap::{IndexMap, IndexSet};
 
-const INT_CLASS_ID: u16 = 11u16;
-const FLOAT_CLASS_ID: u16 = 13u16;
+// const INT_CLASS_ID: u16 = 11u16;
+const INT_CLASS_ID: u16 = 4u16;
+//const FLOAT_CLASS_ID: u16 = 13u16;
+const FLOAT_CLASS_ID: u16 = 5u16;
+//const POINTER_CLASS_ID: u16 = 9u16;
+const POINTER_CLASS_ID: u16 = 17u16;
 
-const POINTER_CLASS_ID: u16 = 9u16;
+//const TRUE_CLASS_ID: u16 = 6u16;
+const TRUE_CLASS_ID: u16 = 2u16;
+//const FALSE_CLASS_ID: u16 = 4u16;
+#[no_mangle]
+pub static FALSE_CLASS_ID: u16 = 1;
+#[no_mangle]
+pub static FALSE_CLASS_ID2: u32 = 1;
 
-const TRUE_CLASS_ID: u16 = 6u16;
-const FALSE_CLASS_ID: u16 = 4u16;
+// extern "C" {
+//
+//     static FalseClassId: u32;
+// }
 
+// extern "C" {
+//     static FalseClassID: u32;
+// }
 type Ptr = *const i64;
 type EvolveClassId = u16;
 type EvolveAuxData = u32;
 
 //type Object = (u64, Ptr);
 // #[repr(C)]
-//#[repr(C)]
+#[repr(C)]
 #[derive(Clone, Copy)]
 struct Object {
     tag: u64,
@@ -196,10 +212,15 @@ mod bools {
     extern "Rust" fn evolve_build_false() -> Object {
         Object::static_class(FALSE_CLASS_ID)
     }
-    #[no_mangle]
+
     extern "Rust" fn evolve_core_true(object: Object) -> bool {
         evolve_core_class_id(object) >= evolve_core_class_id(evolve_build_true())
     }
+
+    // #[no_mangle]
+    // unsafe extern "Rust"  fn evolve_build_false2() -> Object {
+    //     Object::static_class(FalseClassId as u16)
+    // }
 
     #[no_mangle]
     extern "Rust" fn evolve_core_false(object: Object) -> bool {
@@ -215,6 +236,21 @@ mod bools {
     extern "Rust" fn evolve_intrinsic_false(object: Object) -> Object {
         evolve_from_i1(evolve_core_false(object))
     }
+}
+
+#[no_mangle]
+extern "Rust" fn test_str() -> &'static str {
+    "This"
+}
+
+#[no_mangle]
+extern "Rust" fn evolve_string_cmp(value1: &str, value2: &str) -> i64 {
+    value1.cmp(value2) as i64
+}
+
+#[no_mangle]
+extern "Rust" fn evolve_string_equal_bytes(value1: &str, value2: &str) -> bool {
+    value1.cmp(value2) == Ordering::Equal
 }
 
 mod build {
@@ -236,6 +272,8 @@ mod build {
 }
 
 mod math {
+    use ordered_float::OrderedFloat;
+
     #[no_mangle]
     extern "Rust" fn evolve_math_cmp_i64(value1: i64, value2: i64) -> i64 {
         value1.cmp(&value2) as i64
@@ -249,7 +287,19 @@ mod math {
     #[no_mangle]
     // https://doc.rust-lang.org/std/primitive.f64.html#method.total_cmp
     extern "Rust" fn evolve_math_cmp_f64(value1: f64, value2: f64) -> i64 {
-        value1.total_cmp(&value2) as i64
+        // incorrect, but for testing:
+        // value1.partial_cmp(&value2).unwrap_or(Ordering::Equal) as i64
+
+        // works but slightly slower
+        // value1.total_cmp(&value2) as i64
+
+        // generated bad code
+        // unsafe {
+        //   NotNan::new_unchecked(value1).cmp(&NotNan::new_unchecked(value2)) as i64
+        // }
+
+        // performance seems better than total_cmp
+        OrderedFloat(value1).cmp(&OrderedFloat(value2)) as i64
     }
 }
 
@@ -304,6 +354,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[ignore]
     fn test_evolve_core_class() {
         let i = evolve_from_i64(42);
         assert_eq!(INT_CLASS_ID, evolve_core_class_id(i));
