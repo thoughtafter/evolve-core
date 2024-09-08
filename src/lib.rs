@@ -24,6 +24,12 @@ const FALSE_CLASS_ID: u16 = 1u16;
 // #[no_mangle]
 // pub static FALSE_CLASS_ID2: u32 = 1;
 
+const BIGINT_CLASS_ID: u16 = 8u16;
+const STRING_CLASS_ID: u16 = 6u16;
+
+// #[no_mangle]
+// pub static NULLTHING: Object = Object::null();
+
 // extern "C" {
 //
 //     static FalseClassId: u32;
@@ -117,7 +123,7 @@ extern "Rust" fn evolve_core_class_id(o: Object) -> EvolveClassId {
 }
 
 mod import_export {
-    use super::{Object, Ptr, FLOAT_CLASS_ID, INT_CLASS_ID, POINTER_CLASS_ID};
+    use super::{Object, Ptr, FLOAT_CLASS_ID, INT_CLASS_ID, POINTER_CLASS_ID, STRING_CLASS_ID};
 
     #[no_mangle]
     pub extern "Rust" fn evolve_extract_ptr(o: Object) -> Ptr {
@@ -147,6 +153,11 @@ mod import_export {
     #[no_mangle]
     pub extern "Rust" fn evolve_from_ptr(value: Ptr) -> Object {
         Object::new(POINTER_CLASS_ID, value)
+    }
+
+    #[no_mangle]
+    pub extern "Rust" fn evolve_from_string(len: u32, value: Ptr) -> Object {
+        Object::with_aux(STRING_CLASS_ID, len, value)
     }
 
     #[cfg(test)]
@@ -272,22 +283,44 @@ mod build {
     }
 }
 
-mod math {
-    use ordered_float::OrderedFloat;
+mod i64 {
+
+    // // inclusive between with ordered params
+    // #[no_mangle]
+    // extern "Rust" fn evolve_i64_is_between_ordered(value: i64, min: i64, max: i64) -> bool {
+    //     value >= min && value <= max
+    // }
+    //
+    // // inclusive between with unordered params
+    // #[no_mangle]
+    // extern "Rust" fn evolve_i64_is_between_unordered(value: i64, min: i64, max: i64) -> bool {
+    //     (value >= min && value <= max) | (value >= max && value <= min)
+    // }
 
     #[no_mangle]
-    extern "Rust" fn evolve_math_cmp_i64(value1: i64, value2: i64) -> i64 {
+    extern "Rust" fn evolve_i64_cmp(value1: i64, value2: i64) -> i64 {
         value1.cmp(&value2) as i64
     }
 
-    #[no_mangle]
-    extern "Rust" fn evolve_math_f64_fits_i64(value: f64) -> bool {
-        (value <= i64::MAX as f64) && (value >= i64::MIN as f64)
-    }
+    // #[no_mangle]
+    // extern "Rust" fn evolve_i64_signum(value: i64) -> i64 {
+    //     value.signum()
+    // }
+}
+
+mod f64 {
+    use ordered_float::OrderedFloat;
+
+    // #[no_mangle]
+    // extern "Rust" fn evolve_f64_signum(value: f64) -> i64 {
+    //     // value.signum() as i64
+    //     OrderedFloat(value).cmp(&OrderedFloat(0.0)) as i64
+    // }
 
     #[no_mangle]
     // https://doc.rust-lang.org/std/primitive.f64.html#method.total_cmp
-    extern "Rust" fn evolve_math_cmp_f64(value1: f64, value2: f64) -> i64 {
+    // was evolve_math_cmp_f64
+    extern "Rust" fn evolve_f64_cmp(value1: f64, value2: f64) -> i64 {
         // incorrect, but for testing:
         // value1.partial_cmp(&value2).unwrap_or(Ordering::Equal) as i64
 
@@ -302,6 +335,12 @@ mod math {
         // performance seems better than total_cmp
         OrderedFloat(value1).cmp(&OrderedFloat(value2)) as i64
     }
+
+    // not needed with saturated fptosi
+    // #[no_mangle]
+    // extern "Rust" fn evolve_f64_fits_i64(value: f64) -> bool {
+    //     (value <= i64::MAX as f64) && (value >= i64::MIN as f64)
+    // }
 }
 
 mod llvm {
@@ -320,6 +359,31 @@ mod llvm {
         -value
     }
 }
+
+// TODO: needs allocation setup
+// mod regex {
+//     use regex::Regex;
+//     use crate::{Object, Ptr};
+//
+//     #[no_mangle]
+//     extern "Rust" fn evolve_regex_from_string(string: &str) -> Object {
+//         let regex = Regex::new(string).unwrap();
+//         let ptr: *const Regex = &regex;
+//         Object::new(7, ptr as Ptr)
+//     }
+//
+//     #[no_mangle]
+//     extern "Rust" fn evolve_regex_has_match(regex: *const Regex, string: &str) -> bool {
+//         // unsafe { &*regex }.is_match(string)
+//         let the_ref = unsafe { regex.as_ref() };
+//         if let Some(val_back) = the_ref {
+//             val_back.is_match(string)
+//         } else {
+//             false
+//         }
+//     }
+//
+// }
 
 mod mpz {
 
@@ -370,6 +434,23 @@ mod mpz {
             assert_eq!(signum, evolve_mpz_sgn(raw));
             assert_eq!(-signum, evolve_mpz_sgn(neg));
         }
+    }
+}
+
+mod mpq {
+    use crate::{Object, Ptr, BIGINT_CLASS_ID};
+    use gmp_mpfr_sys::gmp::{mpq_denref_const, mpq_numref_const, mpq_srcptr};
+
+    #[no_mangle]
+    extern "Rust" fn evolve_mpq_numref(op: mpq_srcptr) -> Object {
+        let num = unsafe { mpq_numref_const(op) };
+        Object::with_aux(BIGINT_CLASS_ID, 16, num as Ptr)
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_mpq_denref(op: mpq_srcptr) -> Object {
+        let den = unsafe { mpq_denref_const(op) };
+        Object::with_aux(BIGINT_CLASS_ID, 16, den as Ptr)
     }
 }
 
