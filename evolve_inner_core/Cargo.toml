@@ -1,0 +1,16 @@
+[package]
+name = "evolve_inner_core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"] }
+gmp-mpfr-sys = { version = "^1.6", default-features = false, features = ["mpfr"] }
+ordered-float = { version = "^4.2",  default-features = false }
+
+
+[dev-dependencies]
+libc-print = "^0.1"
+pretty_assertions = "^1.4"
+rug = "^1.26"
+test-case = "^3.3"

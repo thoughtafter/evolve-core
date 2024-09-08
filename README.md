@@ -58,3 +58,7 @@ https://mcyoung.xyz/2024/04/17/calling-convention/
 ### 2 paths
 - gmp-mpfr-sys - build static lib .a files - link to those
 - no-std rust lib - create interface for use through rust calls
+
+Outer
+no-std - 7980803
+std -   19969813
