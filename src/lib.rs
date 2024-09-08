@@ -17,11 +17,12 @@ const POINTER_CLASS_ID: u16 = 17u16;
 
 //const TRUE_CLASS_ID: u16 = 6u16;
 const TRUE_CLASS_ID: u16 = 2u16;
+const FALSE_CLASS_ID: u16 = 1u16;
 //const FALSE_CLASS_ID: u16 = 4u16;
-#[no_mangle]
-pub static FALSE_CLASS_ID: u16 = 1;
-#[no_mangle]
-pub static FALSE_CLASS_ID2: u32 = 1;
+// #[no_mangle]
+// pub static FALSE_CLASS_ID: u16 = 1;
+// #[no_mangle]
+// pub static FALSE_CLASS_ID2: u32 = 1;
 
 // extern "C" {
 //
@@ -238,10 +239,10 @@ mod bools {
     }
 }
 
-#[no_mangle]
-extern "Rust" fn test_str() -> &'static str {
-    "This"
-}
+// #[no_mangle]
+// extern "Rust" fn test_str() -> &'static str {
+//     "This"
+// }
 
 #[no_mangle]
 extern "Rust" fn evolve_string_cmp(value1: &str, value2: &str) -> i64 {
@@ -317,6 +318,58 @@ mod llvm {
     #[no_mangle]
     extern "Rust" fn evolve_llvm_fneg(value: f64) -> f64 {
         -value
+    }
+}
+
+mod mpz {
+
+    use gmp_mpfr_sys::gmp::{mpz_even_p, mpz_odd_p, mpz_sgn, mpz_srcptr};
+
+    #[no_mangle]
+    extern "Rust" fn evolve_mpz_sgn(op: mpz_srcptr) -> i64 {
+        let signum = unsafe { mpz_sgn(op) };
+        signum as i64
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_mpz_odd_p(op: mpz_srcptr) -> bool {
+        let odd = unsafe { mpz_odd_p(op) };
+        odd != 0
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_mpz_even_p(op: mpz_srcptr) -> bool {
+        let even = unsafe { mpz_even_p(op) };
+        even != 0
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use gmp_mpfr_sys::gmp::mpz_get_ui;
+        use rug::Integer;
+        use test_case::test_case;
+
+        #[test_case(0, true, 0)]
+        #[test_case(1, false, 1)]
+        #[test_case(2, true, 1)]
+        #[test_case(3, false, 1)]
+        fn test_mpz(value: i64, even: bool, signum: i64) {
+            let raw = &Integer::from(value).into_raw();
+            let neg = &Integer::from(-value).into_raw();
+
+            assert_eq!(value, unsafe { mpz_get_ui(raw) } as i64);
+            assert_eq!(value, unsafe { mpz_get_ui(raw) } as i64);
+
+            assert_eq!(even, evolve_mpz_even_p(raw));
+            assert_eq!(even, !evolve_mpz_odd_p(raw));
+
+            assert_eq!(even, evolve_mpz_even_p(neg));
+            assert_eq!(even, !evolve_mpz_odd_p(neg));
+
+            assert_eq!(signum, evolve_mpz_sgn(raw));
+            assert_eq!(-signum, evolve_mpz_sgn(neg));
+        }
     }
 }
 
