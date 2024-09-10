@@ -33,16 +33,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "ctor"
-version = "0.2.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edb49164822f3ee45b17acd4a208cfc1251410cf0cad9a833234c9890774dd9f"
-dependencies = [
- "quote",
- "syn",
-]
-
-[[package]]
 name = "diff"
 version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -57,32 +47,17 @@ checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 [[package]]
 name = "evolve-core"
 version = "0.1.0"
-
-[[package]]
-name = "evolve_inner_core"
-version = "0.1.0"
-dependencies = [
- "gmp-mpfr-sys",
- "libc",
- "libc-print",
- "ordered-float",
- "pretty_assertions",
- "rug",
- "test-case",
-]
-
-[[package]]
-name = "evolve_outer_core"
-version = "0.1.0"
 dependencies = [
  "ahash",
- "ctor",
- "evolve_inner_core",
+ "gmp-mpfr-sys",
  "indexmap",
  "libc",
  "libc-print",
+ "once_cell",
+ "ordered-float",
  "pretty_assertions",
  "regex",
+ "rug",
  "test-case",
 ]
 
@@ -110,6 +85,19 @@ checksum = "68b900aa2f7301e21c36462b170ee99994de34dff39a4a6a528e80e7376d07e5"
 dependencies = [
  "equivalent",
  "hashbrown",
+]
+
+[[package]]
+name = "inner-core"
+version = "0.1.0"
+dependencies = [
+ "gmp-mpfr-sys",
+ "libc",
+ "libc-print",
+ "ordered-float",
+ "pretty_assertions",
+ "rug",
+ "test-case",
 ]
 
 [[package]]
@@ -156,6 +144,10 @@ checksum = "4a91171844676f8c7990ce64959210cd2eaef32c2612c50f9fae9f8aaa6065a6"
 dependencies = [
  "num-traits",
 ]
+
+[[package]]
+name = "outer-core"
+version = "0.1.0"
 
 [[package]]
 name = "pretty_assertions"

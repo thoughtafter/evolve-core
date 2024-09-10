@@ -1,0 +1,25 @@
+# cargo-features = ["test-dummy-unstable"]
+# cargo-features = ["set_ptr_value"]
+
+[package]
+name = "evolve_outer_core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# no-std
+ahash = { version = "^0.8", default-features = false }
+ctor = {  version = "^0.2", default-features = false }
+indexmap = { version = "^2.5",default-features = false }
+libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"] }
+regex = { version = "^1.10", default-features = false }
+evolve_inner_core = { path = "../evolve_inner_core" }
+
+# std
+# llvm-sys = { version = "191.0.0-rc1", default-features = false }
+# postgres = { version = "0.19.8", default-features = false }
+
+[dev-dependencies]
+libc-print = "^0.1"
+pretty_assertions = "^1.4"
+test-case = "^3.3"
