@@ -141,7 +141,6 @@ mod gc_allcator {
     mod tests {
         use super::*;
         use crate::GLOBAL;
-        use libc_print::libc_println;
 
         #[test]
         fn test_big_alloc() {
