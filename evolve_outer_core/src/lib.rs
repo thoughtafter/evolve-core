@@ -414,30 +414,34 @@ mod stringmap {
     // }
 
     #[derive(Clone, Copy)]
-    struct EvolveStringMap {
-        // x: &'a EvolveStringMap
-        ptr: *mut EvolveStringMapType,
+    struct EvolveStringMap<'a> {
+        map : &'a EvolveStringMapType
+        // map: *mut EvolveStringMapType,
     }
 
 
-    impl EvolveStringMap {
+    impl EvolveStringMap<'_> {
 
         // can be 0, but seems reasonable to allocate some
         // only issue would me something like `map == {}` instead of `empty?`
         const MIN_CAPACITY: usize = 8;
 
-        fn the_ref<'a>(self) -> &'a EvolveStringMapType {
-            let foo = unsafe { &*self.ptr };
-            foo
-        }
+        // fn the_ref<'a>(self) -> &'a EvolveStringMapType {
+        //     let foo = unsafe { &*self.map };
+        //     foo
+        // }
 
         fn new(capacity: usize) -> Self {
             let capacity = capacity.max(Self::MIN_CAPACITY);
             let hash_builder = RandomState::with_seed(42);
             let string_map = Box::new(EvolveStringMapType::with_capacity_and_hasher(capacity, hash_builder));
-            let leak = Box::into_raw(string_map);
+
+            // let leak = Box::into_raw(string_map);
+            // libc_println!("heap ptr: {:?}", leak);
+            // EvolveStringMap { map: leak }
+            let leak = Box::leak(string_map);
             libc_println!("heap ptr: {:?}", leak);
-            EvolveStringMap { ptr: leak }
+            EvolveStringMap { map: leak }
         }
 
         #[no_mangle]
@@ -454,7 +458,10 @@ mod stringmap {
             // let a_ref = unsafe { &*self.ptr };
             // let len = a_ref.len();
             // len
-            self.the_ref().len()
+
+            // self.the_ref().len()
+
+            self.map.len()
         }
 
         #[no_mangle]
@@ -464,20 +471,26 @@ mod stringmap {
             // let a_ref = unsafe { &*self.ptr };
             // let len = a_ref.capacity();
             // len
-            self.the_ref().capacity()
+
+            // self.the_ref().capacity()
+
+            self.map.capacity()
         }
     }
 
-    impl Into<Object> for EvolveStringMap {
+    impl Into<Object> for EvolveStringMap<'_> {
         fn into(self) -> Object {
-            evolve_build_ptr(unsafe { hashmapClassId } as u16, 0, self.ptr as Ptr)
+            let ptr = self.map as *const _ as Ptr;
+            evolve_build_ptr(unsafe { hashmapClassId } as u16, 0, ptr)
         }
     }
 
-    impl From<Object> for EvolveStringMap {
+    impl From<Object> for EvolveStringMap<'_> {
+        // unsafe - where it should be, if object is not a string map this goes bad
         fn from(value: Object) -> Self {
             let ptr = evolve_extract_ptr(value) as *mut EvolveStringMapType;
-            EvolveStringMap { ptr }
+            let a_ref =   unsafe { &mut *ptr };
+            EvolveStringMap { map: a_ref }
         }
     }
 
