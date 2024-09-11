@@ -8,11 +8,12 @@ edition = "2021"
 
 [dependencies]
 # no-std
-ahash = { version = "^0.8", default-features = false }
-ctor = {  version = "^0.2", default-features = false }
-indexmap = { version = "^2.5",default-features = false }
-libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"] }
-regex = { version = "^1.10", default-features = false }
+ahash = { version = "^0.8", default-features = false, optional = true }
+hashbrown = { version = "^0.14", default-features = false, optional = true }
+indexmap = { version = "^2.5",default-features = false, optional = true }
+libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"], optional = true }
+libc-print = "^0.1"
+regex = { version = "^1.10", default-features = false, optional = true }
 evolve_inner_core = { path = "../evolve_inner_core" }
 
 # std
@@ -20,6 +21,14 @@ evolve_inner_core = { path = "../evolve_inner_core" }
 # postgres = { version = "0.19.8", default-features = false }
 
 [dev-dependencies]
-libc-print = "^0.1"
+ctor = {  version = "^0.2", default-features = false }
 pretty_assertions = "^1.4"
 test-case = "^3.3"
+
+[features]
+default = ["string", "stringmap", "regex", "libc_alloc"]
+libgc_alloc = []
+libc_alloc = ["dep:libc"]
+regex = ["dep:regex"]
+string = []
+stringmap = ["dep:indexmap", "dep:ahash", "dep:hashbrown"]

@@ -78,6 +78,7 @@ dependencies = [
  "ahash",
  "ctor",
  "evolve_inner_core",
+ "hashbrown",
  "indexmap",
  "libc",
  "libc-print",

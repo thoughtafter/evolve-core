@@ -1,9 +1,13 @@
 #![feature(strict_provenance)]
 #![feature(str_from_raw_parts)]
 #![no_std]
+extern crate alloc;
 
 use crate::import_export::evolve_extract_ptr;
 use crate::string::evolve_from_string;
+use alloc::borrow::Cow;
+use alloc::boxed::Box;
+use alloc::string::String;
 use core::mem;
 use core::str::from_raw_parts;
 
@@ -67,7 +71,7 @@ impl Object {
         Self::new(class_id, 0 as Ptr)
     }
 
-    fn null() -> Self {
+    pub fn null() -> Self {
         Self::static_class(0)
     }
 
@@ -92,6 +96,30 @@ impl Object {
 impl From<&str> for Object {
     fn from(s: &str) -> Self {
         evolve_from_string(s.len() as u32, s.as_ptr())
+    }
+}
+
+pub fn copy_to_heap_and_leak<T>(thing: T) -> *const T {
+    Box::into_raw(Box::new(thing))
+}
+
+impl From<String> for Object {
+    fn from(s: String) -> Self {
+        let len = s.len();
+        let ptr = copy_to_heap_and_leak(s.clone());
+        evolve_from_string(len as u32, ptr as Ptr)
+    }
+}
+
+impl From<Cow<'_, str>> for Object {
+    fn from(s: Cow<'_, str>) -> Self {
+        evolve_from_string(s.len() as u32, s.as_ptr())
+    }
+}
+
+impl Default for Object {
+    fn default() -> Self {
+        Self::null()
     }
 }
 
@@ -564,6 +592,8 @@ mod object_debug {
 #[cfg(test)]
 mod tests {
     use crate::import_export::{evolve_extract_i64, evolve_from_i64};
+    use alloc::borrow::ToOwned;
+    use alloc::string::ToString;
     // use test_case;
     use super::*;
 
@@ -590,5 +620,27 @@ mod tests {
         let i_class_x4 = evolve_core_class(i_class_x3);
         assert_eq!(65534, evolve_core_class_id(i_class_x4));
         assert_eq!(65534, evolve_extract_i64(i_class_x4));
+    }
+
+    #[test]
+    fn test_object_from_str() {
+        let str = "HELLO";
+        let o = Object::from(str);
+        assert_eq!(str, o.string_str());
+    }
+
+    // #[test]
+    // fn test_object_from_string() {
+    //     let str = "HELLO";
+    //     let string = str.to_owned();
+    //     let o = Object::from(string);
+    //     assert_eq!(str, o.string_str());
+    // }
+
+    #[test]
+    fn test_object_from_cow_str() {
+        let str = "HELLO";
+        let o = Object::from(Cow::from(str));
+        assert_eq!(str, o.string_str());
     }
 }
