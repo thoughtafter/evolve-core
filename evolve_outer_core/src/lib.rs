@@ -266,6 +266,10 @@ mod string {
     use evolve_inner_core::string::evolve_from_string;
     use evolve_inner_core::{Object, Ptr};
 
+    struct EvolveString<'a> {
+        str: &'a str
+    }
+
     // using box leak
     // does not preserve cstring
     fn str_to_safe_object(value: &str) -> Object {
@@ -413,15 +417,31 @@ mod stringmap {
     //     }
     // }
 
-    #[derive(Clone, Copy)]
-    struct EvolveStringMap<'a> {
-        map : &'a EvolveStringMapType
-        // map: *mut EvolveStringMapType,
-    }
+    // #[derive(Clone, Copy)]
+    // struct EvolveStringMap<'a> {
+    //     map_mut: &'a mut EvolveStringMapType, // map: *mut EvolveStringMapType,
+    // }
 
+    // Newtype Pattern
+    // - https://doc.rust-lang.org/stable/book/ch19-03-advanced-traits.html#using-the-newtype-pattern-to-implement-external-traits-on-external-types
+    // - https://doc.rust-lang.org/stable/book/ch19-04-advanced-types.html#using-the-newtype-pattern-for-type-safety-and-abstraction
+    struct EvolveStringMap<'a>(&'a mut EvolveStringMapType);
+
+    // impl Clone for EvolveStringMap<'_> {
+    //     fn clone(&self) -> Self {
+    //         // EvolveStringMap { map: &mut self.map.clone() }
+    //         todo!();
+    //     }
+    //
+    //
+    //
+    //     fn clone_from(&mut self, source: &Self) {
+    //         // self.map = &mut source.map.clone();
+    //         todo!();
+    //     }
+    // }
 
     impl EvolveStringMap<'_> {
-
         // can be 0, but seems reasonable to allocate some
         // only issue would me something like `map == {}` instead of `empty?`
         const MIN_CAPACITY: usize = 8;
@@ -434,15 +454,29 @@ mod stringmap {
         fn new(capacity: usize) -> Self {
             let capacity = capacity.max(Self::MIN_CAPACITY);
             let hash_builder = RandomState::with_seed(42);
-            let string_map = Box::new(EvolveStringMapType::with_capacity_and_hasher(capacity, hash_builder));
+            // let string_map = EvolveStringMapType::with_capacity_and_hasher(
+            //     capacity,
+            //     hash_builder,
+            // );
+
+            let string_map = Box::new(EvolveStringMapType::with_capacity_and_hasher(
+                capacity,
+                hash_builder,
+            ));
+            let leak = Box::leak(string_map);
+            EvolveStringMap { 0: leak }
 
             // let leak = Box::into_raw(string_map);
             // libc_println!("heap ptr: {:?}", leak);
             // EvolveStringMap { map: leak }
-            let leak = Box::leak(string_map);
-            libc_println!("heap ptr: {:?}", leak);
-            EvolveStringMap { map: leak }
+            // let leak = Box::leak(string_map);
+            // libc_println!("heap ptr: {:?}", leak as *const _);
+            // EvolveStringMap { 0: string_map }
         }
+
+        // fn map(&self) -> &EvolveStringMapType {
+        //     self.map_mut
+        // }
 
         #[no_mangle]
         pub extern "Rust" fn evolve_stringmap_new(capacity: usize) -> Object {
@@ -452,20 +486,24 @@ mod stringmap {
         }
 
         #[no_mangle]
-        extern "Rust" fn evolve_stringmap_size(self) -> usize {
-            // let ptr = self.ptr;
-            // libc_println!("Size: {:?}", ptr);
+        extern "Rust" fn evolve_stringmap_size(&self) -> usize {
+            // let map = self.0;
+            // libc_println!("Size: {:?}", map as *const _);
             // let a_ref = unsafe { &*self.ptr };
             // let len = a_ref.len();
             // len
 
             // self.the_ref().len()
 
-            self.map.len()
+            self.0.len()
         }
 
         #[no_mangle]
-        extern "Rust" fn evolve_stringmap_capacity(self) -> usize {
+        extern "Rust" fn evolve_stringmap_capacity(&self) -> usize {
+            // let map = self.map();
+            // libc_println!("Cap: {:?}", map as *const _);
+            // let ptr = &self.map_mut;
+            // libc_println!("Cap: {:?}", ptr as *const _);
             // let ptr = self.ptr;
             // libc_println!("Size: {:?}", ptr);
             // let a_ref = unsafe { &*self.ptr };
@@ -474,13 +512,26 @@ mod stringmap {
 
             // self.the_ref().capacity()
 
-            self.map.capacity()
+            self.0.capacity()
+        }
+
+        #[no_mangle]
+        extern "Rust" fn evolve_stringmap_get(&self, key: &str) -> Object {
+            let value = self.0.get(key).copied().unwrap_or_default();
+            value
+        }
+
+        #[no_mangle]
+        extern "Rust" fn evolve_stringmap_put(&mut self, key: &str, value: Object) {
+            self.0.insert(key.into(), value);
         }
     }
 
     impl Into<Object> for EvolveStringMap<'_> {
         fn into(self) -> Object {
-            let ptr = self.map as *const _ as Ptr;
+            // let x = self.0;
+            // let y = self;
+            let ptr = self.0 as *const _ as Ptr;
             evolve_build_ptr(unsafe { hashmapClassId } as u16, 0, ptr)
         }
     }
@@ -488,9 +539,12 @@ mod stringmap {
     impl From<Object> for EvolveStringMap<'_> {
         // unsafe - where it should be, if object is not a string map this goes bad
         fn from(value: Object) -> Self {
-            let ptr = evolve_extract_ptr(value) as *mut EvolveStringMapType;
-            let a_ref =   unsafe { &mut *ptr };
-            EvolveStringMap { map: a_ref }
+            let raw_ptr = evolve_extract_ptr(value);
+            let cast_ptr = raw_ptr as *mut EvolveStringMapType;
+            // let other_ptr = raw_ptr as *const _ as &EvolveStringMapType;
+            let unsafe_ref = unsafe { &mut *cast_ptr };
+            EvolveStringMap { 0: unsafe_ref }
+            // EvolveStringMap::new(10)
         }
     }
 
@@ -508,17 +562,6 @@ mod stringmap {
     //     evolve_build_ptr(unsafe { hashmapClassId } as u16, 0, copy as Ptr)
     // }
 
-    #[no_mangle]
-    extern "Rust" fn evolve_stringmap_get(the_self: &EvolveStringMapType, key: &str) -> Object {
-        let value = the_self.get(key).copied().unwrap_or_default();
-        value
-    }
-
-    // #[no_mangle]
-    // extern "Rust" fn evolve_stringmap_put(the_self: &mut &EvolveStringMap, key: &str, value: Object) {
-    //     the_self.insert(key.into(), value);
-    // }
-
     // TODO: need to compare objects for equality
     #[no_mangle]
     extern "Rust" fn evolve_stringmap_eq(
@@ -532,7 +575,10 @@ mod stringmap {
     #[cfg(test)]
     mod tests {
         use super::*;
-        use evolve_inner_core::import_export::evolve_extract_ptr;
+        use evolve_inner_core::evolve_core_null;
+        use evolve_inner_core::import_export::{
+            evolve_extract_i64, evolve_extract_ptr, evolve_from_i64,
+        };
 
         #[test]
         fn test_create() {
@@ -552,9 +598,24 @@ mod stringmap {
 
         #[test]
         fn test_put_get() {
+            let mut map =  EvolveStringMap::new(10);
+            map.evolve_stringmap_put("foo", evolve_from_i64(42));
+            let get = map.evolve_stringmap_get("foo");
+            let i = evolve_extract_i64(get);
+            assert_eq!(42, i);
+
+
+
             // let map = evolve_stringmap_new(0);
 
             // evolve_stringmap_put()
+        }
+
+        fn test_get_missing_returns_null() {
+            let mut map =  EvolveStringMap::new(10);
+            map.evolve_stringmap_put("foo", evolve_from_i64(42));
+            let get = map.evolve_stringmap_get("bar");
+            assert!(evolve_core_null(get));
         }
     }
 }

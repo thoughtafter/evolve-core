@@ -188,7 +188,7 @@ extern "Rust" fn evolve_core_is_not(a: Object, b: Object) -> bool {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_core_null(a: Object) -> bool {
+pub extern "Rust" fn evolve_core_null(a: Object) -> bool {
     a.tag == 0
 }
 
