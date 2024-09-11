@@ -212,9 +212,9 @@ checksum = "7a66a03ae7c801facd77a29370b4faec201768915ac14a721ba36f20bc9c209b"
 
 [[package]]
 name = "rug"
-version = "1.26.0"
+version = "1.26.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f86bdefce0edcc5493a2c5a2c87e57a40c78c772a7e6c48f25550e89815772b"
+checksum = "97ae2c1089ec0575193eb9222881310cc1ed8bce3646ef8b81b44b518595b79d"
 dependencies = [
  "az",
  "gmp-mpfr-sys",
