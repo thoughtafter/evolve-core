@@ -11,10 +11,12 @@ edition = "2021"
 ahash = { version = "^0.8", default-features = false, optional = true }
 hashbrown = { version = "^0.14", default-features = false, optional = true }
 indexmap = { version = "^2.5",default-features = false, optional = true }
-libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"], optional = true }
+libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"] }
 libc-print = "^0.1"
 regex = { version = "^1.10", default-features = false, optional = true }
 evolve_inner_core = { path = "../evolve_inner_core" }
+bdwgc-alloc = { version = "0.6.9", default-features = false, features = ["cmake"], optional = true}
+libc_alloc = { version = "1.0.7", default-features = false, optional = true }
 
 # std
 # llvm-sys = { version = "191.0.0-rc1", default-features = false }
@@ -26,9 +28,10 @@ pretty_assertions = "^1.4"
 test-case = "^3.3"
 
 [features]
-default = ["string", "stringmap", "regex", "libc_alloc"]
-libgc_alloc = []
-libc_alloc = ["dep:libc"]
+default = ["string", "stringmap", "regex"]
 regex = ["dep:regex"]
 string = []
 stringmap = ["dep:indexmap", "dep:ahash", "dep:hashbrown"]
+bdwgc_alloc = ["dep:bdwgc-alloc"]
+libgc_alloc = []
+libc_alloc = ["dep:libc_alloc"]

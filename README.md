@@ -63,8 +63,7 @@ Outer
 no-std - 7980803
 std -   19969813
 
-good:
-`cargo test --all --features "libc_alloc"`
+
 
 bad:
 `cargo test --all --features "libgc_alloc"`
@@ -81,7 +80,24 @@ libc stress:
 
 libgc stress:
 `cargo stress --all --features="libgc_alloc"`
-`cargo stress -p=evolve_inner_core"`
 `cargo stress -p=evolve_outer_core --features="libgc_alloc" -- --test-threads=1"`
 `cargo stress -r -p=evolve_outer_core --features="libgc_alloc" -- --test-threads=1"`
 
+# inner
+
+`cargo test -p=evolve_inner_core"`
+`cargo stress -p=evolve_inner_core"`
+
+# outer
+
+`cargo test -p=evolve_outer_core"`
+`cargo stress -p=evolve_inner_core"`
+
+good:
+`cargo test --all --features "libc_alloc"`
+
+
+libgc test/stress works in single thread with gc disabled
+
+`cargo test -p evolve_outer_core --features="libgc_alloc" -- --nocapture --test-threads=1`
+`cargo stress -p evolve_outer_core --features="libgc_alloc" -- --test-threads=1`
