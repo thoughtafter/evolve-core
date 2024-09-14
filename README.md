@@ -62,3 +62,42 @@ https://mcyoung.xyz/2024/04/17/calling-convention/
 Outer
 no-std - 7980803
 std -   19969813
+
+
+
+bad:
+`cargo test --all --features "libgc_alloc"`
+`cargo test --all --features "libgc_alloc" -- --test-threads=1"`
+
+`Collecting from unknown thread`
+- https://github.com/ivmai/bdwgc/issues/333
+- https://github.com/ivmai/bdwgc/issues/561
+- no-std has no effect
+
+libc stress:
+`cargo stress --all --features="libc_alloc"`
+`cargo stress -r --all --features="libc_alloc"`
+
+libgc stress:
+`cargo stress --all --features="libgc_alloc"`
+`cargo stress -p=evolve_outer_core --features="libgc_alloc" -- --test-threads=1"`
+`cargo stress -r -p=evolve_outer_core --features="libgc_alloc" -- --test-threads=1"`
+
+# inner
+
+`cargo test -p=evolve_inner_core"`
+`cargo stress -p=evolve_inner_core"`
+
+# outer
+
+`cargo test -p=evolve_outer_core"`
+`cargo stress -p=evolve_inner_core"`
+
+good:
+`cargo test --all --features "libc_alloc"`
+
+
+libgc test/stress works in single thread with gc disabled
+
+`cargo test -p evolve_outer_core --features="libgc_alloc" -- --nocapture --test-threads=1`
+`cargo stress -p evolve_outer_core --features="libgc_alloc" -- --test-threads=1`
