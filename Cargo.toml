@@ -16,6 +16,7 @@ members = [
     "evolve_inner_core",
     "evolve_outer_core",
 ]
+#    "inject_global_allocator",
 
 #[dependencies]
 ## no-std
