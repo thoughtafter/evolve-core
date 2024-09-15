@@ -1,4 +1,5 @@
 #![feature(ptr_sub_ptr)]
+#![feature(allocator_api)]
 #![no_std]
 extern crate alloc;
 
@@ -10,12 +11,154 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
     }
 }
 
+// #[lang = "eh_personality"]
+// extern "C" fn rust_eh_personality() {}
+
+#[no_mangle]
+extern "C" fn rust_eh_personality() {}
+
+#[cfg(feature = "redirect_malloc")]
+mod redirect_malloc {
+    use core::alloc::{Layout, LayoutError};
+    use libc::size_t;
+    use libc_print::libc_println;
+
+    fn get_layout_from_size(bytes: usize) -> Layout {
+        if let Ok(layout) = Layout::from_size_align(bytes as usize, 1) {
+            layout
+        } else {
+            panic!("invalid layout")
+        }
+    }
+
+    #[no_mangle]
+    extern "C" fn malloc(bytes: usize) -> *mut u8 {
+        // libc_println!("mallocating {} bytes", bytes);
+        //let layout = get_layout_from_size(bytes);
+        let layout = unsafe { Layout::from_size_align_unchecked(bytes as usize, 1) };
+        let ptr = unsafe { alloc::alloc::alloc(layout) };
+        libc_println!("> {:?} malloc, {} bytes", ptr, bytes);
+        ptr
+        // unsafe {
+        //     // libc::malloc(bytes)
+        //     let layout = Layout::from_size_align(bytes as usize, 1);
+        //     let layout = match layout {
+        //         Ok(layout) => layout,
+        //         Err(err) => {
+        //             libc_println!("{}", err);
+        //             panic!()
+        //         }
+        //     };
+        //     let ptr = Global.allocate(layout).unwrap().as_ptr() as *mut c_void;
+        //     libc_println!("HERE: {:?}", ptr);
+        //     ptr
+        // }
+    }
+
+    #[no_mangle]
+    extern "C" fn free(ptr: *mut u8) {
+        libc_println!("< {:?} free", ptr);
+        let layout = Layout::new::<u8>();
+        unsafe {
+            alloc::alloc::dealloc(ptr, layout);
+        }
+        // if let Some(non_null) = NonNull::new(ptr) {
+        //     let layout = Layout::new::<u8>();
+        //     unsafe {
+        //         Global.deallocate(non_null, layout)
+        //     }
+        // } else {
+        // }
+    }
+
+    #[no_mangle]
+    extern "C" fn realloc(p: *mut u8, bytes: size_t) -> *mut u8 {
+        libc_println!("< {:?} realloc, old", p);
+        //let layout = Layout::from_size_align(size as usize, 1).expect("realloc layout fail");
+        let layout = unsafe { Layout::from_size_align_unchecked(bytes as usize, 1) };
+
+        // // libc::realloc()
+        // Global.grow()
+        // p
+        let ptr = unsafe { alloc::alloc::realloc(p, layout, bytes) };
+        libc_println!("> {:?} realloc, new, {} bytes", ptr, bytes);
+        ptr
+    }
+
+    #[no_mangle]
+    extern "C" fn calloc(nobj: size_t, size: size_t) -> *mut u8 {
+        // libc::calloc()
+        let bytes = nobj * size;
+        // libc_println!("callocating {} bytes", bytes);
+        // let layout = Layout::from_size_align(bytes as usize, 1).expect("calloc layout fail");
+        let layout = unsafe { Layout::from_size_align_unchecked(bytes as usize, 1) };
+
+        let ptr = unsafe { alloc::alloc::alloc_zeroed(layout) };
+        libc_println!("> {:?} calloc {} bytes", ptr, bytes);
+        ptr
+        // unsafe {
+        //     // libc::malloc(bytes)
+        //     let layout = Layout::from_size_align(bytes as usize, 1);
+        //     let layout = match layout {
+        //         Ok(layout) => layout,
+        //         Err(err) => {
+        //             libc_println!("{}", err);
+        //             panic!()
+        //         }
+        //     };
+        //     let ptr = Global.allocate_zeroed(layout).unwrap().as_ptr() as *mut c_void;
+        //     libc_println!("HERE: {:?}", ptr);
+        //     ptr
+        // }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use gmp_mpfr_sys::gmp;
+
+        use core::mem::MaybeUninit;
+        use libc_print::libc_println;
+
+        #[test]
+        fn test_alloc() {
+            // let x = MaybeUninit::<*mut mpz_t>::uninit();
+            // let x = unsafe { x.assume_init() };
+            // libc_println!("x {:?}", x);
+            // unsafe { mpz_init_set_si(x,42) }
+            // libc_println!("x {:?}", x);
+
+            unsafe {
+                let mut z = {
+                    let mut z = MaybeUninit::uninit();
+                    gmp::mpz_init(z.as_mut_ptr());
+                    z.assume_init()
+                };
+                gmp::mpz_set_ui(&mut z, 15);
+                libc_println!("z {:?}", z);
+                let u = gmp::mpz_get_ui(&z);
+                assert_eq!(u, 15);
+                gmp::mpz_clear(&mut z);
+            }
+            // assert_eq!(42, unsafe { mpz_get_ui(x) });
+            // assert_eq!(42, unsafe { mpz_get_si(x) });
+        }
+    }
+}
+
 #[cfg(feature = "libc_alloc")]
 mod libc_allocator {
     use libc_alloc::LibcAlloc;
 
     #[global_allocator]
     pub(crate) static GLOBAL: LibcAlloc = LibcAlloc;
+}
+
+#[cfg(feature = "mimalloc_alloc")]
+mod mimalloc_allocator {
+    use mimalloc::MiMalloc;
+
+    #[global_allocator]
+    static GLOBAL: MiMalloc = MiMalloc;
 }
 
 #[cfg(feature = "libgc_alloc")]
@@ -225,7 +368,7 @@ mod gc_allocator {
     use alloc::alloc::handle_alloc_error;
 
     use core::alloc::{GlobalAlloc, Layout};
-
+    use core::ffi::CStr;
     use libc_print::libc_println;
 
     #[global_allocator]
@@ -236,9 +379,7 @@ mod gc_allocator {
     #[cfg(test)]
     mod ctor {
         // use crate::gc_allocator::THE_INIT_DONE;
-        use crate::libgc::{
-            GC_allow_register_threads, GC_disable, GC_init, GC_thread_is_registered,
-        };
+        use crate::libgc::*;
         // use core::sync::atomic::AtomicBool;
         // use core::sync::atomic::Ordering::Relaxed;
         use ctor::{ctor, dtor};
@@ -369,7 +510,7 @@ mod gc_allocator {
 
     // static mut GUARD: Mutex<i8>  = Mutex::new(0);
 
-    // static FILENAME: &CStr = c"GcAllocator";
+    static FILENAME: &CStr = c"GcAllocator";
 
     fn verify_alloc_success(ptr: *mut u8, layout: Layout) -> *mut u8 {
         if ptr.is_null() {
@@ -384,8 +525,11 @@ mod gc_allocator {
         if !is_registered {
             libc_println!("libgc unregistered thread");
             unsafe {
-                GC_allow_register_threads();
+                libc_println!("GC_allow_register_threads");
+                // GC_allow_register_threads();
+                libc_println!("get_stack_base");
                 let stack_base = get_stack_base();
+                libc_println!("GC_register_my_thread");
                 GC_register_my_thread(&stack_base);
             }
 
@@ -414,8 +558,8 @@ mod gc_allocator {
             //verify_thread_registration(layout);
             verify_thread_registration(layout);
             // let bytes = layout.size();
-            let ptr = GC_memalign(align, size);
-            //let ptr = GC_debug_malloc(size, FILENAME.as_ptr(), line!());
+            // let ptr = GC_memalign(align, size);
+            let ptr = GC_debug_malloc(size, FILENAME.as_ptr(), line!());
 
             //let ptr = GC_debug_malloc_ignore_off_page(size, FILENAME.as_ptr(), line!());
             // let ptr = GC_malloc(size);
@@ -428,18 +572,19 @@ mod gc_allocator {
 
         unsafe fn dealloc(&self, ptr: *mut u8, _layout: Layout) {
             // verify_thread_registration_or_fail(layout);
-            // GC_debug_free(ptr, FILENAME.as_ptr(), line!());
-            GC_free(ptr);
+            GC_debug_free(ptr, FILENAME.as_ptr(), line!());
+            // GC_free(ptr);
         }
 
-        // unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        //     self.alloc(layout)
-        // }
+        // usable if alloc is zeroed - which is the case for malloc, but unsure for memalign
+        unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
+            self.alloc(layout)
+        }
 
         unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
             verify_thread_registration(layout);
-            // let ptr = GC_debug_realloc(ptr, new_size, FILENAME.as_ptr(), line!());
-            let ptr = GC_realloc(ptr, new_size);
+            let ptr = GC_debug_realloc(ptr, new_size, FILENAME.as_ptr(), line!());
+            // let ptr = GC_realloc(ptr, new_size);
             verify_alloc_success(ptr, layout)
         }
     }
@@ -644,7 +789,13 @@ mod string {
 
             let new_ptr = obj.evolve_extract_ptr();
             let old_ptr = str.as_ptr();
-            let diff = unsafe { new_ptr.sub_ptr(old_ptr) };
+            let diff = unsafe {
+                if new_ptr > old_ptr {
+                    new_ptr.sub_ptr(old_ptr)
+                } else {
+                    old_ptr.sub_ptr(new_ptr)
+                }
+            };
             assert_ne!(8, diff);
             // assert_eq!(8, diff);
         }
@@ -893,17 +1044,8 @@ mod regex {
 mod tests {
     use alloc::collections::VecDeque;
     use alloc::vec;
-    use core::alloc::{GlobalAlloc, Layout};
+    use core::alloc::{Layout};
     use libc_print::libc_println;
-
-    #[cfg(feature = "libc_alloc")]
-    use crate::libc_allocator::GLOBAL;
-
-    #[cfg(feature = "libgc_alloc")]
-    use crate::gc_allocator::GLOBAL;
-
-    #[cfg(feature = "bdwgc_alloc")]
-    use crate::bdwgc_alloc::GLOBAL;
 
     #[test]
     fn test_allocs() {
@@ -911,7 +1053,7 @@ mod tests {
         let layout = Layout::from_size_align(1 << 16, 8).unwrap();
         for n in 1..=10 {
             libc_println!("allocation {} for {:?}", n, layout);
-            let x = unsafe { GLOBAL.alloc(layout) };
+            let x = unsafe { alloc::alloc::alloc(layout) };
             assert!(!x.is_null());
         }
         libc_println!("DONE test_allocs")

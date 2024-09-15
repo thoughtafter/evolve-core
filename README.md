@@ -101,3 +101,7 @@ libgc test/stress works in single thread with gc disabled
 
 `cargo test -p evolve_outer_core --features="libgc_alloc" -- --nocapture --test-threads=1`
 `cargo stress -p evolve_outer_core --features="libgc_alloc" -- --test-threads=1`
+
+mimalloc stress
+
+`cargo stress --all --features="mimalloc_alloc"`
