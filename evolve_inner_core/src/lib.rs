@@ -1,5 +1,7 @@
 #![feature(str_from_raw_parts)]
+#![feature(allocator_api)]
 #![no_std]
+extern crate alloc;
 
 mod class_ids {
     // const INT_CLASS_ID: u16 = 11u16;
@@ -47,6 +49,11 @@ pub mod object {
         tag: u64,
         ptr: Ptr,
     }
+
+    // extern "C" {
+    //     #[use]
+    //     pub fn evolve_regex_from_string(string: &str) -> Object;
+    // }
 
     // #[no_mangle]
     // pub const fn evolve_big_int_from_srcptr(mpz: mpz_srcptr) -> Object {
@@ -609,6 +616,12 @@ mod mpz {
         even != 0
     }
 
+    // #[no_mangle]
+    // extern "Rust" fn evolve_mpz_zero_p(op: mpz_srcptr) -> bool {
+    //     let zero = unsafe { gmp::mpz_cmp_si(op, 0) };
+    //     zero != 0
+    // }
+
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -620,7 +633,7 @@ mod mpz {
         #[test_case(1, false, 1)]
         #[test_case(2, true, 1)]
         #[test_case(3, false, 1)]
-        fn test_mpz(value: i64, even: bool, signum: i64) {
+        fn test_mpz_sgn_even_odd(value: i64, even: bool, signum: i64) {
             let raw = &Integer::from(value).into_raw();
             let neg = &Integer::from(-value).into_raw();
 
@@ -685,6 +698,8 @@ mod mpq {
 // extern "Rust" fn call_from_rust() {
 //     println!("Just called a Rust function from C!");
 // }
+
+
 
 #[cfg(test)]
 mod tests {

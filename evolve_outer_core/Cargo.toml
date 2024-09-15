@@ -14,10 +14,12 @@ indexmap = { version = "^2.6",default-features = false, optional = true }
 libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"] }
 libc-print = "^0.1"
 regex = { version = "^1.11", default-features = false, optional = true }
-evolve_inner_core = { path = "../evolve_inner_core" }
 bdwgc-alloc = { version = "0.6.9", default-features = false, features = ["cmake"], optional = true}
 libc_alloc = { version = "1.0.7", default-features = false, optional = true }
+mimalloc = { version = "0.1.43", optional = true }
 
+evolve_inner_core = { path = "../evolve_inner_core" }
+#inject_global_allocator = { path = "../inject_global_allocator", optional = true }
 # std
 # llvm-sys = { version = "191.0.0-rc1", default-features = false }
 # postgres = { version = "0.19.8", default-features = false }
@@ -27,6 +29,9 @@ ctor = {  version = "^0.2", default-features = false }
 pretty_assertions = "^1.4"
 test-case = "^3.3"
 
+# temporary, probably
+gmp-mpfr-sys = { version = "^1.6", default-features = false, features = ["mpfr"] }
+
 [features]
 default = ["string", "stringmap", "regex"]
 regex = ["dep:regex"]
@@ -35,3 +40,9 @@ stringmap = ["dep:indexmap", "dep:ahash", "dep:hashbrown"]
 bdwgc_alloc = ["dep:bdwgc-alloc"]
 libgc_alloc = []
 libc_alloc = ["dep:libc_alloc"]
+mimalloc_alloc = ["dep:mimalloc", "redirect_malloc"]
+redirect_malloc = []
+
+[profile.release]
+lto = "fat"
+panic = "abort"

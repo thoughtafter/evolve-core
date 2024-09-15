@@ -107,11 +107,13 @@ dependencies = [
  "bdwgc-alloc",
  "ctor",
  "evolve_inner_core",
+ "gmp-mpfr-sys",
  "hashbrown",
  "indexmap",
  "libc",
  "libc-print",
  "libc_alloc",
+ "mimalloc",
  "pretty_assertions",
  "regex",
  "test-case",
@@ -169,6 +171,25 @@ name = "libm"
 version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a00419de735aac21d53b0de5ce2c03bd3627277cf471300f27ebc89f7d828047"
+
+[[package]]
+name = "libmimalloc-sys"
+version = "0.1.39"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23aa6811d3bd4deb8a84dde645f943476d13b248d818edcf8ce0b2f37f036b44"
+dependencies = [
+ "cc",
+ "libc",
+]
+
+[[package]]
+name = "mimalloc"
+version = "0.1.43"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68914350ae34959d83f732418d51e2427a794055d0b9529f48259ac07af65633"
+dependencies = [
+ "libmimalloc-sys",
+]
 
 [[package]]
 name = "num-traits"
