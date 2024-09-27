@@ -14,8 +14,8 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 // #[lang = "eh_personality"]
 // extern "C" fn rust_eh_personality() {}
 
-#[no_mangle]
-extern "C" fn rust_eh_personality() {}
+// #[no_mangle]
+// extern "C" fn rust_eh_personality() {}
 
 #[cfg(feature = "redirect_malloc")]
 mod redirect_malloc {
@@ -370,6 +370,7 @@ mod gc_allocator {
     use core::alloc::{GlobalAlloc, Layout};
     use core::ffi::CStr;
     use libc_print::libc_println;
+    use libc_print::std_name::println;
 
     #[global_allocator]
     pub(crate) static GLOBAL: GcAllocator = GcAllocator;
@@ -384,6 +385,7 @@ mod gc_allocator {
         // use core::sync::atomic::Ordering::Relaxed;
         use ctor::{ctor, dtor};
         use libc_print::libc_println;
+        use crate::gc_allocator::GcAllocator;
         // use libc_print::std_name::println;
 
         #[ctor]
@@ -392,10 +394,11 @@ mod gc_allocator {
             // let foo =  unsafe { GC_thread_is_registered() };
             // libc_println!("is_reg: {}", foo);
             unsafe {
+                GcAllocator::setup();
                 // GC_set_handle_fork(0);
                 // GC_allow_register_threads();
-                GC_allow_register_threads();
-                GC_init(); // creates pthreads?
+                // GC_allow_register_threads();
+                // GC_init(); // creates pthreads?
                            // GC_enable_incremental(); // calls INIT
                            // THE_INIT_DONE.store(true, Relaxed);
                            // libc_println!("set_min");
@@ -404,13 +407,10 @@ mod gc_allocator {
 
                 // GC_register_my_thread(&stack_base);
                 // libc_println!("disable");
-                GC_disable();
+                // GC_disable();
                 // GC_enable();
             }
-            libc_println!("is_reg");
 
-            let foo = unsafe { GC_thread_is_registered() };
-            libc_println!("is_reg: {}", foo);
         }
 
         #[dtor]
@@ -589,6 +589,25 @@ mod gc_allocator {
         }
     }
 
+    impl GcAllocator {
+        pub unsafe fn setup() {
+            println!("libgc setup");
+            GC_init();
+
+            libc_println!("is_reg");
+
+            let foo = unsafe { GC_thread_is_registered() };
+            libc_println!("is_reg: {}", foo);
+
+            GC_allow_register_threads();
+
+            let foo = unsafe { GC_thread_is_registered() };
+            libc_println!("is_reg: {}", foo);
+
+            GC_disable();
+        }
+    }
+
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -596,6 +615,7 @@ mod gc_allocator {
 
         #[test]
         fn test_big_alloc() {
+            unsafe { GcAllocator::setup(); }
             let foo = unsafe { GC_thread_is_registered() };
             println!("is_reg: {}", foo);
 
@@ -666,22 +686,27 @@ mod string {
 
     // using box leak
     // does not preserve cstring
-    fn str_to_safe_object(value: &str) -> Object {
+    fn str_to_safe_object2(value: &str) -> Object {
         // copy_ref_to_heap_and_leak(&value.to_owned()).as_str().into()
         //
-        // let owned = value.to_owned();
-        // let box_string = Box::new(owned);
+        let owned = value.to_owned();
+        let box_string = Box::new(owned);
         // // let leak_string = Box::leak(box_string);
         // // leak_string.as_str().into()
-        // let leak_string = Box::into_raw(box_string);
-        // unsafe { &*leak_string }.as_str().into()
+        let leak_string = Box::into_raw(box_string);
+        unsafe { &*leak_string }.as_str().into()
 
         // let heap = String::from(value);
+    }
+
+    fn str_to_safe_object(value: &str) -> Object {
         let heap = value.to_owned();
 
         let leaked: &'static str = Box::leak(heap.into_boxed_str());
         leaked.into()
     }
+
+
 
     // #[allow(dead_code)]
     // #[cfg(feature = "experimental")]
