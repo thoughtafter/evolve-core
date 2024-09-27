@@ -933,6 +933,7 @@ mod stringmap {
 // TODO: needs allocation setup
 #[cfg(feature = "regex")]
 mod regex {
+    use alloc::vec;
     use crate::get_ptr::copy_to_heap_and_leak;
 
     // use libc::write;
@@ -996,6 +997,18 @@ mod regex {
         // let z = Box::leak(y);
         //
         unsafe { *y }.into()
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_test(regex: &Regex, haystack: &str, replacer: &str) -> Object {
+        let x = vec![4, 2, 42];
+        x[2].into()
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_test2(regex: &Regex, haystack: &str, replacer: &str) -> Object {
+        let x = (4, 2, 42);
+        x.2.into()
     }
 
     #[cfg(test)]
