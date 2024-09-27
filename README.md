@@ -75,8 +75,7 @@ bad:
 - no-std has no effect
 
 libc stress:
-`cargo stress --all --features="libc_alloc"`
-`cargo stress -r --all --features="libc_alloc"`
+
 
 libgc stress:
 `cargo stress --all --features="libgc_alloc"`
@@ -102,6 +101,22 @@ libgc test/stress works in single thread with gc disabled
 `cargo test -p evolve_outer_core --features="libgc_alloc" -- --nocapture --test-threads=1`
 `cargo stress -p evolve_outer_core --features="libgc_alloc" -- --test-threads=1`
 
-mimalloc stress
+## stress
+
+### mimalloc
 
 `cargo stress --all --features="mimalloc_alloc"`
+
+### libc
+
+`cargo stress --all --features="libc_alloc"`
+
+`cargo stress -r --all --features="libc_alloc"`
+
+### libgc
+
+works when gc disabled
+
+`cargo stress --all --features="libgc_alloc"`
+
+
