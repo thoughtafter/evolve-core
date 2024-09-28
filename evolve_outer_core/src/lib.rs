@@ -383,9 +383,9 @@ mod gc_allocator {
         use crate::libgc::*;
         // use core::sync::atomic::AtomicBool;
         // use core::sync::atomic::Ordering::Relaxed;
+        use crate::gc_allocator::GcAllocator;
         use ctor::{ctor, dtor};
         use libc_print::libc_println;
-        use crate::gc_allocator::GcAllocator;
         // use libc_print::std_name::println;
 
         #[ctor]
@@ -399,18 +399,17 @@ mod gc_allocator {
                 // GC_allow_register_threads();
                 // GC_allow_register_threads();
                 // GC_init(); // creates pthreads?
-                           // GC_enable_incremental(); // calls INIT
-                           // THE_INIT_DONE.store(true, Relaxed);
-                           // libc_println!("set_min");
-                           // GC_set_min_bytes_allocd(16);
-                           // let stack_base = get_stack_base();
+                // GC_enable_incremental(); // calls INIT
+                // THE_INIT_DONE.store(true, Relaxed);
+                // libc_println!("set_min");
+                // GC_set_min_bytes_allocd(16);
+                // let stack_base = get_stack_base();
 
                 // GC_register_my_thread(&stack_base);
                 // libc_println!("disable");
                 // GC_disable();
                 // GC_enable();
             }
-
         }
 
         #[dtor]
@@ -615,7 +614,9 @@ mod gc_allocator {
 
         #[test]
         fn test_big_alloc() {
-            unsafe { GcAllocator::setup(); }
+            unsafe {
+                GcAllocator::setup();
+            }
             let foo = unsafe { GC_thread_is_registered() };
             println!("is_reg: {}", foo);
 
@@ -705,8 +706,6 @@ mod string {
         let leaked: &'static str = Box::leak(heap.into_boxed_str());
         leaked.into()
     }
-
-
 
     // #[allow(dead_code)]
     // #[cfg(feature = "experimental")]
@@ -958,8 +957,8 @@ mod stringmap {
 // TODO: needs allocation setup
 #[cfg(feature = "regex")]
 mod regex {
-    use alloc::vec;
     use crate::get_ptr::copy_to_heap_and_leak;
+    use alloc::vec;
 
     // use libc::write;
     use evolve_inner_core::object::{evolve_build_ptr, evolve_core_build_null, Object, Ptr};
@@ -1082,7 +1081,7 @@ mod regex {
 mod tests {
     use alloc::collections::VecDeque;
     use alloc::vec;
-    use core::alloc::{Layout};
+    use core::alloc::Layout;
     use libc_print::libc_println;
 
     #[test]
