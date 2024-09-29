@@ -12,12 +12,12 @@ extern "Rust" fn evolve_heap_new(capacity: usize) -> Object {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_heap_size(heap: &EvolveHeap) -> usize {
+const extern "Rust" fn evolve_heap_size(heap: &EvolveHeap) -> usize {
     heap.len()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_heap_capacity(heap: &EvolveHeap) -> usize {
+const extern "Rust" fn evolve_heap_capacity(heap: &EvolveHeap) -> usize {
     heap.capacity()
 }
 

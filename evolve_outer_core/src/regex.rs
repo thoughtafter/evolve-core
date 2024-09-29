@@ -1,11 +1,9 @@
 // TODO: needs allocation setup
 mod regex {
-    use crate::get_ptr::copy_to_heap_and_leak;
-    use alloc::vec;
     use libc_print::libc_println;
     use libc_print::std_name::println;
     // use libc::write;
-    use crate::string::str_to_safe_object;
+    use evolve_inner_core::allocates::{copy_to_heap_and_leak, str_to_safe_object};
     use evolve_inner_core::class_ids::REGEX_CLASS_ID;
     use evolve_inner_core::object::{evolve_build_ptr, evolve_core_build_null, Object, Ptr};
     use regex::Regex;
@@ -80,18 +78,6 @@ mod regex {
         //unsafe { *y }.into()
         let y = x.as_ref();
         str_to_safe_object(y)
-    }
-
-    #[no_mangle]
-    extern "Rust" fn evolve_test(regex: &Regex, haystack: &str, replacer: &str) -> Object {
-        let x = vec![4, 2, 42];
-        x[2].into()
-    }
-
-    #[no_mangle]
-    extern "Rust" fn evolve_test2(regex: &Regex, haystack: &str, replacer: &str) -> Object {
-        let x = (4, 2, 42);
-        x.2.into()
     }
 
     #[cfg(test)]
