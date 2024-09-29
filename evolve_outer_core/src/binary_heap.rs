@@ -1,8 +1,8 @@
 use alloc::collections::BinaryHeap;
 use alloc::vec::Vec;
 use core::cmp::Reverse;
+use evolve_inner_core::allocates::copy_to_heap_and_leak;
 use evolve_inner_core::class_ids::HEAP_CLASS_ID;
-use evolve_inner_core::copy_to_heap_and_leak;
 use evolve_inner_core::object::{evolve_build_ptr, Object, Ptr};
 
 type EvolveHeap = BinaryHeap<Object>;
@@ -33,10 +33,11 @@ fn reverse_heap(heap: &EvolveHeap) -> BinaryHeap<Reverse<Object>> {
 /// pricey
 extern "Rust" fn evolve_heap_peek_min(heap: &EvolveHeap) -> Object {
     // *(heap.clone().into_vec().iter().min().unwrap_or_default())
-    reverse_heap(heap)
-        .peek()
-        .unwrap_or(&Reverse(Object::null()))
-        .0
+    // reverse_heap(heap)
+    //     .peek()
+    //     .unwrap_or(&Reverse(Object::null()))
+    //     .0
+    *heap.iter().min().unwrap_or_default()
 }
 
 #[no_mangle]
@@ -47,7 +48,8 @@ extern "Rust" fn evolve_heap_peek_max(heap: &EvolveHeap) -> Object {
 #[no_mangle]
 /// pricey
 extern "Rust" fn evolve_heap_pop_min(heap: &mut EvolveHeap) -> Object {
-    reverse_heap(heap).pop().unwrap_or_default().0
+    // reverse_heap(heap).pop().unwrap_or_default().0
+    todo!()
 }
 
 #[no_mangle]
