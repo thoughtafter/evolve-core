@@ -1,16 +1,54 @@
 #![feature(str_from_raw_parts)]
 #![feature(allocator_api)]
+#![feature(ptr_sub_ptr)]
 #![no_std]
-extern crate alloc;
-
-use alloc::boxed::Box;
 
 mod array;
 pub mod class_ids;
 mod string;
 
-pub fn copy_to_heap_and_leak<T>(thing: T) -> *const T {
-    Box::into_raw(Box::new(thing))
+// for testing optimizations
+// mod testing;
+
+pub mod allocates {
+    extern crate alloc;
+
+    use crate::object::Object;
+    use alloc::borrow::ToOwned;
+    use alloc::boxed::Box;
+    use alloc::string::ToString;
+
+    pub fn copy_to_heap_and_leak<T>(thing: T) -> *const T {
+        Box::into_raw(Box::new(thing))
+    }
+
+    // using box leak
+    // does not preserve cstring
+    // fn str_to_safe_object2(value: &str) -> Object {
+    //     // copy_ref_to_heap_and_leak(&value.to_owned()).as_str().into()
+    //     //
+    //     let owned = value.to_owned();
+    //     let box_string = Box::new(owned);
+    //     // // let leak_string = Box::leak(box_string);
+    //     // // leak_string.as_str().into()
+    //     let leak_string = Box::into_raw(box_string);
+    //     unsafe { &*leak_string }.as_str().into()
+    //
+    //     // let heap = String::from(value);
+    // }
+
+    // pub fn str_to_safe_object(value: &str) -> Object {
+    //     let heap = value.to_owned();
+    //
+    //     let leaked: &'static str = Box::leak(heap.into_boxed_str());
+    //     leaked.into()
+    // }
+
+    // same as above
+    pub fn str_to_safe_object(value: &str) -> Object {
+        // (&*value.to_string().leak()).into()
+        (&*value.to_owned().leak()).into()
+    }
 }
 
 pub mod object {
@@ -500,6 +538,8 @@ mod i64 {
     //     (value >= min && value <= max) | (value >= max && value <= min)
     // }
 
+    use core::cmp::Ordering;
+
     #[no_mangle]
     extern "Rust" fn evolve_i64_cmp(value1: i64, value2: i64) -> i64 {
         value1.cmp(&value2) as i64
@@ -515,7 +555,7 @@ mod i64 {
     /// - use checked_div which handles this
     /// - cannot use overflowing_div because of panic on divide by zero
     #[no_mangle]
-    extern "Rust" fn evolve_i64_checked_div(lhs: i64, rhs: i64) -> (i64, bool) {
+    const extern "Rust" fn evolve_i64_checked_div(lhs: i64, rhs: i64) -> (i64, bool) {
         if let Some(dividend) = lhs.checked_div(rhs) {
             (dividend, false)
         } else {
@@ -524,17 +564,17 @@ mod i64 {
     }
 
     #[no_mangle]
-    extern "Rust" fn evolve_i64_overflowing_abs(value: i64) -> (i64, bool) {
+    const extern "Rust" fn evolve_i64_overflowing_abs(value: i64) -> (i64, bool) {
         value.overflowing_abs()
     }
 
     #[no_mangle]
-    extern "Rust" fn evolve_i64_overflowing_neg(value: i64) -> (i64, bool) {
+    const extern "Rust" fn evolve_i64_overflowing_neg(value: i64) -> (i64, bool) {
         value.overflowing_neg()
     }
 
     #[no_mangle]
-    extern "Rust" fn evolve_i64_nabs(value: i64) -> i64 {
+    const extern "Rust" fn evolve_i64_nabs(value: i64) -> i64 {
         if value > 0 {
             -value
         } else {

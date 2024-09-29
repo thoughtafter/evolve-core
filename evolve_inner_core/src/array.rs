@@ -1,7 +1,12 @@
-use crate::class_ids::ARRAY_CLASS_ID;
-use crate::copy_to_heap_and_leak;
-use crate::object::{Object, Ptr};
+/// array using VecDeque
+/// allocations will be common in this code
+/// https://doc.rust-lang.org/std/collections/vec_deque/struct.VecDeque.html
+extern crate alloc;
 use alloc::collections::VecDeque;
+
+use crate::allocates::copy_to_heap_and_leak;
+use crate::class_ids::ARRAY_CLASS_ID;
+use crate::object::{Object, Ptr};
 
 type EvolveArray = VecDeque<Object>;
 
@@ -43,3 +48,5 @@ impl From<EvolveArray> for Object {
         Object::with_aux(ARRAY_CLASS_ID, 0, ptr as Ptr)
     }
 }
+
+mod tests {}
