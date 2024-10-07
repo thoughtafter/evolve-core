@@ -9,7 +9,7 @@ edition = "2021"
 [dependencies]
 # no-std
 ahash = { version = "^0.8", default-features = false, optional = true }
-hashbrown = { version = "^0.14", default-features = false, optional = true }
+hashbrown = { version = "^0.15", default-features = false, optional = true }
 indexmap = { version = "^2.6",default-features = false, optional = true }
 libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"] }
 libc-print = "^0.1"
