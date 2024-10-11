@@ -1,7 +1,8 @@
-use crate::allocates::str_to_safe_object;
-use crate::object::Object;
+use alloc::borrow::ToOwned;
 use core::cmp::Ordering;
 use core::str::FromStr;
+
+use crate::object::Object;
 // use libc_print::libc_println;
 
 #[no_mangle]
@@ -27,13 +28,15 @@ extern "Rust" fn evolve_string_equal_bytes(value1: &str, value2: &str) -> bool {
 #[no_mangle]
 extern "Rust" fn evolve_string_trim_end(value: &str) -> Object {
     let trimmed = value.trim_end(); // slice
-    str_to_safe_object(trimmed)
+    // str_to_safe_object(trimmed)
+    trimmed.to_owned().into()
 }
 
 #[no_mangle]
 extern "Rust" fn evolve_string_trim_start(value: &str) -> Object {
     let trimmed = value.trim_start(); // slice
-    str_to_safe_object(trimmed)
+    // str_to_safe_object(trimmed)
+    trimmed.to_owned().into()
 }
 
 #[no_mangle]
@@ -46,6 +49,15 @@ const extern "Rust" fn evolve_string_is_ascii(value: &str) -> bool {
     value.is_ascii()
 }
 
+#[no_mangle]
+extern "Rust" fn new_string(value: &str) -> Object {
+    value.into()
+}
+
+#[no_mangle]
+extern "Rust" fn new_string_repeat(value: &str, times: usize) -> Object {
+    value.repeat(times).into()
+}
 
 #[no_mangle]
 /// return f64 from string, replace strtod

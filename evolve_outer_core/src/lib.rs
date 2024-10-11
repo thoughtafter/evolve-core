@@ -12,7 +12,6 @@ mod heap;
 mod regex;
 mod set;
 
-
 #[cfg(not(any(test, feature = "bdwgc_alloc")))]
 #[panic_handler]
 fn panic(_info: &core::panic::PanicInfo) -> ! {
@@ -47,7 +46,7 @@ mod redirect_malloc {
         //let layout = get_layout_from_size(bytes);
         let layout = unsafe { Layout::from_size_align_unchecked(bytes as usize, 1) };
         let ptr = unsafe { alloc::alloc::alloc(layout) };
-        libc_println!("> {:?} malloc, {} bytes", ptr, bytes);
+        // libc_println!("> {:?} malloc, {} bytes", ptr, bytes);
         ptr
         // unsafe {
         //     // libc::malloc(bytes)
@@ -67,7 +66,7 @@ mod redirect_malloc {
 
     #[no_mangle]
     extern "C" fn free(ptr: *mut u8) {
-        libc_println!("< {:?} free", ptr);
+        // libc_println!("< {:?} free", ptr);
         let layout = Layout::new::<u8>();
         unsafe {
             alloc::alloc::dealloc(ptr, layout);
@@ -83,7 +82,7 @@ mod redirect_malloc {
 
     #[no_mangle]
     extern "C" fn realloc(p: *mut u8, bytes: size_t) -> *mut u8 {
-        libc_println!("< {:?} realloc, old", p);
+        // libc_println!("< {:?} realloc, old", p);
         //let layout = Layout::from_size_align(size as usize, 1).expect("realloc layout fail");
         let layout = unsafe { Layout::from_size_align_unchecked(bytes as usize, 1) };
 
@@ -91,7 +90,7 @@ mod redirect_malloc {
         // Global.grow()
         // p
         let ptr = unsafe { alloc::alloc::realloc(p, layout, bytes) };
-        libc_println!("> {:?} realloc, new, {} bytes", ptr, bytes);
+        // libc_println!("> {:?} realloc, new, {} bytes", ptr, bytes);
         ptr
     }
 
@@ -104,7 +103,7 @@ mod redirect_malloc {
         let layout = unsafe { Layout::from_size_align_unchecked(bytes as usize, 1) };
 
         let ptr = unsafe { alloc::alloc::alloc_zeroed(layout) };
-        libc_println!("> {:?} calloc {} bytes", ptr, bytes);
+        // libc_println!("> {:?} calloc {} bytes", ptr, bytes);
         ptr
         // unsafe {
         //     // libc::malloc(bytes)
@@ -175,9 +174,15 @@ mod mimalloc_allocator {
 mod libgc {
     // https://github.com/ivmai/bdwgc
 
+    use alloc::boxed::Box;
+    use alloc::format;
+    use alloc::string::ToString;
     use core::ffi::{c_char, c_int, c_uint, c_void};
     use core::mem::MaybeUninit;
+    use core::ops::Deref;
+    use evolve_inner_core::object::Object;
     use libc::{pthread_attr_t, pthread_t};
+    use libc_print::libc_println;
 
     #[repr(C)]
     pub struct GC_stack_base {
@@ -336,6 +341,43 @@ mod libgc {
             oldset: *mut libc::sigset_t,
         );
         pub fn GC_dlopen(path: *const c_char, mode: c_int);
+
+        fn GC_get_heap_usage_safe(
+            heap_size: *mut usize,
+            free_bytes: *mut usize,
+            unmapped_bytes: *mut usize,
+            btes_since_gc: *mut usize,
+            total_bytes: *mut usize,
+        );
+    }
+
+    #[derive(Default)]
+    struct HeapUsage {
+        pub heap_size: usize,
+        pub free_bytes: usize,
+        pub unmapped_bytes: usize,
+        pub bytes_since_gc: usize,
+        pub total_bytes: usize,
+    }
+
+    /// convert to MB rounding up
+    /// eg 1MB + 1 byte = 2MB
+    fn to_mb(bytes: usize) -> usize {
+        (bytes + 1048575) >> 20
+    }
+
+    fn get_heap_usages() -> HeapUsage {
+        let mut heap_usage = HeapUsage::default();
+        unsafe {
+            GC_get_heap_usage_safe(
+                &mut heap_usage.heap_size,
+                &mut heap_usage.free_bytes,
+                &mut heap_usage.unmapped_bytes,
+                &mut heap_usage.bytes_since_gc,
+                &mut heap_usage.total_bytes,
+            );
+        }
+        heap_usage
     }
 
     pub fn get_stack_base() -> GC_stack_base {
@@ -346,6 +388,21 @@ mod libgc {
         }
 
         unsafe { stack_base.assume_init() }
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_gc_summary() -> Object {
+        let heap_usage = get_heap_usages();
+        let summary = format!(
+            "total = {}MB, since_gc = {}MB, heap = {}MB, unmapped = {}MB, free = {}MB",
+            to_mb(heap_usage.total_bytes),
+            to_mb(heap_usage.bytes_since_gc),
+            to_mb(heap_usage.heap_size),
+            to_mb(heap_usage.unmapped_bytes),
+            to_mb(heap_usage.free_bytes)
+        );
+        // libc_println!("{}", summary);
+        summary.into()
     }
 }
 

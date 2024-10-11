@@ -1,9 +1,11 @@
 // TODO: needs allocation setup
 mod regex {
+    use alloc::borrow::ToOwned;
+    use alloc::string::ToString;
     use libc_print::libc_println;
     use libc_print::std_name::println;
     // use libc::write;
-    use evolve_inner_core::allocates::{copy_to_heap_and_leak, str_to_safe_object};
+    use evolve_inner_core::allocates::{copy_to_heap_and_leak};
     use evolve_inner_core::class_ids::REGEX_CLASS_ID;
     use evolve_inner_core::object::{evolve_build_ptr, evolve_core_build_null, Object, Ptr};
     use regex::Regex;
@@ -58,26 +60,21 @@ mod regex {
             // let raw = copy_to_heap_and_leak(str);
             // let danger = unsafe { *raw }.as_ptr();
             // evolve_from_string(str.len() as u32, danger)
-            str_to_safe_object(str)
+            // str_to_safe_object(str)
+            str.to_owned().into()
         }
     }
 
     #[no_mangle]
     extern "Rust" fn evolve_regex_replace(regex: &Regex, haystack: &str, replacer: &str) -> Object {
-        libc_println!(
-            "regex replace: regex: {} haystack: {} replacer: {}",
-            regex.as_str(),
-            haystack,
-            replacer
-        );
-        let x = regex.replace_all(haystack, replacer);
-        //let y = copy_to_heap_and_leak(x.as_ref());
-        // let y = Box::new(x);
-        // let z = Box::leak(y);
-        //
-        //unsafe { *y }.into()
-        let y = x.as_ref();
-        str_to_safe_object(y)
+        // libc_println!(
+        //     "regex replace: regex: {} haystack: {} replacer: {}",
+        //     regex.as_str(),
+        //     haystack,
+        //     replacer
+        // );
+        let replaced = regex.replace_all(haystack, replacer);
+        replaced.to_string().into()
     }
 
     #[cfg(test)]
