@@ -49,30 +49,16 @@ mod regex {
             self.regex().is_match(string)
         }
 
-        // TODO: deal with dropping
         #[no_mangle]
         extern "Rust" fn evolve_regex_to_s2(self) -> Object {
             let re = self.regex();
             let str = re.as_str();
-            // let leak = Box::leak(Box::new(re));
-            // let raw = Box::into_raw(Box::new(str));
-            // let danger = unsafe { *raw };
-            // let raw = copy_to_heap_and_leak(str);
-            // let danger = unsafe { *raw }.as_ptr();
-            // evolve_from_string(str.len() as u32, danger)
-            // str_to_safe_object(str)
             str.to_owned().into()
         }
     }
 
     #[no_mangle]
     extern "Rust" fn evolve_regex_replace(regex: &Regex, haystack: &str, replacer: &str) -> Object {
-        // libc_println!(
-        //     "regex replace: regex: {} haystack: {} replacer: {}",
-        //     regex.as_str(),
-        //     haystack,
-        //     replacer
-        // );
         let replaced = regex.replace_all(haystack, replacer);
         replaced.to_string().into()
     }
