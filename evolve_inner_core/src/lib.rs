@@ -1,12 +1,14 @@
 #![feature(str_from_raw_parts)]
 #![feature(allocator_api)]
 #![feature(ptr_sub_ptr)]
+#![feature(unbounded_shifts)]
 #![no_std]
+extern crate alloc;
 
 mod array;
 pub mod class_ids;
+mod llvm;
 mod string;
-
 // for testing optimizations
 // mod testing;
 
@@ -16,8 +18,6 @@ pub mod allocates {
     use crate::object::Object;
     use alloc::borrow::ToOwned;
     use alloc::boxed::Box;
-    use alloc::string::ToString;
-
     pub fn copy_to_heap_and_leak<T>(thing: T) -> *const T {
         Box::into_raw(Box::new(thing))
     }
@@ -45,10 +45,10 @@ pub mod allocates {
     // }
 
     // same as above
-    pub fn str_to_safe_object(value: &str) -> Object {
-        // (&*value.to_string().leak()).into()
-        (&*value.to_owned().leak()).into()
-    }
+    // pub fn str_to_safe_object(value: &str) -> Object {
+    //     // (&*value.to_string().leak()).into()
+    //     (&*value.to_owned().leak()).into()
+    // }
 }
 
 pub mod object {
@@ -291,6 +291,9 @@ pub mod object {
 }
 
 pub mod object_from {
+    use alloc::string::String;
+    use core::ops::Deref;
+    use crate::allocates::copy_to_heap_and_leak;
     use crate::class_ids::{
         FALSE_CLASS_ID, FLOAT_CLASS_ID, INT_CLASS_ID, POINTER_CLASS_ID, STRING_CLASS_ID,
         TRUE_CLASS_ID,
@@ -387,9 +390,19 @@ pub mod object_from {
         }
     }
 
+    /// create object from &str - assumed to be already leaked
     impl From<&str> for Object {
         fn from(s: &str) -> Self {
             evolve_from_string(s.len() as u32, s.as_ptr())
+        }
+    }
+
+    impl From<String> for Object {
+        fn from(s: String) -> Object {
+            // let len = s.len();
+            // let ptr = copy_to_heap_and_leak(s);
+            // evolve_from_string(len as u32, ptr as Ptr)
+            s.leak().deref().into()
         }
     }
 
@@ -538,7 +551,7 @@ mod i64 {
     //     (value >= min && value <= max) | (value >= max && value <= min)
     // }
 
-    use core::cmp::Ordering;
+    use core::ops::Shr;
 
     #[no_mangle]
     extern "Rust" fn evolve_i64_cmp(value1: i64, value2: i64) -> i64 {
@@ -564,6 +577,39 @@ mod i64 {
     }
 
     #[no_mangle]
+    const extern "Rust" fn evolve_i64_checked_rem(lhs: i64, rhs: i64) -> (i64, bool) {
+        if let Some(rem) = lhs.checked_rem(rhs) {
+            (rem, false)
+        } else {
+            (0, true)
+        }
+    }
+
+    /// safe rem - no checking needed
+    /// min / -1 = 0, though overflow there is no remainder
+    /// x / 0 = x, can be checked or used
+    #[no_mangle]
+    #[allow(unused)]
+    const extern "Rust" fn evolve_i64_safe_rem(lhs: i64, rhs: i64) -> i64 {
+        match rhs {
+            0 => lhs,
+            -1 => 0,
+            _ => lhs % rhs,
+        }
+    }
+
+    #[no_mangle]
+    const extern "Rust" fn evolve_i64_checked_div_rem(lhs: i64, rhs: i64) -> (i64, i64) {
+        let div = lhs.checked_div(rhs);
+        let rem = lhs.checked_rem(rhs);
+
+        match (div, rem) {
+            (Some(div), Some(rem)) => (div, rem),
+            _ => (-1, -1),
+        }
+    }
+
+    #[no_mangle]
     const extern "Rust" fn evolve_i64_overflowing_abs(value: i64) -> (i64, bool) {
         value.overflowing_abs()
     }
@@ -579,6 +625,81 @@ mod i64 {
             -value
         } else {
             value
+        }
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_i64_ashr(lhs: i64, rhs: u32) -> i64 {
+        lhs.unbounded_shr(rhs)
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_i64_ashr2(lhs: i64, rhs: u32) -> i64 {
+        lhs.checked_shr(rhs).unwrap_or_default()
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_i64_lshr(lhs: u64, rhs: u32) -> u64 {
+        lhs.unbounded_shr(rhs)
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_i64_lshr2(lhs: u64, rhs: u32) -> u64 {
+        lhs.checked_shr(rhs).unwrap_or_default()
+    }
+
+    // overflowing_shl - checks for overflow of bits, not result
+    #[no_mangle]
+    extern "Rust" fn evolve_i64_overflowing_shl(lhs: i64, rhs: u32) -> (i64, bool) {
+        let shl = lhs.unbounded_shl(rhs);
+        let shr = shl.unbounded_shr(rhs);
+        (shl, lhs != shr)
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_i64_unbounded_shl(lhs: i64, rhs: u32) -> i64 {
+        lhs.unbounded_shl(rhs)
+    }
+
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn test_unbounded_shl() {
+            assert_eq!(i64::MAX << 1, -2);
+            assert_eq!(i64::MIN << 1, 0);
+
+            assert_eq!(evolve_i64_unbounded_shl(i64::MAX, 0), i64::MAX);
+            assert_eq!(evolve_i64_unbounded_shl(i64::MAX, 1), -2);
+
+            assert_eq!(evolve_i64_unbounded_shl(i64::MIN, 0), i64::MIN);
+            assert_eq!(evolve_i64_unbounded_shl(i64::MIN, 1), 0);
+
+            assert_eq!(evolve_i64_unbounded_shl(1, 1), 2);
+            assert_eq!(evolve_i64_unbounded_shl(-1, 1), -2);
+        }
+
+        #[test]
+        fn test_overflowing_shl() {
+            assert_eq!(evolve_i64_overflowing_shl(i64::MAX, 0), (i64::MAX, false));
+            assert_eq!(evolve_i64_overflowing_shl(i64::MAX, 1), (-2, true));
+
+            assert_eq!(evolve_i64_overflowing_shl(i64::MIN, 0), (i64::MIN, false));
+            assert_eq!(evolve_i64_overflowing_shl(i64::MIN, 1), (0, true));
+
+            assert_eq!(evolve_i64_overflowing_shl(1, 1), (2, false));
+            assert_eq!(evolve_i64_overflowing_shl(-1, 1), (-2, false));
+        }
+
+        #[test]
+        fn test_evolve_i64_checked_div_rem() {
+            assert_eq!((2, 1), evolve_i64_checked_div_rem(5, 2));
+            assert_eq!((-2, -1), evolve_i64_checked_div_rem(-5, 2));
+            assert_eq!((-2, 1), evolve_i64_checked_div_rem(5, -2));
+            assert_eq!((2, -1), evolve_i64_checked_div_rem(-5, -2));
+
+            assert_eq!((-i64::MAX, 0), evolve_i64_checked_div_rem(i64::MAX, -1));
+            assert_eq!((-1, -1), evolve_i64_checked_div_rem(i64::MIN, -1));
         }
     }
 }
@@ -608,23 +729,6 @@ mod f64 {
     // extern "Rust" fn evolve_f64_fits_i64(value: f64) -> bool {
     //     (value <= i64::MAX as f64) && (value >= i64::MIN as f64)
     // }
-}
-
-mod llvm {
-    #[no_mangle]
-    extern "Rust" fn evolve_llvm_sitofp(value: i64) -> f64 {
-        value as f64
-    }
-
-    #[no_mangle]
-    extern "Rust" fn evolve_llvm_fptosi(value: f64) -> i64 {
-        value as i64
-    }
-
-    #[no_mangle]
-    extern "Rust" fn evolve_llvm_fneg(value: f64) -> f64 {
-        -value
-    }
 }
 
 // #[cfg(not(test))]
@@ -711,6 +815,49 @@ mod mpq {
     }
 }
 
+mod io {
+    use alloc::ffi::CString;
+    use alloc::format;
+    use alloc::string::String;
+    use core::ffi::c_void;
+    use libc::{fprintf, fputs, fwrite, iovec, FILE};
+    use libc_print::{libc_print, libc_println};
+
+    /// TODO: alloc-less, probably using writev and iovec
+    #[no_mangle]
+    extern "Rust" fn evolve_puts2(string: &str, newline: &str) -> u64 {
+        libc_print!("{}{}", string, newline);
+        0
+        //let output = format!("{}{}", string, newline);
+        //fwrite(file, )
+        // let iov = libc::iovec { iov_base: string.as_ptr() as *mut c_void, iov_len: string.len() };
+        //
+        // let count = unsafe {
+        //     libc::writev(libc::STDOUT_FILENO, &iov, 1)
+        // };
+        //
+        // count as u64
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_stdout() -> *mut FILE {
+        let mode = CString::new("w").unwrap();
+        unsafe { libc::fdopen(libc::STDOUT_FILENO, mode.as_ptr()) }
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_stderr() -> *mut FILE {
+        let mode = CString::new("w").unwrap();
+        unsafe { libc::fdopen(libc::STDERR_FILENO, mode.as_ptr()) }
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_stdin() -> *mut FILE {
+        let mode = CString::new("r").unwrap();
+        unsafe { libc::fdopen(libc::STDIN_FILENO, mode.as_ptr()) }
+    }
+}
+
 // #[no_mangle]
 //  extern "Rust" fn evolve_build_ptr_rust(class_id: u32, aux4: u32, ptr: *const u64) -> (u64, *const u64) {
 //     (((class_id as u64) << 32) | aux4 as u64, ptr)
@@ -737,6 +884,24 @@ mod mpq {
 // extern "Rust" fn call_from_rust() {
 //     println!("Just called a Rust function from C!");
 // }
+
+mod time {
+    use libc::timespec;
+
+    fn timespec_to_f64(ts: timespec) -> f64 {
+        ts.tv_sec as f64 + (ts.tv_nsec as f64 * 1e-9)
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_posix_clock_monotonic() -> f64 {
+        let mut x = timespec { tv_sec: 0, tv_nsec: 0 };
+
+        unsafe {
+            libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut x);
+        }
+        timespec_to_f64(x)
+    }
+}
 
 #[cfg(test)]
 mod tests {
