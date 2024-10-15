@@ -1,5 +1,5 @@
 mod mem {
-    use core::alloc::GlobalAlloc;
+    use core::alloc::{GlobalAlloc, Layout};
     use core::ffi::c_void;
 
     //extern "C" fn(alloc_size: usize) -> *mut c_void
@@ -9,16 +9,28 @@ mod mem {
     //     }
 
     extern "C" fn evolve_gmp_allocate(alloc_size: usize) -> *mut c_void {
-        unsafe { libc::malloc(alloc_size) }
+        // unsafe { libc::malloc(alloc_size) }
+        let layout = Layout::from_size_align(alloc_size, 8).unwrap();
+        let ptr = unsafe { alloc::alloc::alloc(layout) };
+        ptr as *mut c_void
     }
+
     extern "C" fn evolve_gmp_reallocate(
         ptr: *mut c_void,
         old_size: usize,
         new_size: usize,
     ) -> *mut c_void {
-        unsafe { libc::realloc(ptr, new_size) }
+        // unsafe { libc::realloc(ptr, new_size) }
+        // should this be old_size or new_size? ie, same layout as initial or new?
+        let layout = Layout::from_size_align(old_size, 8).unwrap();
+        let ptr = unsafe { alloc::alloc::realloc(ptr as *mut u8, layout, new_size)};
+        ptr as *mut c_void
     }
-    extern "C" fn evolve_gmp_free(ptr: *mut c_void, size: usize) {}
+
+    extern "C" fn evolve_gmp_free(_ptr: *mut c_void, size: usize) {
+        let layout = Layout::from_size_align(size, 8).unwrap();
+        unsafe { alloc::alloc::dealloc(_ptr as *mut u8, layout) };
+    }
 
     #[no_mangle]
     extern "Rust" fn evolve_gmp_set_mem_func() {

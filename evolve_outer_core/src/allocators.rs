@@ -20,7 +20,9 @@ mod tests {
     #[test]
     fn test_allocs() {
         #[cfg(feature = "bdwgc_alloc")]
-        unsafe { bdwgc_alloc::Allocator::initialize(); }
+        unsafe {
+            bdwgc_alloc::Allocator::initialize();
+        }
         // TODO: libgc was slow at >= 64K but not now
         let layout = Layout::from_size_align(1 << 18, 8).unwrap();
         for n in 1..=100 {
