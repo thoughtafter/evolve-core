@@ -4,7 +4,7 @@
 extern crate alloc;
 use alloc::collections::VecDeque;
 
-use crate::allocates::copy_to_heap_and_leak;
+use crate::allocates::leak_heap_ptr;
 use crate::class_ids::ARRAY_CLASS_ID;
 use crate::object::{Object, Ptr};
 
@@ -44,7 +44,7 @@ extern "Rust" fn evolve_array_put(array: &mut EvolveArray, index: usize, value: 
 
 impl From<EvolveArray> for Object {
     fn from(s: EvolveArray) -> Self {
-        let ptr = copy_to_heap_and_leak(s);
+        let ptr = leak_heap_ptr(s);
         Object::with_aux(ARRAY_CLASS_ID, 0, ptr as Ptr)
     }
 }

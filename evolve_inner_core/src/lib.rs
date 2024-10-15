@@ -16,13 +16,15 @@ mod string;
 // mod testing;
 
 pub mod allocates {
-    extern crate alloc;
+    // extern crate alloc;
 
-    use crate::object::Object;
-    use alloc::borrow::ToOwned;
     use alloc::boxed::Box;
-    pub fn copy_to_heap_and_leak<T>(thing: T) -> *const T {
+    pub fn leak_heap_ptr<T>(thing: T) -> *const T {
         Box::into_raw(Box::new(thing))
+    }
+
+    pub fn leak_heap_ref<T>(thing: T) -> &'static T {
+        Box::leak(Box::new(thing))
     }
 
     // using box leak
@@ -282,19 +284,18 @@ pub mod object {
 
     impl PartialOrd<Self> for Object {
         fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-            todo!()
+            Some(self.cmp(other))
         }
     }
 
     impl Ord for Object {
-        fn cmp(&self, other: &Self) -> Ordering {
+        fn cmp(&self, _other: &Self) -> Ordering {
             todo!()
         }
     }
 }
 
 pub mod object_from {
-    use crate::allocates::copy_to_heap_and_leak;
     use crate::class_ids::{
         FALSE_CLASS_ID, FLOAT_CLASS_ID, INT_CLASS_ID, POINTER_CLASS_ID, STRING_CLASS_ID,
         TRUE_CLASS_ID,
@@ -755,12 +756,9 @@ mod f64 {
 
 mod io {
     use alloc::ffi::CString;
-    use alloc::format;
-    use alloc::string::String;
-    use core::ffi::c_void;
     use core::mem;
-    use libc::{fprintf, fputs, fwrite, iovec, timeval, FILE, RUSAGE_SELF, STDOUT_FILENO};
-    use libc_print::{libc_eprint, libc_print, libc_println};
+    use libc::{timeval, FILE, RUSAGE_SELF};
+    use libc_print::{libc_print, libc_println};
 
     // TODO: allocators-less, probably using writev and iovec
     // libc_print! may not allocate?
