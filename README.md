@@ -20,5 +20,7 @@
 ## outer-core
   - set
   - map
-  - heap
-  - regex
+  - heap - currently binary_heap b/c min_max_heap requires std
+  - regex - performance gains from std
+  - bitmap - roaring
+  - allocator trait requires std

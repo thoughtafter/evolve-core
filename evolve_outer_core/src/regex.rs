@@ -3,9 +3,8 @@ mod regex {
     use alloc::borrow::ToOwned;
     use alloc::string::ToString;
     use libc_print::libc_println;
-    use libc_print::std_name::println;
     // use libc::write;
-    use evolve_inner_core::allocates::{copy_to_heap_and_leak};
+    use evolve_inner_core::allocates::copy_to_heap_and_leak;
     use evolve_inner_core::class_ids::REGEX_CLASS_ID;
     use evolve_inner_core::object::{evolve_build_ptr, evolve_core_build_null, Object, Ptr};
     use regex::Regex;

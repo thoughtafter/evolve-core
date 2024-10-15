@@ -7,7 +7,10 @@ extern crate alloc;
 
 mod array;
 pub mod class_ids;
+mod gmp_mpfr;
 mod llvm;
+mod mem;
+mod misc;
 mod string;
 // for testing optimizations
 // mod testing;
@@ -291,14 +294,14 @@ pub mod object {
 }
 
 pub mod object_from {
-    use alloc::string::String;
-    use core::ops::Deref;
     use crate::allocates::copy_to_heap_and_leak;
     use crate::class_ids::{
         FALSE_CLASS_ID, FLOAT_CLASS_ID, INT_CLASS_ID, POINTER_CLASS_ID, STRING_CLASS_ID,
         TRUE_CLASS_ID,
     };
     use crate::object::{Object, Ptr};
+    use alloc::string::String;
+    use core::ops::Deref;
 
     // TODO: this generates possibly suboptimal code
     // assembly looks good
@@ -476,9 +479,10 @@ mod object_default {
 }
 
 mod object_debug {
-    use crate::class_ids::STRING_CLASS_ID;
-    use crate::object::Object;
+    use crate::class_ids::{FLOAT_CLASS_ID, INT_CLASS_ID, STRING_CLASS_ID};
+    use crate::object::{evolve_build_ptr, EvolveAuxData, EvolveClassId, Object, Ptr};
     use core::fmt::{Debug, Formatter};
+    use libc_print::libc_println;
 
     impl Debug for Object {
         fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
@@ -490,6 +494,8 @@ mod object_debug {
 
             let more = match self.evolve_core_class_id() {
                 STRING_CLASS_ID => common.field("string", &self.evolve_extract_rust_str()),
+                INT_CLASS_ID => common.field("i64", &self.evolve_extract_i64()),
+                FLOAT_CLASS_ID => common.field("f64", &self.evolve_extract_f64()),
                 // 7 => {
                 //     let rust_str = evolve_regex_to_rust_str(self.regex_ptr());
                 //     common.field("regex", &rust_str.to_string())
@@ -498,6 +504,16 @@ mod object_debug {
             };
             more.finish()
         }
+    }
+
+    #[no_mangle]
+    extern "Rust" fn object_debug2(class_id: u64, aux4: u64, data: u64) {
+        let object = evolve_build_ptr(
+            class_id as EvolveClassId,
+            aux4 as EvolveAuxData,
+            data as Ptr,
+        );
+        libc_println!("{:?}", object);
     }
 }
 
@@ -737,95 +753,21 @@ mod f64 {
 //     unsafe { libc::abort(); }
 // }
 
-mod mpz {
-
-    use gmp_mpfr_sys::gmp::{mpz_even_p, mpz_odd_p, mpz_sgn, mpz_srcptr};
-
-    #[no_mangle]
-    extern "Rust" fn evolve_mpz_sgn(op: mpz_srcptr) -> i64 {
-        let signum = unsafe { mpz_sgn(op) };
-        signum as i64
-    }
-
-    #[no_mangle]
-    const extern "Rust" fn evolve_mpz_odd_p(op: mpz_srcptr) -> bool {
-        let odd = unsafe { mpz_odd_p(op) };
-        odd != 0
-    }
-
-    #[no_mangle]
-    extern "Rust" fn evolve_mpz_even_p(op: mpz_srcptr) -> bool {
-        let even = unsafe { mpz_even_p(op) };
-        even != 0
-    }
-
-    // #[no_mangle]
-    // extern "Rust" fn evolve_mpz_zero_p(op: mpz_srcptr) -> bool {
-    //     let zero = unsafe { gmp::mpz_cmp_si(op, 0) };
-    //     zero != 0
-    // }
-
-    #[cfg(test)]
-    mod tests {
-        use super::*;
-        use gmp_mpfr_sys::gmp::mpz_get_ui;
-        use rug::Integer;
-        use test_case::test_case;
-
-        #[test_case(0, true, 0)]
-        #[test_case(1, false, 1)]
-        #[test_case(2, true, 1)]
-        #[test_case(3, false, 1)]
-        fn test_mpz_sgn_even_odd(value: i64, even: bool, signum: i64) {
-            let raw = &Integer::from(value).into_raw();
-            let neg = &Integer::from(-value).into_raw();
-
-            assert_eq!(value, unsafe { mpz_get_ui(raw) } as i64);
-            assert_eq!(value, unsafe { mpz_get_ui(raw) } as i64);
-
-            assert_eq!(even, evolve_mpz_even_p(raw));
-            assert_eq!(even, !evolve_mpz_odd_p(raw));
-
-            assert_eq!(even, evolve_mpz_even_p(neg));
-            assert_eq!(even, !evolve_mpz_odd_p(neg));
-
-            assert_eq!(signum, evolve_mpz_sgn(raw));
-            assert_eq!(-signum, evolve_mpz_sgn(neg));
-        }
-    }
-}
-
-mod mpq {
-    use crate::class_ids::BIGINT_CLASS_ID;
-    use crate::object::{Object, Ptr};
-    use gmp_mpfr_sys::gmp::{mpq_denref_const, mpq_numref_const, mpq_srcptr};
-
-    #[no_mangle]
-    const extern "Rust" fn evolve_mpq_numref(op: mpq_srcptr) -> Object {
-        let num = unsafe { mpq_numref_const(op) };
-        //evolve_big_int_from_srcptr(num)
-        Object::with_aux(BIGINT_CLASS_ID, 16, num as Ptr)
-    }
-
-    #[no_mangle]
-    const extern "Rust" fn evolve_mpq_denref(op: mpq_srcptr) -> Object {
-        let den = unsafe { mpq_denref_const(op) };
-        //evolve_big_int_from_srcptr(den)
-        Object::with_aux(BIGINT_CLASS_ID, 16, den as Ptr)
-    }
-}
-
 mod io {
     use alloc::ffi::CString;
     use alloc::format;
     use alloc::string::String;
     use core::ffi::c_void;
-    use libc::{fprintf, fputs, fwrite, iovec, FILE};
-    use libc_print::{libc_print, libc_println};
+    use core::mem;
+    use libc::{fprintf, fputs, fwrite, iovec, timeval, FILE, RUSAGE_SELF, STDOUT_FILENO};
+    use libc_print::{libc_eprint, libc_print, libc_println};
 
-    /// TODO: alloc-less, probably using writev and iovec
+    // TODO: allocators-less, probably using writev and iovec
+    // libc_print! may not allocate?
     #[no_mangle]
     extern "Rust" fn evolve_puts2(string: &str, newline: &str) -> u64 {
+        // let ptr = string.as_ptr() as *const c_void;
+        // unsafe { libc::write(STDOUT_FILENO, ptr, string.len()); }
         libc_print!("{}{}", string, newline);
         0
         //let output = format!("{}{}", string, newline);
@@ -855,6 +797,21 @@ mod io {
     extern "Rust" fn evolve_stdin() -> *mut FILE {
         let mode = CString::new("r").unwrap();
         unsafe { libc::fdopen(libc::STDIN_FILENO, mode.as_ptr()) }
+    }
+
+    const fn calc(tv: timeval) -> f64 {
+        ((tv.tv_sec as f64 * 1_000_000.0) + tv.tv_usec as f64) / 1_000_000.0
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_write_resource_usage() {
+        let mut usage: libc::rusage = unsafe { mem::zeroed() };
+        unsafe {
+            libc::getrusage(RUSAGE_SELF, &mut usage);
+        }
+        let utime = calc(usage.ru_utime);
+        let stime = calc(usage.ru_stime);
+        libc_println!("user: {} kernel: {}", utime, stime);
     }
 }
 
@@ -894,7 +851,10 @@ mod time {
 
     #[no_mangle]
     extern "Rust" fn evolve_posix_clock_monotonic() -> f64 {
-        let mut x = timespec { tv_sec: 0, tv_nsec: 0 };
+        let mut x = timespec {
+            tv_sec: 0,
+            tv_nsec: 0,
+        };
 
         unsafe {
             libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut x);

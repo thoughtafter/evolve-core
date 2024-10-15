@@ -117,6 +117,7 @@ dependencies = [
  "min-max-heap",
  "pretty_assertions",
  "regex",
+ "roaring",
  "test-case",
 ]
 
@@ -274,6 +275,12 @@ name = "regex-syntax"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
+
+[[package]]
+name = "roaring"
+version = "0.10.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f4b84ba6e838ceb47b41de5194a60244fac43d9fe03b71dbe8c5a201081d6d1"
 
 [[package]]
 name = "rug"
