@@ -47,7 +47,7 @@ extern "Rust" fn evolve_heap_peek_max(heap: &EvolveHeap) -> Object {
 
 #[no_mangle]
 /// pricey
-extern "Rust" fn evolve_heap_pop_min(heap: &mut EvolveHeap) -> Object {
+extern "Rust" fn evolve_heap_pop_min(_heap: &mut EvolveHeap) -> Object {
     // reverse_heap(heap).pop().unwrap_or_default().0
     todo!()
 }
