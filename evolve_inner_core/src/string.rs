@@ -1,4 +1,13 @@
+/**
+# String
+
+- should use malloc atomic, but strings do not support custom allocators
+- except maybe here: https://doc.rust-lang.org/1.81.0/src/alloc/string.rs.html#2163
+- but this means all string functions need to be allocator aware
+**/
 use alloc::borrow::ToOwned;
+use alloc::boxed::Box;
+use alloc::string::ToString;
 use core::cmp::Ordering;
 use core::str::FromStr;
 
@@ -28,14 +37,14 @@ extern "Rust" fn evolve_string_equal_bytes(value1: &str, value2: &str) -> bool {
 #[no_mangle]
 extern "Rust" fn evolve_string_trim_end(value: &str) -> Object {
     let trimmed = value.trim_end(); // slice
-    // str_to_safe_object(trimmed)
+                                    // str_to_safe_object(trimmed)
     trimmed.to_owned().into()
 }
 
 #[no_mangle]
 extern "Rust" fn evolve_string_trim_start(value: &str) -> Object {
     let trimmed = value.trim_start(); // slice
-    // str_to_safe_object(trimmed)
+                                      // str_to_safe_object(trimmed)
     trimmed.to_owned().into()
 }
 
