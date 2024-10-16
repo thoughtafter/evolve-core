@@ -197,6 +197,7 @@ fn get_heap_usages() -> HeapUsage {
     heap_usage
 }
 
+#[allow(dead_code)]
 pub fn get_stack_base() -> GC_stack_base {
     let mut stack_base = MaybeUninit::<GC_stack_base>::uninit();
 
