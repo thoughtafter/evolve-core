@@ -160,6 +160,7 @@ fn verify_alloc_success(ptr: *mut u8, layout: Layout) -> *mut u8 {
     ptr
 }
 
+#[allow(dead_code)]
 fn verify_thread_registration(layout: Layout) {
     let is_registered = unsafe { GC_thread_is_registered() == 1 };
     if !is_registered {
@@ -262,6 +263,7 @@ unsafe impl GlobalAlloc for GcAllocator {
 }
 
 impl GcAllocator {
+    #[allow(dead_code)]
     pub unsafe fn setup() {
         println!("libgc setup");
         GC_init();
@@ -315,16 +317,16 @@ mod tests {
     }
 }
 
-struct AtomicAllocator;
-
-unsafe impl Allocator for AtomicAllocator {
-    fn allocate(&self, layout: Layout) -> Result<NonNull<[u8]>, AllocError> {
-        let bytes = layout.size();
-        let ptr = unsafe { GC_malloc_atomic_ignore_off_page(bytes) };
-        let slice = ptr::slice_from_raw_parts_mut(ptr, bytes);
-        let x = NonNull::new(slice);
-        x.ok_or(AllocError)
-    }
-
-    unsafe fn deallocate(&self, _ptr: NonNull<u8>, _layout: Layout) {}
-}
+// struct AtomicAllocator;
+//
+// unsafe impl Allocator for AtomicAllocator {
+//     fn allocate(&self, layout: Layout) -> Result<NonNull<[u8]>, AllocError> {
+//         let bytes = layout.size();
+//         let ptr = unsafe { GC_malloc_atomic_ignore_off_page(bytes) };
+//         let slice = ptr::slice_from_raw_parts_mut(ptr, bytes);
+//         let x = NonNull::new(slice);
+//         x.ok_or(AllocError)
+//     }
+//
+//     unsafe fn deallocate(&self, _ptr: NonNull<u8>, _layout: Layout) {}
+// }
