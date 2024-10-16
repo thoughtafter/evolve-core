@@ -315,7 +315,6 @@ mod tests {
     }
 }
 
-
 // mod atomic {
 //     use crate::allocators::libgc_alloc::libgc::GC_malloc_atomic_ignore_off_page;
 //     use core::alloc::{AllocError, Allocator, Layout};
