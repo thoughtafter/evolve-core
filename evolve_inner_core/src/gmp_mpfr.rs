@@ -1,5 +1,5 @@
 mod mem {
-    use core::alloc::{GlobalAlloc, Layout};
+    use core::alloc::Layout;
     use core::ffi::c_void;
 
     //extern "C" fn(alloc_size: usize) -> *mut c_void
@@ -23,7 +23,7 @@ mod mem {
         // unsafe { libc::realloc(ptr, new_size) }
         // should this be old_size or new_size? ie, same layout as initial or new?
         let layout = Layout::from_size_align(old_size, 8).unwrap();
-        let ptr = unsafe { alloc::alloc::realloc(ptr as *mut u8, layout, new_size)};
+        let ptr = unsafe { alloc::alloc::realloc(ptr as *mut u8, layout, new_size) };
         ptr as *mut c_void
     }
 

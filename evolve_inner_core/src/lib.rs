@@ -1,6 +1,4 @@
 #![feature(str_from_raw_parts)]
-#![feature(allocator_api)]
-#![feature(ptr_sub_ptr)]
 #![feature(unbounded_shifts)]
 #![no_std]
 extern crate alloc;
@@ -568,8 +566,6 @@ mod i64 {
     //     (value >= min && value <= max) | (value >= max && value <= min)
     // }
 
-    use core::ops::Shr;
-
     #[no_mangle]
     extern "Rust" fn evolve_i64_cmp(value1: i64, value2: i64) -> i64 {
         value1.cmp(&value2) as i64
@@ -679,7 +675,8 @@ mod i64 {
     }
 
     mod tests {
-        use super::*;
+        #[allow(unused_imports)]
+        use crate::i64::*;
 
         #[test]
         fn test_unbounded_shl() {

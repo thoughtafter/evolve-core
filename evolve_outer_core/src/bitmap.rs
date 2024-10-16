@@ -20,8 +20,7 @@ extern "Rust" fn evolve_bitmap_static_new() -> &'static RoaringBitmap {
     leak_heap_ref::<RoaringBitmap>(bitmap)
 }
 
-    #[no_mangle]
-    extern "Rust" fn evolve_bitmap_is_empty(bitmap: &RoaringBitmap) -> bool {
-        bitmap.is_empty()
-    }
-
+#[no_mangle]
+extern "Rust" fn evolve_bitmap_is_empty(bitmap: &RoaringBitmap) -> bool {
+    bitmap.is_empty()
+}
