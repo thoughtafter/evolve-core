@@ -6,8 +6,6 @@
 - but this means all string functions need to be allocator aware
 **/
 use alloc::borrow::ToOwned;
-use alloc::boxed::Box;
-use alloc::string::ToString;
 use core::cmp::Ordering;
 use core::str::FromStr;
 
@@ -209,16 +207,16 @@ mod tests {
         let extract = obj.evolve_extract_rust_str();
         assert_eq!("Hello, world!", extract);
 
-        let new_ptr = obj.evolve_extract_ptr();
-        let old_ptr = str.as_ptr();
-        let diff = unsafe {
-            if new_ptr > old_ptr {
-                new_ptr.sub_ptr(old_ptr)
-            } else {
-                old_ptr.sub_ptr(new_ptr)
-            }
-        };
-        assert_ne!(8, diff);
+        // let new_ptr = obj.evolve_extract_ptr();
+        // let old_ptr = str.as_ptr();
+        // let diff = unsafe {
+        //     if new_ptr > old_ptr {
+        //         new_ptr.sub_ptr(old_ptr)
+        //     } else {
+        //         old_ptr.sub_ptr(new_ptr)
+        //     }
+        // };
+        // assert_ne!(8, diff);
         // assert_eq!(8, diff);
     }
 

@@ -14,7 +14,9 @@ mod libc_alloc;
 mod bdwgc_alloc;
 
 mod tests {
+    #[allow(unused_imports)]
     use core::alloc::Layout;
+    #[allow(unused_imports)]
     use libc_print::libc_println;
 
     #[test]

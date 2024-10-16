@@ -1,5 +1,3 @@
-use core::ffi::c_void;
-
 // #[no_mangle]
 // #[inline(always)]
 // extern "Rust" fn evolve_mem_malloc(bytes: usize) -> *mut c_void {

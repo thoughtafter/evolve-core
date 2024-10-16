@@ -1,5 +1,3 @@
-use core::ops::Div;
-
 #[no_mangle]
 #[inline(always)]
 extern "Rust" fn evolve_llvm_sitofp(value: i64) -> f64 {
