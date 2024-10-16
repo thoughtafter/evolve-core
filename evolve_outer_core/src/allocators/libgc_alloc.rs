@@ -2,15 +2,13 @@ mod libgc;
 
 use alloc::alloc::handle_alloc_error;
 
-use crate::allocators::libgc_alloc::libgc::*;
-use core::alloc::{AllocError, Allocator, GlobalAlloc, Layout};
+use core::alloc::{Allocator, GlobalAlloc, Layout};
 use core::ffi::CStr;
-use core::ptr;
-use core::ptr::NonNull;
 use core::sync::atomic::AtomicU64;
 use core::sync::atomic::Ordering::Relaxed;
 use libc_print::libc_println;
 use libc_print::std_name::println;
+use libgc::*;
 
 #[global_allocator]
 pub(crate) static GLOBAL: GcAllocator = GcAllocator;
@@ -317,16 +315,24 @@ mod tests {
     }
 }
 
-// struct AtomicAllocator;
+
+// mod atomic {
+//     use crate::allocators::libgc_alloc::libgc::GC_malloc_atomic_ignore_off_page;
+//     use core::alloc::{AllocError, Allocator, Layout};
+//     use core::ptr;
+//     use core::ptr::NonNull;
 //
-// unsafe impl Allocator for AtomicAllocator {
-//     fn allocate(&self, layout: Layout) -> Result<NonNull<[u8]>, AllocError> {
-//         let bytes = layout.size();
-//         let ptr = unsafe { GC_malloc_atomic_ignore_off_page(bytes) };
-//         let slice = ptr::slice_from_raw_parts_mut(ptr, bytes);
-//         let x = NonNull::new(slice);
-//         x.ok_or(AllocError)
+//     struct AtomicAllocator;
+//
+//     unsafe impl Allocator for AtomicAllocator {
+//         fn allocate(&self, layout: Layout) -> Result<NonNull<[u8]>, AllocError> {
+//             let bytes = layout.size();
+//             let ptr = unsafe { GC_malloc_atomic_ignore_off_page(bytes) };
+//             let slice = ptr::slice_from_raw_parts_mut(ptr, bytes);
+//             let x = NonNull::new(slice);
+//             x.ok_or(AllocError)
+//         }
+//
+//         unsafe fn deallocate(&self, _ptr: NonNull<u8>, _layout: Layout) {}
 //     }
-//
-//     unsafe fn deallocate(&self, _ptr: NonNull<u8>, _layout: Layout) {}
 // }

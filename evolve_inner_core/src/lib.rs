@@ -197,6 +197,7 @@ pub mod object {
             let len = self.evolve_core_aux();
             let ptr = self.evolve_extract_ptr();
             unsafe { from_raw_parts(ptr, len as usize) }
+            // unsafe { core::slice::from_raw_parts(ptr, len as usize)  }
         }
     }
 
