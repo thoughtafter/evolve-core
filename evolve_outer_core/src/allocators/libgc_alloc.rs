@@ -2,7 +2,7 @@ mod libgc;
 
 use alloc::alloc::handle_alloc_error;
 
-use core::alloc::{Allocator, GlobalAlloc, Layout};
+use core::alloc::{GlobalAlloc, Layout};
 use core::ffi::CStr;
 use core::sync::atomic::AtomicU64;
 use core::sync::atomic::Ordering::Relaxed;
