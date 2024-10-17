@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"] }
 gmp-mpfr-sys = { version = "^1.6", default-features = false, features = ["mpfr"] }
-ordered-float = { version = "^4.3",  default-features = false }
+ordered-float = { version = "^4.4",  default-features = false }
 
 [dev-dependencies]
 libc-print = "^0.1"
