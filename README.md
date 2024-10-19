@@ -26,7 +26,10 @@
     - trivial: From<string>
     - 1K: new_string_repeat
     - ~6K for string trim
+    - 6K for is_blank
+    - 1K for evolve_string_is_ascii
     - 2K CString
+    - 
 
 ## outer-core
   - set

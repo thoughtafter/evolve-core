@@ -1,4 +1,4 @@
-use alloc::borrow::ToOwned;
+use crate::object::Object;
 /**
 # String
 
@@ -9,8 +9,6 @@ use alloc::borrow::ToOwned;
 use core::cmp::Ordering;
 use core::ffi::CStr;
 use core::str::FromStr;
-
-use crate::object::Object;
 // use libc_print::libc_println;
 
 #[no_mangle]
@@ -46,16 +44,6 @@ extern "Rust" fn evolve_string_equal_bytes(value1: &str, value2: &str) -> bool {
 //                                       // str_to_safe_object(trimmed)
 //     trimmed.to_owned().into()
 // }
-
-#[no_mangle]
-extern "Rust" fn evolve_string_is_blank(value: &str) -> bool {
-    value.trim().is_empty()
-}
-
-#[no_mangle]
-const extern "Rust" fn evolve_string_is_ascii(value: &str) -> bool {
-    value.is_ascii()
-}
 
 #[no_mangle]
 extern "Rust" fn new_string(value: &CStr) -> Object {

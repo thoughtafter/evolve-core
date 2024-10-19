@@ -317,7 +317,7 @@ pub mod object_from {
         TRUE_CLASS_ID,
     };
     use crate::object::{evolve_core_build_null, Object, Ptr};
-    use alloc::ffi::{CString, NulError};
+    use alloc::ffi::CString;
     use alloc::string::String;
     use core::ffi::{c_char, CStr};
     // use alloc::string::String;

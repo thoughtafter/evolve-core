@@ -34,6 +34,16 @@ extern "Rust" fn new_string_repeat(value: &str, times: usize) -> Object {
     value.repeat(times).into()
 }
 
+#[no_mangle]
+const extern "Rust" fn evolve_string_is_ascii(value: &str) -> bool {
+    value.is_ascii()
+}
+
+#[no_mangle]
+extern "Rust" fn evolve_string_is_blank(value: &str) -> bool {
+    value.trim().is_empty()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
