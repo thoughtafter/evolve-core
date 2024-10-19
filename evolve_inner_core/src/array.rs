@@ -1,19 +1,18 @@
 /// array using VecDeque
 /// allocations will be common in this code
 /// https://doc.rust-lang.org/std/collections/vec_deque/struct.VecDeque.html
-extern crate alloc;
 use alloc::collections::VecDeque;
 
-use crate::allocates::leak_heap_ptr;
-use crate::class_ids::ARRAY_CLASS_ID;
-use crate::object::{Object, Ptr};
+use crate::allocates::leak_heap_ref;
+use crate::object::Object;
 
 type EvolveArray = VecDeque<Object>;
 
 #[no_mangle]
-extern "Rust" fn evolve_array_new(capacity: usize) -> Object {
+#[inline(always)]
+extern "Rust" fn evolve_array_static_new(capacity: usize) -> &'static EvolveArray {
     let array = EvolveArray::with_capacity(capacity);
-    array.into()
+    leak_heap_ref(array)
 }
 
 #[no_mangle]
@@ -27,26 +26,15 @@ extern "Rust" fn evolve_array_capacity(array: &EvolveArray) -> usize {
 }
 
 #[no_mangle]
+#[inline(always)]
 extern "Rust" fn evolve_array_get(array: &EvolveArray, index: usize) -> Object {
-    *array.get(index).unwrap_or(&Object::null())
+    *(array.get(index).unwrap_or(&Object::null()))
 }
 
 #[no_mangle]
+#[inline(always)]
 extern "Rust" fn evolve_array_put(array: &mut EvolveArray, index: usize, value: Object) {
     array[index] = value;
-}
-
-// impl From<Object> for EvolveArray {
-//     fn from(s: Object) -> Self {
-//
-//     }
-// }
-
-impl From<EvolveArray> for Object {
-    fn from(s: EvolveArray) -> Self {
-        let ptr = leak_heap_ptr(s);
-        Object::with_aux(ARRAY_CLASS_ID, 0, ptr as Ptr)
-    }
 }
 
 mod tests {}

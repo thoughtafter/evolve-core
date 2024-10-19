@@ -1,17 +1,15 @@
 use alloc::collections::BinaryHeap;
 use alloc::vec::Vec;
 use core::cmp::Reverse;
-use evolve_inner_core::allocates::leak_heap_ptr;
-use evolve_inner_core::class_ids::HEAP_CLASS_ID;
-use evolve_inner_core::object::{evolve_build_ptr, Object, Ptr};
+use evolve_inner_core::allocates::leak_heap_ref;
+use evolve_inner_core::object::Object;
 
 type EvolveHeap = BinaryHeap<Object>;
 
 #[no_mangle]
-extern "Rust" fn evolve_heap_new(capacity: usize) -> Object {
+extern "Rust" fn evolve_heap_static_new(capacity: usize) -> &'static EvolveHeap {
     let heap = EvolveHeap::with_capacity(capacity);
-    let ptr = leak_heap_ptr(heap);
-    evolve_build_ptr(HEAP_CLASS_ID, 0, ptr as Ptr)
+    leak_heap_ref(heap)
 }
 
 #[no_mangle]

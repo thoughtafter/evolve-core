@@ -16,6 +16,17 @@
   - 5K for array/vecdeque
 - rejected
   - 17K bc for binary heap
+- up to 210k
+- w/o allocations - 152K - so 60K for allocations
+    - 72s-77s for test2 
+    - 155K - add "allocates" mod and vec create
+    - 54K bc
+    - ~4K bc for gmp_set_mem - because pulls in various rust allocs
+    - trivial: vec allocate
+    - trivial: From<string>
+    - 1K: new_string_repeat
+    - ~6K for string trim
+    - 2K CString
 
 ## outer-core
   - set

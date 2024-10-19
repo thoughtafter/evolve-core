@@ -5,6 +5,7 @@ use core::ffi::{c_char, c_int, c_uint, c_void};
 use core::mem::MaybeUninit;
 use evolve_inner_core::object::Object;
 use libc::{pthread_attr_t, pthread_t};
+
 #[repr(C)]
 pub struct GC_stack_base {
     mem_base: *const c_void,

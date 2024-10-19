@@ -1,5 +1,7 @@
 use core::alloc::Layout;
 use libc::size_t;
+
+#[allow(dead_code)]
 fn get_layout_from_size(bytes: usize) -> Layout {
     if let Ok(layout) = Layout::from_size_align(bytes as usize, 1) {
         layout

@@ -1,7 +1,8 @@
-#![feature(str_from_raw_parts)]
 #![feature(unbounded_shifts)]
 #![no_std]
 extern crate alloc;
+
+// extern crate alloc;
 
 mod array;
 pub mod class_ids;
@@ -56,7 +57,8 @@ pub mod allocates {
 
 pub mod object {
     use core::cmp::Ordering;
-    use core::str::from_raw_parts;
+    use core::ffi::CStr;
+    use core::slice;
 
     // #[no_mangle]
     // pub static NULLTHING: Object = Object::null();
@@ -149,6 +151,11 @@ pub mod object {
         }
 
         #[no_mangle]
+        pub(crate) const extern "Rust" fn evolve_core_tag(self) -> u64 {
+            self.tag
+        }
+
+        #[no_mangle]
         pub(crate) const extern "Rust" fn evolve_core_aux(self) -> EvolveAuxData {
             (self.tag >> 32) as EvolveAuxData
         }
@@ -192,11 +199,21 @@ pub mod object {
             f64::from_bits(self.evolve_extract_ptr() as u64)
         }
 
+        // #[no_mangle]
+        // pub const fn evolve_extract_rust_str<'a>(self) -> &'a str {
+        //     let len = self.evolve_core_aux();
+        //     let ptr = self.evolve_extract_ptr();
+        //     unsafe { from_raw_parts(ptr, len as usize) }
+        //     // unsafe { core::slice::from_raw_parts(ptr, len as usize)  }
+        // }
+
         #[no_mangle]
-        pub const fn evolve_extract_rust_str<'a>(self) -> &'a str {
+        pub const fn evolve_extract_rust_cstr<'a>(self) -> &'a CStr {
             let len = self.evolve_core_aux();
             let ptr = self.evolve_extract_ptr();
-            unsafe { from_raw_parts(ptr, len as usize) }
+            let bytes = unsafe { slice::from_raw_parts(ptr, len as usize + 1) };
+            unsafe { CStr::from_bytes_with_nul_unchecked(bytes) }
+            // unsafe { from_raw_parts(ptr, len as usize) }
             // unsafe { core::slice::from_raw_parts(ptr, len as usize)  }
         }
     }
@@ -299,8 +316,12 @@ pub mod object_from {
         FALSE_CLASS_ID, FLOAT_CLASS_ID, INT_CLASS_ID, POINTER_CLASS_ID, STRING_CLASS_ID,
         TRUE_CLASS_ID,
     };
-    use crate::object::{Object, Ptr};
+    use crate::object::{evolve_core_build_null, Object, Ptr};
+    use alloc::ffi::{CString, NulError};
     use alloc::string::String;
+    use core::ffi::{c_char, CStr};
+    // use alloc::string::String;
+    use crate::allocates::leak_heap_ref;
     use core::ops::Deref;
 
     // TODO: this generates possibly suboptimal code
@@ -353,8 +374,8 @@ pub mod object_from {
     }
 
     #[no_mangle]
-    pub const extern "Rust" fn evolve_from_string(len: u32, ptr: Ptr) -> Object {
-        Object::with_aux(STRING_CLASS_ID, len, ptr)
+    pub const extern "Rust" fn evolve_from_string(len: u32, ptr: *const c_char) -> Object {
+        Object::with_aux(STRING_CLASS_ID, len, ptr as Ptr)
     }
 
     impl From<bool> for Object {
@@ -396,22 +417,37 @@ pub mod object_from {
     /// create object from &str - assumed to be already leaked
     impl From<&str> for Object {
         fn from(s: &str) -> Self {
-            evolve_from_string(s.len() as u32, s.as_ptr())
+            let c_string = CString::new(s);
+            match c_string {
+                Ok(ok) => ok.into(),
+                Err(_) => evolve_core_build_null(),
+            }
+        }
+    }
+
+    impl From<&CStr> for Object {
+        fn from(s: &CStr) -> Self {
+            evolve_from_string(s.count_bytes() as u32, s.as_ptr())
+        }
+    }
+
+    impl From<CString> for Object {
+        fn from(s: CString) -> Object {
+            let x = leak_heap_ref(s);
+            x.as_c_str().into()
         }
     }
 
     impl From<String> for Object {
         fn from(s: String) -> Object {
-            // let len = s.len();
-            // let ptr = copy_to_heap_and_leak(s);
-            // evolve_from_string(len as u32, ptr as Ptr)
-            s.leak().deref().into()
+            let leaked = s.leak();
+            leaked.deref().into()
         }
     }
 
     impl From<Object> for &str {
         fn from(val: Object) -> &'static str {
-            val.evolve_extract_rust_str()
+            val.evolve_extract_rust_cstr().to_str().unwrap()
         }
     }
 
@@ -452,10 +488,22 @@ pub mod object_from {
         #[test]
         fn test_string() {
             let hello = "Hello World\0";
-            let hello2 = evolve_from_string(hello.len() as u32, hello.as_ptr());
+            // let hello2 = evolve_from_string(hello.len() as u32, hello.as_ptr());
+            //
+            // // println!("{:?}", hello2);
+            // assert_eq!(hello, hello2.evolve_extract_rust_str());
+        }
+
+        #[test]
+        fn test_from_cstr() {
+            let hello = c"Hello World";
+            assert_eq!(11, hello.count_bytes());
+            assert_eq!(11, unsafe { libc::strlen(hello.as_ptr()) });
+
+            let hello2 = Object::from(hello);
 
             // println!("{:?}", hello2);
-            assert_eq!(hello, hello2.evolve_extract_rust_str());
+            assert_eq!(hello, hello2.evolve_extract_rust_cstr());
         }
     }
 }
@@ -493,7 +541,7 @@ mod object_debug {
                 .field("ptr", &self.evolve_extract_ptr());
 
             let more = match self.evolve_core_class_id() {
-                STRING_CLASS_ID => common.field("string", &self.evolve_extract_rust_str()),
+                STRING_CLASS_ID => common.field("string", &self.evolve_extract_rust_cstr()),
                 INT_CLASS_ID => common.field("i64", &self.evolve_extract_i64()),
                 FLOAT_CLASS_ID => common.field("f64", &self.evolve_extract_f64()),
                 // 7 => {
@@ -753,7 +801,7 @@ mod f64 {
 // }
 
 mod io {
-    use alloc::ffi::CString;
+    // use alloc::ffi::CString;
     use core::mem;
     use libc::{timeval, FILE, RUSAGE_SELF};
     use libc_print::{libc_print, libc_println};
@@ -779,19 +827,19 @@ mod io {
 
     #[no_mangle]
     extern "Rust" fn evolve_stdout() -> *mut FILE {
-        let mode = CString::new("w").unwrap();
+        let mode = c"w";
         unsafe { libc::fdopen(libc::STDOUT_FILENO, mode.as_ptr()) }
     }
 
     #[no_mangle]
     extern "Rust" fn evolve_stderr() -> *mut FILE {
-        let mode = CString::new("w").unwrap();
+        let mode = c"w";
         unsafe { libc::fdopen(libc::STDERR_FILENO, mode.as_ptr()) }
     }
 
     #[no_mangle]
     extern "Rust" fn evolve_stdin() -> *mut FILE {
-        let mode = CString::new("r").unwrap();
+        let mode = c"r";
         unsafe { libc::fdopen(libc::STDIN_FILENO, mode.as_ptr()) }
     }
 
