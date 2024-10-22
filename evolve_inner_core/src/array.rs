@@ -44,7 +44,6 @@ extern "Rust" fn evolve_array_get(array: &EvolveArray, index: usize) -> Object {
 /// put inbounds - suitable for initializer
 /// returns true if overflow / error
 extern "Rust" fn evolve_array_put(array: &mut EvolveArray, index: usize, value: Object) -> bool {
-    array.resize(index + 1, Object::null());
     if let Some(store) = array.get_mut(index) {
         *store = value;
         false
