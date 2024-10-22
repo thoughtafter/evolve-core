@@ -1,4 +1,5 @@
 #![feature(unbounded_shifts)]
+#![feature(str_as_str)]
 #![no_std]
 extern crate alloc;
 
@@ -23,6 +24,10 @@ pub mod allocates {
     }
 
     pub fn leak_heap_ref<T>(thing: T) -> &'static T {
+        Box::leak(Box::new(thing))
+    }
+
+    pub fn leak_heap_ref_mut<T>(thing: T) -> &'static mut T {
         Box::leak(Box::new(thing))
     }
 
@@ -312,13 +317,14 @@ pub mod object {
 }
 
 pub mod object_from {
+    use alloc::borrow::Cow;
     use crate::class_ids::{
         FALSE_CLASS_ID, FLOAT_CLASS_ID, INT_CLASS_ID, POINTER_CLASS_ID, STRING_CLASS_ID,
         TRUE_CLASS_ID,
     };
     use crate::object::{evolve_core_build_null, Object, Ptr};
     use alloc::ffi::CString;
-    use alloc::string::String;
+    use alloc::string::{String};
     use core::ffi::{c_char, CStr};
     // use alloc::string::String;
     use crate::allocates::leak_heap_ref;
@@ -417,11 +423,23 @@ pub mod object_from {
     /// create object from &str - assumed to be already leaked
     impl From<&str> for Object {
         fn from(s: &str) -> Self {
+            // let bytes = s.as_bytes();
+            // slice_from_raw_parts(bytes.as_ptr(), bytes.len());
+            // evolve_from_string(s.len() as u32, s.as_ptr() as *const _)
             let c_string = CString::new(s);
             match c_string {
                 Ok(ok) => ok.into(),
                 Err(_) => evolve_core_build_null(),
             }
+        }
+    }
+
+    impl From<Cow<'_, str>> for Object {
+        fn from(value: Cow<'_, str>) -> Self {
+            // value.to_string().into()
+            // let x = value.as_str()
+            // let result = CString::new(value);
+            value.as_str().into()
         }
     }
 
@@ -442,6 +460,8 @@ pub mod object_from {
         fn from(s: String) -> Object {
             let leaked = s.leak();
             leaked.deref().into()
+            // evolve_from_string(leaked.len() as u32, leaked.as_ptr() as _)
+
         }
     }
 

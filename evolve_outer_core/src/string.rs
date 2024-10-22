@@ -14,23 +14,28 @@
 //     boxxed.deref().into()
 // }
 
-use alloc::borrow::ToOwned;
 use evolve_inner_core::object::Object;
 
 #[no_mangle]
 extern "Rust" fn evolve_string_trim_end(value: &str) -> Object {
     let trimmed = value.trim_end(); // slice
-    trimmed.to_owned().into()
+    trimmed.into()
 }
 
 #[no_mangle]
 extern "Rust" fn evolve_string_trim_start(value: &str) -> Object {
     let trimmed = value.trim_start(); // slice
-    trimmed.to_owned().into()
+    trimmed.into()
 }
 
 #[no_mangle]
 extern "Rust" fn new_string_repeat(value: &str, times: usize) -> Object {
+    // let bytes = value.as_bytes();
+    // let repeat = bytes.repeat(times);
+    // unsafe { CString::from_vec_unchecked(repeat).into() }
+    // let mut repeat = bytes.repeat(times);
+    // repeat.push(0);
+    // unsafe { CString::from_vec_with_nul_unchecked(repeat) }.into()
     value.repeat(times).into()
 }
 

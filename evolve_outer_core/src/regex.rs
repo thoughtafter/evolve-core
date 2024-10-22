@@ -1,6 +1,4 @@
 // TODO: needs allocation setup
-use alloc::borrow::ToOwned;
-use alloc::string::ToString;
 use libc_print::libc_println;
 // use libc::write;
 use evolve_inner_core::allocates::leak_heap_ptr;
@@ -51,14 +49,14 @@ impl RegexExt for Object {
     extern "Rust" fn evolve_regex_to_s2(self) -> Object {
         let re = self.regex();
         let str = re.as_str();
-        str.to_owned().into()
+        str.into()
     }
 }
 
 #[no_mangle]
 extern "Rust" fn evolve_regex_replace(regex: &Regex, haystack: &str, replacer: &str) -> Object {
     let replaced = regex.replace_all(haystack, replacer);
-    replaced.to_string().into()
+    replaced.into()
 }
 
 #[cfg(test)]

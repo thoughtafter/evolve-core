@@ -1,5 +1,6 @@
 // https://github.com/ivmai/bdwgc
 
+use alloc::ffi::CString;
 use alloc::format;
 use core::ffi::{c_char, c_int, c_uint, c_void};
 use core::mem::MaybeUninit;
@@ -221,5 +222,5 @@ extern "Rust" fn evolve_gc_summary() -> Object {
         to_mb(heap_usage.free_bytes)
     );
     // libc_println!("{}", summary);
-    summary.into()
+    CString::new(summary).unwrap().into()
 }
