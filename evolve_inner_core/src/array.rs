@@ -1,9 +1,10 @@
-/// array using VecDeque
-/// allocations will be common in this code
-/// https://doc.rust-lang.org/std/collections/vec_deque/struct.VecDeque.html
+//! array using VecDeque
+//! allocations will be common in this code
+//! https://doc.rust-lang.org/std/collections/vec_deque/struct.VecDeque.html
+
 use alloc::collections::VecDeque;
-use core::ops::Index;
-use crate::allocates::{leak_heap_ref, leak_heap_ref_mut};
+
+use crate::allocates::leak_heap_ref_mut;
 use crate::object::Object;
 
 type EvolveArray = VecDeque<Object>;
@@ -16,7 +17,6 @@ extern "Rust" fn evolve_array_static_new(size: usize) -> &'static mut EvolveArra
     let size = size + 1;
     let capacity = size.max(MIN_CAPACITY);
     let mut array = EvolveArray::with_capacity(capacity);
-    // array.fill(Object::default());
     array.resize(size, Object::default());
     leak_heap_ref_mut(array)
 }
@@ -42,18 +42,24 @@ extern "Rust" fn evolve_array_get(array: &EvolveArray, index: usize) -> Object {
 #[no_mangle]
 #[inline(always)]
 /// put inbounds - suitable for initializer
-extern "Rust" fn evolve_array_put(array: &mut EvolveArray, index: usize, value: Object) {
-    // if index > array.len() {
-    //     array.resize(index + 1, Object::default());
-    // }
-    // array[index] = value;
+/// returns true if overflow / error
+extern "Rust" fn evolve_array_put(array: &mut EvolveArray, index: usize, value: Object) -> bool {
+    array.resize(index + 1, Object::null());
     if let Some(store) = array.get_mut(index) {
         *store = value;
+        false
     } else {
-        // array.resize(index + 1, Object::default());
-        // array[index] = value;
+        true
     }
+}
 
+#[no_mangle]
+#[inline(always)]
+/// put with resize
+/// returns true if overflow / error - which should not happen
+extern "Rust" fn evolve_array_put_oob(array: &mut EvolveArray, index: usize, value: Object) -> bool {
+    array.resize(index + 1, Object::null());
+    evolve_array_put(array, index, value)
 }
 
 #[no_mangle]
@@ -82,16 +88,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_get_oob()
-    {
+    fn test_get_oob() {
         let a = evolve_array_static_new(1);
         let b = evolve_array_get(a, 100);
         assert_eq!(Object::null(), b);
     }
 
     #[test]
-    fn test_put_get()
-    {
+    fn test_put_get() {
         let mut a = evolve_array_static_new(10);
         evolve_array_put(a, 0, Object::from(42));
         let b = evolve_array_get(a, 0);
@@ -100,8 +104,7 @@ mod tests {
     }
 
     #[test]
-    fn test_new()
-    {
+    fn test_new() {
         let mut a = evolve_array_static_new(10);
         assert_eq!(11, a.capacity());
         assert_eq!(11, a.len());
@@ -114,5 +117,4 @@ mod tests {
         assert_eq!(8, evolve_array_capacity(a));
         assert_eq!(0, evolve_array_size(a));
     }
-
 }

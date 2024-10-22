@@ -317,14 +317,14 @@ pub mod object {
 }
 
 pub mod object_from {
-    use alloc::borrow::Cow;
     use crate::class_ids::{
         FALSE_CLASS_ID, FLOAT_CLASS_ID, INT_CLASS_ID, POINTER_CLASS_ID, STRING_CLASS_ID,
         TRUE_CLASS_ID,
     };
     use crate::object::{evolve_core_build_null, Object, Ptr};
+    use alloc::borrow::Cow;
     use alloc::ffi::CString;
-    use alloc::string::{String};
+    use alloc::string::String;
     use core::ffi::{c_char, CStr};
     // use alloc::string::String;
     use crate::allocates::leak_heap_ref;
@@ -461,7 +461,6 @@ pub mod object_from {
             let leaked = s.leak();
             leaked.deref().into()
             // evolve_from_string(leaked.len() as u32, leaked.as_ptr() as _)
-
         }
     }
 
