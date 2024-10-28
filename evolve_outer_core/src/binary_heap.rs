@@ -1,7 +1,7 @@
 use alloc::collections::BinaryHeap;
 use alloc::vec::Vec;
 use core::cmp::Reverse;
-use evolve_inner_core::allocates::leak_heap_ref;
+use evolve_inner_core::leak::leak_heap_ref;
 use evolve_inner_core::object::Object;
 
 type EvolveHeap = BinaryHeap<Object>;

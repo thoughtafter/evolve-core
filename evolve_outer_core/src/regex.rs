@@ -2,10 +2,11 @@ use alloc::vec::Vec;
 // TODO: needs allocation setup
 use libc_print::libc_println;
 // use libc::write;
-use evolve_inner_core::allocates::leak_heap_ptr;
+use evolve_inner_core::leak::{leak_heap_ptr, leak_heap_ref};
 use evolve_inner_core::class_ids::REGEX_CLASS_ID;
 use evolve_inner_core::object::{evolve_build_ptr, evolve_core_build_null, Object, Ptr};
 use regex::Regex;
+use evolve_inner_core::array::EvolveArray;
 // use evolve_inner_core::import_export::evolve_extract_i64;
 // use evolve_inner_core::string::evolve_from_string;
 
@@ -14,7 +15,6 @@ trait RegexExt {
     fn regex(self) -> &'static Regex;
     extern "Rust" fn evolve_regex_has_match(self, string: &str) -> bool;
     extern "Rust" fn evolve_regex_to_s2(self) -> Object;
-    extern "Rust" fn evolve_regex_match(self, string: &str) -> Object;
 }
 
 // TODO: deal with dropping
@@ -54,10 +54,13 @@ impl RegexExt for Object {
         str.into()
     }
 
-    extern "Rust" fn evolve_regex_match(self, string: &str) -> Object {
-      let x = self.regex().find_iter(string).map(|re| re.as_str()).collect::<Vec<_>>();
-      x.into()
-    }
+
+}
+
+#[no_mangle]
+extern "Rust" fn evolve_regex_match(regex: &Regex, string: &str) -> &'static EvolveArray {
+    let vec = regex.find_iter(string).map(|re| Object::from(re.as_str())).collect::<Vec<_>>();
+    leak_heap_ref(vec.into())
 }
 
 #[no_mangle]
@@ -114,10 +117,17 @@ mod tests {
 
     #[test]
     fn test_regex_matches() {
-        let re_str = "[aeiou]";
-        let re = evolve_regex_from_string(re_str);
-        let matches = re.evolve_regex_match("Hello World");
-
+        // let re_str = "[aeiou]";
+        //let re = evolve_regex_from_string(re_str);
+        //let matches = re.evolve_regex_match("Hello World");
+        let re = Regex::new(r"[aeiou]").expect("should work");
+        let matches = evolve_regex_match(&re, "Hello World");
+        println!("\n{:?}\n", matches);
+        assert_eq!(matches.len(), 3);
+        assert_eq!(c"e", matches[0].evolve_extract_rust_cstr());
+        assert_eq!(c"o", matches[1].evolve_extract_rust_cstr());
+        assert_eq!(c"o", matches[2].evolve_extract_rust_cstr());
+        // assert_eq!(matches, vec!["Hello World"].into());
     }
 }
 

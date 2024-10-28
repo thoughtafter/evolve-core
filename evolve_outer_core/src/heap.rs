@@ -1,6 +1,6 @@
 use evolve_inner_core::class_ids::class_ids::HEAP_CLASS_ID;
 use evolve_inner_core::copy_to_heap_and_leak;
-use evolve_inner_core::object::{Object, Ptr};
+use evolve_inner_core::object::object::{Object, Ptr};
 use min_max_heap::MinMaxHeap;
 
 type EvolveHeap = MinMaxHeap<Object>;

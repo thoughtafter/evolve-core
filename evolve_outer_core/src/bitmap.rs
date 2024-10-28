@@ -1,4 +1,4 @@
-use evolve_inner_core::allocates::{leak_heap_ptr, leak_heap_ref};
+use evolve_inner_core::leak::{leak_heap_ptr, leak_heap_ref};
 use roaring::RoaringBitmap;
 
 // type EvolveBitmap = RoaringBitmap;
