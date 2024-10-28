@@ -3,11 +3,10 @@
 //! https://doc.rust-lang.org/std/collections/vec_deque/struct.VecDeque.html
 
 use alloc::collections::VecDeque;
-
 use crate::allocates::leak_heap_ref_mut;
 use crate::object::Object;
 
-type EvolveArray = VecDeque<Object>;
+pub(super) type EvolveArray = VecDeque<Object>;
 
 const MIN_CAPACITY: usize = 9;
 

@@ -1,3 +1,4 @@
+use alloc::vec::Vec;
 // TODO: needs allocation setup
 use libc_print::libc_println;
 // use libc::write;
@@ -13,6 +14,7 @@ trait RegexExt {
     fn regex(self) -> &'static Regex;
     extern "Rust" fn evolve_regex_has_match(self, string: &str) -> bool;
     extern "Rust" fn evolve_regex_to_s2(self) -> Object;
+    extern "Rust" fn evolve_regex_match(self, string: &str) -> Object;
 }
 
 // TODO: deal with dropping
@@ -50,6 +52,11 @@ impl RegexExt for Object {
         let re = self.regex();
         let str = re.as_str();
         str.into()
+    }
+
+    extern "Rust" fn evolve_regex_match(self, string: &str) -> Object {
+      let x = self.regex().find_iter(string).map(|re| re.as_str()).collect::<Vec<_>>();
+      x.into()
     }
 }
 
@@ -98,11 +105,19 @@ mod tests {
         println!("\n{:?}\n", s);
         assert_eq!(re_str, Into::<&str>::into(s))
     }
+    #[test]
+    fn test_regex_contruction() {
+        Regex::new(r"\s").expect("should work");
+        // assert!(Regex::new(r"\s").is_ok());
+        // assert!(Regex::new("\\s").is_ok());
+    }
+
+    #[test]
+    fn test_regex_matches() {
+        let re_str = "[aeiou]";
+        let re = evolve_regex_from_string(re_str);
+        let matches = re.evolve_regex_match("Hello World");
+
+    }
 }
 
-#[test]
-fn test_regex_contruction() {
-    Regex::new(r"\s").expect("should work");
-    // assert!(Regex::new(r"\s").is_ok());
-    // assert!(Regex::new("\\s").is_ok());
-}

@@ -317,18 +317,17 @@ pub mod object {
 }
 
 pub mod object_from {
-    use crate::class_ids::{
-        FALSE_CLASS_ID, FLOAT_CLASS_ID, INT_CLASS_ID, POINTER_CLASS_ID, STRING_CLASS_ID,
-        TRUE_CLASS_ID,
-    };
+    use crate::class_ids::{ARRAY_CLASS_ID, FALSE_CLASS_ID, FLOAT_CLASS_ID, INT_CLASS_ID, POINTER_CLASS_ID, STRING_CLASS_ID, TRUE_CLASS_ID};
     use crate::object::{evolve_core_build_null, Object, Ptr};
     use alloc::borrow::Cow;
     use alloc::ffi::CString;
     use alloc::string::String;
+    use alloc::vec::Vec;
     use core::ffi::{c_char, CStr};
     // use alloc::string::String;
-    use crate::allocates::leak_heap_ref;
+    use crate::allocates::{leak_heap_ptr, leak_heap_ref, leak_heap_ref_mut};
     use core::ops::Deref;
+    use crate::array::EvolveArray;
 
     // TODO: this generates possibly suboptimal code
     // assembly looks good
@@ -467,6 +466,31 @@ pub mod object_from {
     impl From<Object> for &str {
         fn from(val: Object) -> &'static str {
             val.evolve_extract_rust_cstr().to_str().unwrap()
+        }
+    }
+
+    impl From<Vec<String>> for Object {
+        fn from(value: Vec<String>) -> Self {
+            value.into_iter().map(Object::from).collect::<Vec<_>>().into()
+        }
+    }
+
+    impl From<Vec<&str>> for Object {
+        fn from(value: Vec<&str>) -> Self {
+            value.into_iter().map(Object::from).collect::<Vec<_>>().into()
+        }
+    }
+
+    impl From<Vec<Object>> for Object {
+        fn from(value: Vec<Object>) -> Self {
+            EvolveArray::from(value).into()
+        }
+    }
+
+    impl From<EvolveArray> for Object {
+        fn from(value: EvolveArray) -> Self {
+            let ptr = leak_heap_ptr(value);
+            Object::new(ARRAY_CLASS_ID, ptr as Ptr)
         }
     }
 
