@@ -2,9 +2,9 @@
 //! allocations will be common in this code
 //! https://doc.rust-lang.org/std/collections/vec_deque/struct.VecDeque.html
 
-use alloc::collections::VecDeque;
 use crate::leak::leak_heap_ref_mut;
 use crate::object::Object;
+use alloc::collections::VecDeque;
 
 pub type EvolveArray = VecDeque<Object>;
 
@@ -16,7 +16,7 @@ extern "Rust" fn evolve_array_static_new(size: usize) -> &'static mut EvolveArra
     let size = size + 1;
     let capacity = size.max(MIN_CAPACITY);
     let mut array = EvolveArray::with_capacity(capacity);
-    array.resize(size, Object::default());
+    array.resize_with(size, Default::default);
     leak_heap_ref_mut(array)
 }
 
@@ -35,7 +35,7 @@ extern "Rust" fn evolve_array_capacity(array: &EvolveArray) -> usize {
 #[no_mangle]
 #[inline(always)]
 extern "Rust" fn evolve_array_get(array: &EvolveArray, index: usize) -> Object {
-    *(array.get(index).unwrap_or(&Object::null()))
+    *(array.get(index).unwrap_or_default())
 }
 
 #[no_mangle]
@@ -55,7 +55,11 @@ extern "Rust" fn evolve_array_put(array: &mut EvolveArray, index: usize, value: 
 #[inline(always)]
 /// put with resize
 /// returns true if overflow / error - which should not happen
-extern "Rust" fn evolve_array_put_oob(array: &mut EvolveArray, index: usize, value: Object) -> bool {
+extern "Rust" fn evolve_array_put_oob(
+    array: &mut EvolveArray,
+    index: usize,
+    value: Object,
+) -> bool {
     array.resize(index + 1, Object::null());
     evolve_array_put(array, index, value)
 }

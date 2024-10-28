@@ -268,13 +268,13 @@ impl GcAllocator {
 
         libc_println!("is_reg");
 
-        let foo = unsafe { GC_thread_is_registered() };
-        libc_println!("is_reg: {}", foo);
+        let reg = unsafe { GC_thread_is_registered() };
+        libc_println!("is_reg: {}", reg);
 
         GC_allow_register_threads();
 
-        let foo = unsafe { GC_thread_is_registered() };
-        libc_println!("is_reg: {}", foo);
+        let reg = unsafe { GC_thread_is_registered() };
+        libc_println!("is_reg: {}", reg);
 
         GC_disable();
     }

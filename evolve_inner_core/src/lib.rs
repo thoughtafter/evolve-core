@@ -9,17 +9,20 @@ extern crate alloc;
 pub mod array;
 pub mod class_ids;
 mod gmp_mpfr;
+pub mod leak;
 mod llvm;
 mod mem;
 mod misc;
-mod string;
-pub mod leak;
 pub mod object;
+mod string;
 // for testing optimizations
 // mod testing;
 
 pub mod object_from {
-    use crate::class_ids::{ARRAY_CLASS_ID, FALSE_CLASS_ID, FLOAT_CLASS_ID, INT_CLASS_ID, POINTER_CLASS_ID, STRING_CLASS_ID, TRUE_CLASS_ID};
+    use crate::class_ids::{
+        ARRAY_CLASS_ID, FALSE_CLASS_ID, FLOAT_CLASS_ID, INT_CLASS_ID, POINTER_CLASS_ID,
+        STRING_CLASS_ID, TRUE_CLASS_ID,
+    };
     use crate::object::{evolve_core_build_null, Object, Ptr};
     use alloc::borrow::Cow;
     use alloc::ffi::CString;
@@ -27,9 +30,9 @@ pub mod object_from {
     use alloc::vec::Vec;
     use core::ffi::{c_char, CStr};
     // use alloc::string::String;
+    use crate::array::EvolveArray;
     use crate::leak::{leak_heap_ptr, leak_heap_ref};
     use core::ops::Deref;
-    use crate::array::EvolveArray;
 
     // TODO: this generates possibly suboptimal code
     // assembly looks good
@@ -173,13 +176,21 @@ pub mod object_from {
 
     impl From<Vec<String>> for Object {
         fn from(value: Vec<String>) -> Self {
-            value.into_iter().map(Object::from).collect::<Vec<_>>().into()
+            value
+                .into_iter()
+                .map(Object::from)
+                .collect::<Vec<_>>()
+                .into()
         }
     }
 
     impl From<Vec<&str>> for Object {
         fn from(value: Vec<&str>) -> Self {
-            value.into_iter().map(Object::from).collect::<Vec<_>>().into()
+            value
+                .into_iter()
+                .map(Object::from)
+                .collect::<Vec<_>>()
+                .into()
         }
     }
 

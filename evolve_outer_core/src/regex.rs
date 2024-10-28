@@ -2,11 +2,11 @@ use alloc::vec::Vec;
 // TODO: needs allocation setup
 use libc_print::libc_println;
 // use libc::write;
-use evolve_inner_core::leak::{leak_heap_ptr, leak_heap_ref};
+use evolve_inner_core::array::EvolveArray;
 use evolve_inner_core::class_ids::REGEX_CLASS_ID;
+use evolve_inner_core::leak::{leak_heap_ptr, leak_heap_ref};
 use evolve_inner_core::object::{evolve_build_ptr, evolve_core_build_null, Object, Ptr};
 use regex::Regex;
-use evolve_inner_core::array::EvolveArray;
 // use evolve_inner_core::import_export::evolve_extract_i64;
 // use evolve_inner_core::string::evolve_from_string;
 
@@ -53,13 +53,14 @@ impl RegexExt for Object {
         let str = re.as_str();
         str.into()
     }
-
-
 }
 
 #[no_mangle]
 extern "Rust" fn evolve_regex_match(regex: &Regex, string: &str) -> &'static EvolveArray {
-    let vec = regex.find_iter(string).map(|re| Object::from(re.as_str())).collect::<Vec<_>>();
+    let vec = regex
+        .find_iter(string)
+        .map(|re| Object::from(re.as_str()))
+        .collect::<Vec<_>>();
     leak_heap_ref(vec.into())
 }
 
@@ -130,4 +131,3 @@ mod tests {
         // assert_eq!(matches, vec!["Hello World"].into());
     }
 }
-
