@@ -2,6 +2,16 @@ use evolve_inner_core::array::{adjusted_index, EvolveArray};
 use evolve_inner_core::object::Object;
 
 #[no_mangle]
+extern "Rust" fn evolve_array_size(array: &EvolveArray) -> usize {
+    array.len()
+}
+
+#[no_mangle]
+extern "Rust" fn evolve_array_capacity(array: &EvolveArray) -> usize {
+    array.capacity()
+}
+
+#[no_mangle]
 extern "Rust" fn evolve_array_mut_reserve(array: &mut EvolveArray, capacity: usize) {
     array.reserve(capacity);
 }
@@ -16,6 +26,12 @@ extern "Rust" fn evolve_array_mut_insert(array: &mut EvolveArray, index: usize, 
     array.insert(adjusted_index, value);
 }
 
+#[no_mangle]
+extern "Rust" fn evolve_array_mut_remove(array: &mut EvolveArray, index: usize) -> Object {
+    let adjusted_index = adjusted_index(index);
+    array.remove(adjusted_index).unwrap_or_default()
+}
+
 // #[no_mangle]
 // #[inline(always)]
 // extern "Rust" fn evolve_array_mut_push_front(array: &mut EvolveArray, value: Object) {
@@ -28,17 +44,17 @@ extern "Rust" fn evolve_array_mut_insert(array: &mut EvolveArray, index: usize, 
 //     array.push_back(value);
 // }
 //
-#[no_mangle]
-#[inline(always)]
-extern "Rust" fn evolve_array_mut_pop_front(array: &mut EvolveArray) -> Object {
-    array.pop_front().unwrap_or_default()
-}
-
-#[no_mangle]
-#[inline(always)]
-extern "Rust" fn evolve_array_mut_pop_back(array: &mut EvolveArray) -> Object {
-    array.pop_back().unwrap_or_default()
-}
+// #[no_mangle]
+// #[inline(always)]
+// extern "Rust" fn evolve_array_mut_pop_front(array: &mut EvolveArray) -> Object {
+//     array.pop_front().unwrap_or_default()
+// }
+//
+// #[no_mangle]
+// #[inline(always)]
+// extern "Rust" fn evolve_array_mut_pop_back(array: &mut EvolveArray) -> Object {
+//     array.pop_back().unwrap_or_default()
+// }
 
 #[no_mangle]
 /// reverse this array
@@ -53,18 +69,6 @@ extern "Rust" fn evolve_array_mut_reverse(array: &mut EvolveArray) {
 #[no_mangle]
 extern "Rust" fn evolve_array_copy(array: &EvolveArray) -> Object {
     array.clone().into()
-}
-
-#[no_mangle]
-#[inline(always)]
-extern "Rust" fn evolve_array_size(array: &EvolveArray) -> usize {
-    array.len()
-}
-
-#[no_mangle]
-#[inline(always)]
-extern "Rust" fn evolve_array_capacity(array: &EvolveArray) -> usize {
-    array.capacity()
 }
 
 #[no_mangle]
