@@ -7,9 +7,11 @@ use crate::object::Object;
 - but this means all string functions need to be allocator aware
 **/
 use core::cmp::Ordering;
-use core::ffi::CStr;
-use core::str::FromStr;
+use core::str::{from_raw_parts, FromStr};
 // use libc_print::libc_println;
+
+mod use_str;
+// mod use_cstr;
 
 #[no_mangle]
 extern "Rust" fn evolve_string_cmp(value1: &str, value2: &str) -> i64 {
@@ -17,8 +19,21 @@ extern "Rust" fn evolve_string_cmp(value1: &str, value2: &str) -> i64 {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_string_equal_bytes(value1: &str, value2: &str) -> bool {
+pub extern "Rust" fn evolve_string_equal_bytes(value1: &str, value2: &str) -> bool {
     value1.cmp(value2) == Ordering::Equal
+}
+
+impl Object {
+    pub const fn extract_str(self) -> &'static str {
+        let len = self.aux();
+        let ptr = self.extract_ptr();
+        unsafe { from_raw_parts(ptr, len as usize) }
+        // unsafe { core::slice::from_raw_parts(ptr, len as usize)  }
+    }
+
+    // pub fn as_cstr(self) -> &'static CStr {
+    //     CString::new::<&str>(self.into()).unwrap().as_c_str()
+    // }
 }
 
 // #[allow(dead_code)]
@@ -44,11 +59,6 @@ extern "Rust" fn evolve_string_equal_bytes(value1: &str, value2: &str) -> bool {
 //                                       // str_to_safe_object(trimmed)
 //     trimmed.to_owned().into()
 // }
-
-#[no_mangle]
-extern "Rust" fn new_string(value: &CStr) -> Object {
-    value.into()
-}
 
 // #[no_mangle]
 // extern "Rust" fn new_string_repeat(value: &str, times: usize) -> Object {
