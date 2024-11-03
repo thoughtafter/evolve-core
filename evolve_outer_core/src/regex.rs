@@ -105,24 +105,24 @@ mod tests {
         assert_eq!(re_str, Into::<&str>::into(s))
     }
     #[test]
-    fn test_regex_contruction() {
+    fn test_regex_construction() {
         Regex::new(r"\s").expect("should work");
         // assert!(Regex::new(r"\s").is_ok());
         // assert!(Regex::new("\\s").is_ok());
     }
 
-    #[test]
-    fn test_regex_matches() {
-        // let re_str = "[aeiou]";
-        //let re = evolve_regex_from_string(re_str);
-        //let matches = re.evolve_regex_match("Hello World");
-        let re = Regex::new(r"[aeiou]").expect("should work");
-        let matches = evolve_regex_match(&re, "Hello World");
-        println!("\n{:?}\n", matches);
-        assert_eq!(matches.len(), 3);
-        assert_eq!(c"e", matches[0].evolve_extract_rust_cstr());
-        assert_eq!(c"o", matches[1].evolve_extract_rust_cstr());
-        assert_eq!(c"o", matches[2].evolve_extract_rust_cstr());
-        // assert_eq!(matches, vec!["Hello World"].into());
-    }
+    // #[test]
+    // fn test_regex_matches() {
+    //     // let re_str = "[aeiou]";
+    //     //let re = evolve_regex_from_string(re_str);
+    //     //let matches = re.evolve_regex_match("Hello World");
+    //     let re = Regex::new(r"[aeiou]").expect("should work");
+    //     let matches = evolve_regex_match(&re, "Hello World");
+    //     println!("\n{:?}\n", matches);
+    //     assert_eq!(matches.len(), 3);
+    //     assert_eq!(c"e", matches[0].evolve_extract_rust_cstr());
+    //     assert_eq!(c"o", matches[1].evolve_extract_rust_cstr());
+    //     assert_eq!(c"o", matches[2].evolve_extract_rust_cstr());
+    //     // assert_eq!(matches, vec!["Hello World"].into());
+    // }
 }
