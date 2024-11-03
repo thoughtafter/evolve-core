@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 use evolve_inner_core::class_ids::REGEX_CLASS_ID;
 use evolve_inner_core::leak::leak_heap_ptr;
-use evolve_inner_core::object::{evolve_build_ptr, evolve_core_build_null, Object, Ptr};
+use evolve_inner_core::object::{evolve_build_ptr, Object, Ptr};
 use libc_print::libc_println;
 use regex::Regex;
 
@@ -25,7 +25,7 @@ extern "Rust" fn evolve_regex_from_string(string: &str) -> Object {
         Err(e) => {
             libc_println!("regex fail: {} {}", string, e);
 
-            evolve_core_build_null()
+            Object::null()
         }
     }
 }
@@ -90,7 +90,6 @@ extern "Rust" fn evolve_regex_replace(regex: &Regex, haystack: &str, replacer: &
 mod tests {
     use super::*;
     use alloc::boxed::Box;
-    use alloc::string::String;
     use alloc::vec;
     use libc_print::std_name::println;
     use test_case::test_case;
@@ -160,7 +159,7 @@ mod tests {
         assert!(result.is_some());
         let result = result.unwrap();
         assert_eq!(5, result.len());
-        let strs: Vec<_> = result.iter().flatten().map({ |a| a.as_str() }).collect();
+        let strs: Vec<_> = result.iter().flatten().map(|a| a.as_str()).collect();
         assert_eq!(vec!["HX1138", "H", "X", "113", "8"], strs);
 
         // assert_equal!(["HX1138", "H", "X", "113", "8"], :r"(.)(.)(\d+)(\d)".match("THX1138."))

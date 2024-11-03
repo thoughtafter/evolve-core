@@ -14,18 +14,19 @@
 //     boxxed.deref().into()
 // }
 
+use alloc::string::{String, ToString};
 use evolve_inner_core::object::Object;
 
 #[no_mangle]
 extern "Rust" fn evolve_string_trim_end(value: &str) -> Object {
     let trimmed = value.trim_end(); // slice
-    trimmed.into()
+    trimmed.to_string().into()
 }
 
 #[no_mangle]
 extern "Rust" fn evolve_string_trim_start(value: &str) -> Object {
     let trimmed = value.trim_start(); // slice
-    trimmed.into()
+    trimmed.to_string().into()
 }
 
 #[no_mangle]
@@ -37,6 +38,31 @@ extern "Rust" fn new_string_repeat(value: &str, times: usize) -> Object {
     // repeat.push(0);
     // unsafe { CString::from_vec_with_nul_unchecked(repeat) }.into()
     value.repeat(times).into()
+}
+
+#[no_mangle]
+extern "Rust" fn evolve_string_new_append2(string1: &str, string2: &str) -> Object {
+    // let mut appended = string1.to_string();
+    // appended.push_str(string2);
+    // // libc_println!("\"{}\" + \"{}\" == \"{}\"", string1, string2, appended);
+    // appended.into()
+
+    // format!("{}{}", string1, string2).into()
+
+    let mut buffer = String::with_capacity(string1.len() + string2.len());
+    buffer.push_str(string1);
+    buffer.push_str(string2);
+    buffer.into()
+}
+
+#[no_mangle]
+extern "Rust" fn evolve_string_new_append3(string1: &str, string2: &str, string3: &str) -> Object {
+    let capacity = string1.len() + string2.len() + string3.len();
+    let mut buffer = String::with_capacity(capacity);
+    buffer.push_str(string1);
+    buffer.push_str(string2);
+    buffer.push_str(string3);
+    buffer.into()
 }
 
 #[no_mangle]
@@ -56,7 +82,7 @@ mod tests {
     use alloc::borrow::ToOwned;
     use alloc::boxed::Box;
     use alloc::ffi::CString;
-    use alloc::string::ToString;
+    use alloc::string::{String, ToString};
 
     #[test]
     fn test_lowlevel() {
@@ -114,9 +140,11 @@ mod tests {
         //  };
         let str = "Hello, world!    ";
         let obj = evolve_string_trim_end(str);
-        let extract = obj.evolve_extract_rust_cstr();
-        assert_eq!(c"Hello, world!", extract);
-        assert_ne!(obj.evolve_extract_ptr(), str.as_ptr());
+        // let extract = obj.evolve_extract_rust_cstr();
+        // assert_eq!(c"Hello, world!", extract);
+        let extract = String::from(obj);
+        assert_eq!("Hello, world!", extract);
+        assert_ne!(obj.extract_ptr(), str.as_ptr());
     }
 
     #[test]
@@ -129,8 +157,8 @@ mod tests {
         //  };
         let str = "        Hello, world!";
         let obj = evolve_string_trim_start(str);
-        let extract = obj.evolve_extract_rust_cstr();
-        assert_eq!(c"Hello, world!", extract);
+        let extract = String::from(obj);
+        assert_eq!("Hello, world!", extract);
 
         // let new_ptr = obj.evolve_extract_ptr();
         // let old_ptr = str.as_ptr();

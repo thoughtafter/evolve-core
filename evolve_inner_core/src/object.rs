@@ -1,7 +1,12 @@
+mod default;
+mod hash;
+
+use crate::class_ids::*;
+use crate::intrinsic::evolve_intrinsic_eq;
 use core::cmp::Ordering;
 use core::ffi::CStr;
 use core::slice;
-
+use libc_print::libc_println;
 // #[no_mangle]
 // pub static NULLTHING: Object = Object::null();
 
@@ -39,11 +44,6 @@ pub struct Object {
 // }
 
 #[no_mangle]
-pub const extern "Rust" fn evolve_core_build_null() -> Object {
-    Object::null()
-}
-
-#[no_mangle]
 pub const extern "Rust" fn evolve_build_ptr(
     class_id: EvolveClassId,
     aux4: EvolveAuxData,
@@ -55,12 +55,14 @@ pub const extern "Rust" fn evolve_build_ptr(
 impl Object {
     /// evaluate pointer as immutable reference of T
     pub fn to_ref<T>(&self) -> &'static T {
-        unsafe { &*(self.ptr as *const T) }
+        let const_ptr = self.ptr as *const T;
+        unsafe { &*const_ptr }
     }
 
     /// evaluate pointer as mutable reference of T
     pub fn to_mut<T>(&mut self) -> &'static mut T {
-        unsafe { &mut *(self.ptr as *mut T) }
+        let mut_ptr = self.ptr as *mut T;
+        unsafe { &mut *mut_ptr }
     }
 
     pub const fn from_ref<T>(class_id: EvolveClassId, ref_t: &T) -> Self {
@@ -83,26 +85,37 @@ impl Object {
         Self::new(class_id, 0 as Ptr)
     }
 
-    pub const fn null() -> Self {
+    #[export_name = "evolve_core_build_null"]
+    pub const extern "Rust" fn null() -> Self {
         Self::static_class(0)
     }
 
-    #[no_mangle]
-    pub(crate) const extern "Rust" fn evolve_core_class_id(self) -> EvolveClassId {
-        self.tag as EvolveClassId
+    #[export_name = "evolve_build_true"]
+    pub const extern "Rust" fn build_true() -> Self {
+        Self::static_class(TRUE_CLASS_ID)
     }
 
-    #[no_mangle]
-    pub(crate) const extern "Rust" fn evolve_core_tag(self) -> u64 {
+    #[export_name = "evolve_build_false"]
+    pub const extern "Rust" fn build_false() -> Self {
+        Self::static_class(FALSE_CLASS_ID)
+    }
+
+    #[export_name = "evolve_core_tag"]
+    pub(crate) const extern "Rust" fn tag(self) -> u64 {
         self.tag
     }
 
-    #[no_mangle]
-    pub(crate) const extern "Rust" fn evolve_core_aux(self) -> EvolveAuxData {
+    #[export_name = "evolve_core_class_id"]
+    pub(crate) const extern "Rust" fn class_id(self) -> EvolveClassId {
+        self.tag as EvolveClassId
+    }
+
+    #[export_name = "evolve_core_aux"]
+    pub(crate) const extern "Rust" fn aux(self) -> EvolveAuxData {
         (self.tag >> 32) as EvolveAuxData
     }
 
-    #[no_mangle]
+    #[export_name = "evolve_core_class"]
     /// return the class object of the given object
     /// stateful instances are odd numbers, stateless are even
     /// class of odd is -1
@@ -110,13 +123,14 @@ impl Object {
     // eg:
     // 0 = @null
     // 1 = non-existent instance of null
-    // 2 = @error
-    // 4 = @false
-    // 6 = @true
-    // 8 = @i64
-    // 9 = instance of @i64
-    pub(crate) const extern "Rust" fn evolve_core_class(self) -> Object {
-        let class_id = self.evolve_core_class_id();
+    // 2 = @error - stateless
+    // 4 = @error - stateful
+    // 6 = @false
+    // 8 = @true
+    // 10 = @i64
+    // 11 = instance of @i64
+    pub(crate) const extern "Rust" fn class(self) -> Object {
+        let class_id = self.class_id();
         if (class_id & 1) == 0 {
             Object::new(u16::MAX - 1, class_id as Ptr)
         } else {
@@ -124,21 +138,33 @@ impl Object {
         }
     }
 
-    #[no_mangle]
-    pub const extern "Rust" fn evolve_extract_ptr(self) -> Ptr {
+    #[export_name = "evolve_extract_ptr"]
+    pub const extern "Rust" fn extract_ptr(self) -> Ptr {
         self.ptr
     }
 
     /// extract ptr value as i64, cannot be const
-    #[no_mangle]
-    pub extern "Rust" fn evolve_extract_i64(self) -> i64 {
-        self.evolve_extract_ptr() as i64
+    pub extern "Rust" fn extract_i64(self) -> i64 {
+        self.into()
     }
 
-    /// extract ptr value as f64, cannot be const
-    #[no_mangle]
-    pub extern "Rust" fn evolve_extract_f64(self) -> f64 {
-        f64::from_bits(self.evolve_extract_ptr() as u64)
+    pub fn extract_f64(self) -> f64 {
+        self.into()
+    }
+
+    #[export_name = "evolve_core_is"]
+    extern "Rust" fn is_same(self, rhs: Object) -> bool {
+        (self.tag == rhs.tag) && (self.ptr == rhs.ptr)
+    }
+
+    #[export_name = "evolve_core_is_not"]
+    extern "Rust" fn is_not_same(self, rhs: Object) -> bool {
+        !self.is_same(rhs)
+    }
+
+    #[export_name = "evolve_core_null"]
+    pub extern "Rust" fn is_null(self) -> bool {
+        self.tag == 0
     }
 
     // #[no_mangle]
@@ -151,12 +177,29 @@ impl Object {
 
     #[no_mangle]
     pub const fn evolve_extract_rust_cstr<'a>(self) -> &'a CStr {
-        let len = self.evolve_core_aux();
-        let ptr = self.evolve_extract_ptr();
+        let len = self.aux();
+        let ptr = self.extract_ptr();
         let bytes = unsafe { slice::from_raw_parts(ptr, len as usize + 1) };
         unsafe { CStr::from_bytes_with_nul_unchecked(bytes) }
         // unsafe { from_raw_parts(ptr, len as usize) }
         // unsafe { core::slice::from_raw_parts(ptr, len as usize)  }
+    }
+}
+
+impl From<bool> for Object {
+    #[export_name = "evolve_from_i1"]
+    fn from(value: bool) -> Self {
+        if value {
+            Object::build_true()
+        } else {
+            Object::build_false()
+        }
+    }
+}
+
+impl From<Object> for bool {
+    fn from(val: Object) -> bool {
+        val.evolve_core_is_true()
     }
 }
 
@@ -206,21 +249,6 @@ impl Object {
 // type EvolveMap = IndexMap<Object, Object, RandomState>;
 // type EvolveSet = IndexSet<Object, RandomState>;
 
-#[no_mangle]
-extern "Rust" fn evolve_core_is(a: Object, b: Object) -> bool {
-    (a.tag == b.tag) && (a.ptr == b.ptr)
-}
-
-#[no_mangle]
-extern "Rust" fn evolve_core_is_not(a: Object, b: Object) -> bool {
-    !evolve_core_is(a, b)
-}
-
-#[no_mangle]
-pub extern "Rust" fn evolve_core_null(a: Object) -> bool {
-    a.tag == 0
-}
-
 const fn evolve_internal_build_tag(class_id: EvolveClassId, aux: EvolveAuxData) -> u64 {
     // let bits = mem::size_of_val(&aux) << 3;
     let bits = 32;
@@ -231,9 +259,24 @@ impl Eq for Object {}
 
 impl PartialEq<Self> for Object {
     fn eq(&self, other: &Self) -> bool {
-        if evolve_core_is(*self, *other) {
+        if self.is_same(*other) {
             return true;
         }
+
+        libc_println!("NOT SAME");
+
+        let test = evolve_intrinsic_eq(*self, *other);
+
+        libc_println!("intrinsic_eq says: {:?}", test);
+
+        if test.is_same(Object::from(true)) {
+            return true;
+        }
+        if test.is_same(Object::from(false)) {
+            return false;
+        }
+
+        libc_println!("NEED TO DO SOMETHING");
 
         // TODO: call interface for eq
         false
@@ -249,20 +292,5 @@ impl PartialOrd<Self> for Object {
 impl Ord for Object {
     fn cmp(&self, _other: &Self) -> Ordering {
         todo!()
-    }
-}
-
-const EVOLVE_STATIC_NULL: &Object = &Object::null();
-
-impl Default for Object {
-    fn default() -> Self {
-        // Self::null()
-        *EVOLVE_STATIC_NULL
-    }
-}
-
-impl Default for &Object {
-    fn default() -> Self {
-        EVOLVE_STATIC_NULL
     }
 }
