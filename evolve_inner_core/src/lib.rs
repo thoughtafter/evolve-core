@@ -1,11 +1,14 @@
+// no_std to stay lean
+#![no_std]
+// needed for literal arrays can be pushed to when capacity is known
+#![feature(extend_one_unchecked)]
+// additional features
 #![feature(unbounded_shifts)]
 #![feature(str_as_str)]
 #![feature(cstr_bytes)]
-#![feature(extend_one_unchecked)]
-#![no_std]
-extern crate alloc;
 
-// extern crate alloc;
+// alloc is needed for array, string, leak
+extern crate alloc;
 
 pub mod array;
 pub mod class_ids;

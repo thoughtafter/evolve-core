@@ -18,7 +18,7 @@ const MIN_CAPACITY: usize = 8;
 #[inline(always)]
 /// creates array literal
 // does not need to be resized if create uses inbounds_push
-pub extern "Rust" fn evolve_array_static_new(size: usize) -> &'static mut EvolveArray {
+pub extern "Rust" fn evolve_array_literal(size: usize) -> &'static mut EvolveArray {
     let capacity = size.max(MIN_CAPACITY);
     let array = EvolveArray::with_capacity(capacity);
     leak_heap_ref_mut(array)
@@ -42,12 +42,7 @@ pub extern "Rust" fn evolve_array_get(array: &EvolveArray, index: usize) -> Obje
 /// get: should be fine because it will be out of range and this null
 /// put: will be problematic because of resize
 // saturating_sub impedes optimization
-// return 0 on 0 impledes optimization
+// return 0 on 0 impedes optimization
 pub fn adjusted_index(index: usize) -> usize {
-    // if index == 0 {
-    //     return 0
-    // }
     index.wrapping_sub(1)
-
-    // index.saturating_sub(1)
 }
