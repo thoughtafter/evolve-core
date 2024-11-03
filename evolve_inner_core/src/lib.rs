@@ -1,6 +1,7 @@
 #![feature(unbounded_shifts)]
 #![feature(str_as_str)]
 #![feature(cstr_bytes)]
+#![feature(extend_one_unchecked)]
 #![no_std]
 extern crate alloc;
 
@@ -9,6 +10,7 @@ extern crate alloc;
 pub mod array;
 pub mod class_ids;
 mod gmp_mpfr;
+mod intrinsic;
 pub mod leak;
 mod llvm;
 mod mem;

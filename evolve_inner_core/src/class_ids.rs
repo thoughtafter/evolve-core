@@ -19,5 +19,5 @@ pub const STRING_CLASS_ID: u16 = 6u16;
 
 pub const REGEX_CLASS_ID: u16 = 7u16;
 
-pub const ARRAY_CLASS_ID: u16 = 21u16;
+pub const ARRAY_CLASS_ID: u16 = 16u16;
 pub const HEAP_CLASS_ID: u16 = 23u16;

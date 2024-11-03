@@ -1,14 +1,9 @@
 use alloc::vec::Vec;
-// TODO: needs allocation setup
-use libc_print::libc_println;
-// use libc::write;
-use evolve_inner_core::array::EvolveArray;
 use evolve_inner_core::class_ids::REGEX_CLASS_ID;
-use evolve_inner_core::leak::{leak_heap_ptr, leak_heap_ref};
+use evolve_inner_core::leak::leak_heap_ptr;
 use evolve_inner_core::object::{evolve_build_ptr, evolve_core_build_null, Object, Ptr};
+use libc_print::libc_println;
 use regex::Regex;
-// use evolve_inner_core::import_export::evolve_extract_i64;
-// use evolve_inner_core::string::evolve_from_string;
 
 #[allow(dead_code)]
 trait RegexExt {
@@ -56,12 +51,12 @@ impl RegexExt for Object {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_regex_match(regex: &Regex, string: &str) -> &'static EvolveArray {
+extern "Rust" fn evolve_regex_match(regex: &Regex, string: &str) -> Object {
     let vec = regex
         .find_iter(string)
         .map(|re| Object::from(re.as_str()))
         .collect::<Vec<_>>();
-    leak_heap_ref(vec.into())
+    vec.into()
 }
 
 #[no_mangle]

@@ -5,6 +5,7 @@
 extern crate alloc;
 
 mod allocators;
+mod array;
 #[cfg(feature = "binary_heap")]
 mod binary_heap;
 mod bitmap;
