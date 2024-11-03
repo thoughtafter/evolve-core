@@ -1,6 +1,5 @@
 use crate::object::Object;
 use crate::object_from::evolve_from_string;
-use alloc::borrow::Cow;
 use alloc::string::{String, ToString};
 use core::str::from_raw_parts;
 
@@ -52,11 +51,21 @@ impl From<Object> for String {
     }
 }
 
-impl From<Cow<'_, str>> for Object {
-    fn from(value: Cow<'_, str>) -> Self {
-        value.to_string().into()
-        // let x = value.as_str()
-        // let result = CString::new(value);
-        // value.as_str().into()
+mod cow {
+    use super::*;
+
+    use alloc::borrow::Cow;
+
+    impl From<Cow<'_, str>> for Object {
+        fn from(value: Cow<'_, str>) -> Self {
+            match value {
+                Cow::Borrowed(s) => s.into(),
+                Cow::Owned(s) => s.into(),
+            }
+            //value.to_string().into()
+            // let x = value.as_str()
+            // let result = CString::new(value);
+            // value.as_str().into()
+        }
     }
 }
