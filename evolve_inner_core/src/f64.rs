@@ -1,5 +1,3 @@
-use crate::class_ids::FLOAT_CLASS_ID;
-use crate::object::{Object, Ptr};
 use ordered_float::OrderedFloat;
 
 #[no_mangle]
@@ -30,17 +28,22 @@ pub extern "Rust" fn evolve_f64_eq(value1: f64, value2: f64) -> bool {
 //     (value <= i64::MAX as f64) && (value >= i64::MIN as f64)
 // }
 
-impl From<f64> for Object {
-    #[export_name = "evolve_from_f64"]
-    fn from(value: f64) -> Self {
-        Object::new(FLOAT_CLASS_ID, value.to_bits() as Ptr)
-    }
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use test_case::test_case;
 
-impl From<Object> for f64 {
-    #[export_name = "evolve_extract_f64"]
-    /// extract ptr value as f64, cannot be const
-    fn from(value: Object) -> f64 {
-        f64::from_bits(value.extract_ptr() as u64)
+    use core::cmp::Ordering;
+    use core::cmp::Ordering::*;
+
+    #[test_case(0.0, Equal, -0.0; "0 == neg 0")]
+    #[test_case(-0.0, Equal, 0.0; "neg 0 == 0")]
+    #[test_case(0.0, Equal, 0.0; "0 == 0")]
+    #[test_case(-0.0, Equal, -0.0; "neg 0 == neg 0")]
+    #[test_case(f64::NAN, Equal, f64::NAN; "NAN == NAN")]
+    #[test_case(f64::NAN, Greater, f64::INFINITY; "NAN > INF")]
+    fn test_evolve_f64_cmp(lhs: f64, order: Ordering, rhs: f64) {
+        let cmp = evolve_f64_cmp(lhs, rhs);
+        assert_eq!(order as i64, cmp);
     }
 }

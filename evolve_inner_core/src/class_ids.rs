@@ -19,6 +19,7 @@ pub const STRING_CLASS_ID: u16 = 6u16;
 
 pub const REGEX_CLASS_ID: u16 = 7u16;
 
+pub const TUPLE_CLASS_ID: u16 = 15u16;
 pub const ARRAY_CLASS_ID: u16 = 16u16;
 pub const MAP_CLASS_ID: u16 = 18u16;
 pub const HEAP_CLASS_ID: u16 = 23u16;

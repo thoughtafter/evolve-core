@@ -43,6 +43,6 @@ pub extern "Rust" fn evolve_array_get(array: &EvolveArray, index: usize) -> Obje
 /// put: will be problematic because of resize
 // saturating_sub impedes optimization
 // return 0 on 0 impedes optimization
-pub fn adjusted_index(index: usize) -> usize {
+pub const fn adjusted_index(index: usize) -> usize {
     index.wrapping_sub(1)
 }

@@ -91,7 +91,6 @@ mod tests {
     use super::*;
     use alloc::boxed::Box;
     use alloc::vec;
-    use libc_print::std_name::println;
     use test_case::test_case;
 
     #[test]
@@ -116,7 +115,7 @@ mod tests {
         let re_str = "[aeiou]";
         let re = evolve_regex_from_string(re_str);
         // assert_eq!(768, unsafe { ALLOCS.load(Relaxed) });
-        println!("\n{:?}\n", re);
+        // println!("\n{:?}\n", re);
         assert_eq!(
             re_str,
             // evolve_regex_to_rust_str(re.evolve_extract_ptr() as *const Regex)
@@ -124,7 +123,7 @@ mod tests {
         );
 
         let s = re.evolve_regex_to_s2();
-        println!("\n{:?}\n", s);
+        // println!("\n{:?}\n", s);
         assert_eq!(re_str, Into::<&str>::into(s))
     }
     #[test]

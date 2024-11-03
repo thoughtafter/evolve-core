@@ -19,6 +19,7 @@ libc_alloc = { version = "1.0.7", default-features = false, optional = true }
 mimalloc = { version = "0.1.43", optional = true }
 min-max-heap = { version = "1.3.0",  default-features = false, optional = true }
 roaring = { version = "0.10.6",  default-features = false }
+unicase = { version = "2.8.0",  default-features = false }
 
 evolve_inner_core = { path = "../evolve_inner_core" }
 #inject_global_allocator = { path = "../inject_global_allocator", optional = true }

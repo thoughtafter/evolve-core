@@ -113,7 +113,6 @@ mod tests {
     use super::*;
     use alloc::collections::VecDeque;
     use alloc::vec;
-    use libc_print::libc_println;
 
     pub trait ArrayExt {
         fn array(self) -> &'static EvolveArray;
@@ -155,7 +154,7 @@ mod tests {
     fn test_put_get() {
         let string_map = Object::evolve_map_new(0);
         string_map.map_put_str("foo", 42.into());
-        libc_println!("{:#?}", string_map.map());
+        // libc_println!("{:#?}", string_map.map());
         let get = string_map.map_get_str("foo");
         let i = get.extract_i64();
         assert_eq!(42, i);
@@ -169,7 +168,7 @@ mod tests {
     fn test_put_get_int() {
         let string_map = Object::evolve_map_new(0);
         string_map.map_put(1.into(), 42.into());
-        libc_println!("{:#?}", string_map.map());
+        // libc_println!("{:#?}", string_map.map());
         let get = string_map.map_get(1.into());
         let i = get.extract_i64();
         assert_eq!(42, i);
@@ -183,7 +182,7 @@ mod tests {
     fn test_get_missing_returns_null() {
         let map = Object::evolve_map_new(0);
         map.map_put_str("foo", 42.into());
-        libc_println!("{:#?}", map.map());
+        // libc_println!("{:#?}", map.map());
         let get = map.map_get_str("bar");
         assert!(get.is_null());
     }

@@ -2,57 +2,32 @@
 #![no_std]
 // needed for literal arrays can be pushed to when capacity is known
 #![feature(extend_one_unchecked)]
-// additional features
+// for i64 shifts
 #![feature(unbounded_shifts)]
-#![feature(str_as_str)]
-#![feature(cstr_bytes)]
+// for creating rust &str
 #![feature(str_from_raw_parts)]
+// for is_same to be const
+#![feature(const_raw_ptr_comparison)]
 // alloc is needed for array, string, leak
 extern crate alloc;
 
 pub mod array;
 pub mod class_ids;
-pub mod f64;
+pub mod leak;
+pub mod object;
+
+mod f64;
 mod gmp_mpfr;
 mod i64;
 mod intrinsic;
-pub mod leak;
 mod llvm;
 mod mem;
-mod misc;
-pub mod object;
 mod string;
+mod tuple;
 // for testing optimizations
 // mod testing;
 
 pub mod object_from {
-    use crate::class_ids::{POINTER_CLASS_ID, STRING_CLASS_ID};
-    use crate::object::{Object, Ptr};
-    use core::ffi::c_char;
-
-    // TODO: this generates possibly suboptimal code
-    // assembly looks good
-    // evolve_from_i1:
-    // .cfi_startproc
-    // movl	%edi, %eax
-    // leaq	4(,%rax,2), %rax
-    // xorl	%edx, %edx
-    // retq
-    // #[no_mangle]
-    // pub const extern "Rust" fn evolve_from_i1(value: bool) -> Object {
-    //     if value {
-    //         evolve_build_true()
-    //     } else {
-    //         evolve_build_false()
-    //     }
-    //
-    //     // let class_id = if value {
-    //     //     TRUE_CLASS_ID
-    //     // } else {
-    //     //     FALSE_CLASS_ID
-    //     // };
-    //     // Object::static_class(class_id)
-    // }
 
     // #[no_mangle]
     // pub const extern "Rust" fn evolve_from_i64(value: i64) -> Object {
@@ -63,16 +38,6 @@ pub mod object_from {
     // pub const extern "Rust" fn evolve_from_f64(value: f64) -> Object {
     //     Object::new(FLOAT_CLASS_ID, value.to_bits() as Ptr)
     // }
-
-    #[no_mangle]
-    pub const extern "Rust" fn evolve_from_ptr(value: Ptr) -> Object {
-        Object::new(POINTER_CLASS_ID, value)
-    }
-
-    #[no_mangle]
-    pub const extern "Rust" fn evolve_from_string(len: u32, ptr: *const c_char) -> Object {
-        Object::with_aux(STRING_CLASS_ID, len, ptr as Ptr)
-    }
 
     // pricey - can't be From in outer, but maybe change to helper function instead
     mod vecs {
@@ -119,7 +84,9 @@ pub mod object_from {
 
     #[cfg(test)]
     mod tests {
-        use super::*;
+        // TODO: tests in the wrong place
+        // use super::*;
+        use crate::object::Object;
         use test_case::test_case;
 
         #[test_case(i64::MAX)]
@@ -211,25 +178,20 @@ mod bool {
     // }
 
     impl Object {
-        #[no_mangle]
-        pub(crate) extern "Rust" fn evolve_core_is_true(self) -> bool {
-            self.class_id() >= Object::build_true().class_id()
-        }
+        // #[no_mangle]
+        // pub extern "Rust" fn evolve_core_is_false(self) -> bool {
+        //     !self.evolve_core_is_true()
+        // }
+        //
+        // #[no_mangle]
+        // extern "Rust" fn evolve_intrinsic_true(self) -> Object {
+        //     self.evolve_core_is_true().into()
+        // }
 
-        #[no_mangle]
-        pub extern "Rust" fn evolve_core_is_false(self) -> bool {
-            !self.evolve_core_is_true()
-        }
-
-        #[no_mangle]
-        extern "Rust" fn evolve_intrinsic_true(self) -> Object {
-            self.evolve_core_is_true().into()
-        }
-
-        #[no_mangle]
-        extern "Rust" fn evolve_intrinsic_false(self) -> Object {
-            self.evolve_core_is_false().into()
-        }
+        // #[no_mangle]
+        // extern "Rust" fn evolve_intrinsic_false(self) -> Object {
+        //     self.evolve_core_is_false().into()
+        // }
     }
 }
 
@@ -270,27 +232,6 @@ mod bool {
 // extern "Rust" fn call_from_rust() {
 //     println!("Just called a Rust function from C!");
 // }
-
-mod time {
-    use libc::timespec;
-
-    fn timespec_to_f64(ts: timespec) -> f64 {
-        ts.tv_sec as f64 + (ts.tv_nsec as f64 * 1e-9)
-    }
-
-    #[no_mangle]
-    extern "Rust" fn evolve_posix_clock_monotonic() -> f64 {
-        let mut x = timespec {
-            tv_sec: 0,
-            tv_nsec: 0,
-        };
-
-        unsafe {
-            libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut x);
-        }
-        timespec_to_f64(x)
-    }
-}
 
 #[cfg(test)]
 mod tests {

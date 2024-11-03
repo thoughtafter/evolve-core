@@ -54,3 +54,24 @@ extern "Rust" fn evolve_write_resource_usage() {
     let stime = calc(usage.ru_stime);
     libc_println!("user: {} kernel: {}", utime, stime);
 }
+
+mod time {
+    use libc::timespec;
+
+    fn timespec_to_f64(ts: timespec) -> f64 {
+        ts.tv_sec as f64 + (ts.tv_nsec as f64 * 1e-9)
+    }
+
+    #[no_mangle]
+    extern "Rust" fn evolve_posix_clock_monotonic() -> f64 {
+        let mut x = timespec {
+            tv_sec: 0,
+            tv_nsec: 0,
+        };
+
+        unsafe {
+            libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut x);
+        }
+        timespec_to_f64(x)
+    }
+}
