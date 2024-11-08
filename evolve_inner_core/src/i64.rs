@@ -10,9 +10,6 @@
 //     (value >= min && value <= max) | (value >= max && value <= min)
 // }
 
-use crate::class_ids::INT_CLASS_ID;
-use crate::object::{Object, Ptr};
-
 #[no_mangle]
 extern "Rust" fn evolve_i64_cmp(value1: i64, value2: i64) -> i64 {
     value1.cmp(&value2) as i64
@@ -119,20 +116,6 @@ extern "Rust" fn evolve_i64_overflowing_shl(lhs: i64, rhs: u32) -> (i64, bool) {
 #[no_mangle]
 extern "Rust" fn evolve_i64_unbounded_shl(lhs: i64, rhs: u32) -> i64 {
     lhs.unbounded_shl(rhs)
-}
-
-impl From<i64> for Object {
-    #[export_name = "evolve_from_i64"]
-    fn from(value: i64) -> Self {
-        Object::new(INT_CLASS_ID, value as Ptr)
-    }
-}
-
-impl From<Object> for i64 {
-    #[export_name = "evolve_extract_i64"]
-    fn from(value: Object) -> i64 {
-        value.extract_ptr() as i64
-    }
 }
 
 mod tests {

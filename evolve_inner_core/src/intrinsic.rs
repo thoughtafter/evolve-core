@@ -1,7 +1,7 @@
 use crate::class_ids::*;
 use crate::f64::evolve_f64_eq;
 use crate::object::Object;
-use crate::string::evolve_string_equal_bytes;
+use crate::string::evolve_string_bytes_eq;
 use core::ops::Add;
 
 const LOCAL_INT_CLASS_ID: u64 = INT_CLASS_ID as u64;
@@ -71,7 +71,7 @@ pub extern "Rust" fn evolve_intrinsic_eq(left: Object, right: Object) -> Object 
             x.into()
         }
         (STRING_CLASS_ID, STRING_CLASS_ID) => {
-            let x = evolve_string_equal_bytes(left.extract_str(), right.extract_str());
+            let x = evolve_string_bytes_eq(left.extract_str(), right.extract_str());
             x.into()
         }
         (_, _) => Object::null(),

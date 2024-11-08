@@ -1,5 +1,4 @@
 use crate::object::Object;
-use crate::object_from::evolve_from_string;
 use alloc::string::{String, ToString};
 use core::str::from_raw_parts;
 
@@ -40,7 +39,7 @@ impl From<String> for Object {
     fn from(s: String) -> Self {
         let leaked = s.leak();
         // leaked.deref().into()
-        evolve_from_string(leaked.len() as u32, leaked.as_ptr() as _)
+        Object::from_string(leaked.len() as u32, leaked.as_ptr() as _)
     }
 }
 

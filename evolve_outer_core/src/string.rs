@@ -15,7 +15,129 @@
 // }
 
 use alloc::string::{String, ToString};
+use core::cmp::Ordering;
 use evolve_inner_core::object::Object;
+use unicase::UniCase;
+
+mod parse_f64 {
+    use core::str::FromStr;
+
+    #[no_mangle]
+    /// return f64 from string, replace strtod
+    /// could use nan to signal error
+    /// or success bool to match similar calls
+    /// better than strtod needing to check errno
+    extern "Rust" fn evolve_string_parse_f64(value: &str) -> (f64, bool) {
+        // let parsed = value.parse::<f64>();
+        let parsed = f64::from_str(value);
+        match parsed {
+            Ok(f64::INFINITY) => (f64::INFINITY, true),
+            Ok(f64::NEG_INFINITY) => (f64::NEG_INFINITY, true),
+            Ok(value) => (value, false),
+            Err(_) => (0.0, true),
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use test_case::test_case;
+
+        #[test_case("0" => (0.0, false))]
+        #[test_case("+1.7976931348623157e+308" => (f64::MAX, false))]
+        #[test_case("-1.7976931348623157e+308" => (f64::MIN, false))]
+        #[test_case("+2.2250738585072014e-308" => (f64::MIN_POSITIVE, false))]
+        #[test_case("inf" => (f64::INFINITY, true))]
+        #[test_case("1e500" => (f64::INFINITY, true))]
+        #[test_case("-inf" => (f64::NEG_INFINITY, true))]
+        #[test_case("-1e500" => (f64::NEG_INFINITY, true))]
+        fn test_parse_f64(value: &str) -> (f64, bool) {
+            let parsed = evolve_string_parse_f64(value);
+            assert!(!parsed.0.is_nan());
+            parsed
+        }
+
+        #[test]
+        fn test_parse_f64_nan() {
+            let parsed = evolve_string_parse_f64("NaN");
+            assert!(parsed.0.is_nan());
+            assert_eq!(parsed.1, false);
+        }
+    }
+}
+
+mod parse_i64 {
+    fn auto_radix(value: &str) -> (&str, u32) {
+        let trimmed = value.trim_start().trim_start_matches('+');
+        // libc_println!("trimmed: {}", trimmed);
+        let hex = trimmed
+            .strip_prefix("0x")
+            .or_else(|| trimmed.strip_prefix("0X"));
+        // libc_println!("hex: {:?}", hex);
+        if let Some(hex) = hex {
+            // libc_println!("found hex: {}", hex);
+            return (hex, 16);
+        };
+
+        // need + removed
+        (trimmed, 10)
+    }
+
+    /// return i64 from string
+    /// replace strtoll, no errno
+    ///
+    #[no_mangle]
+    extern "Rust" fn evolve_string_parse_i64(value: &str, radix: u32) -> (i64, bool) {
+        let (value, radix) = if radix == 0 {
+            auto_radix(value)
+        } else {
+            (value, radix)
+        };
+        if !(2..=36).contains(&radix) {
+            return (0, true);
+        }
+        let parsed = i64::from_str_radix(value, radix);
+        match parsed {
+            Ok(value) => (value, false),
+            Err(_) => (0, true),
+        }
+    }
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn test_i64_radix() {
+            assert_eq!(i64::from_str_radix("A", 16), Ok(10));
+            // assert_eq!(i64::from_str_radix("-0xa", 16), Ok(10));
+        }
+
+        #[test]
+        fn test_evolve_string_parse_i64_hex() {
+            assert_eq!((255, false), evolve_string_parse_i64("0xff", 0));
+            assert_eq!((255, false), evolve_string_parse_i64("+0xff", 0));
+            // TODO: assert_eq!((-255, false), evolve_string_parse_i64("-0xff", 0));
+
+            assert_eq!((255, false), evolve_string_parse_i64("ff", 16));
+            assert_eq!((255, false), evolve_string_parse_i64("+ff", 16));
+            assert_eq!((-255, false), evolve_string_parse_i64("-ff", 16));
+
+            // TODO:
+            // assert_eq!((255, false), evolve_string_parse_i64("0xff", 16));
+        }
+
+        #[test]
+        fn test_evolve_string_parse_i64_bin() {
+            assert_eq!((7, false), evolve_string_parse_i64("111", 2));
+            assert_eq!((7, false), evolve_string_parse_i64("+111", 2));
+            assert_eq!((-7, false), evolve_string_parse_i64("-111", 2));
+
+            // TODO:
+            // assert_eq!((7, false), evolve_string_parse_i64("0b111", 0));
+            // assert_eq!((7, false), evolve_string_parse_i64("0b111", 2));
+        }
+    }
+}
 
 #[no_mangle]
 extern "Rust" fn evolve_string_trim_end(value: &str) -> Object {
@@ -75,14 +197,23 @@ extern "Rust" fn evolve_string_is_blank(value: &str) -> bool {
     value.trim().is_empty()
 }
 
+#[no_mangle]
+extern "Rust" fn evolve_string_cmp(lhs: &str, rhs: &str) -> Ordering {
+    let a = UniCase::new(lhs);
+    let b = UniCase::new(rhs);
+    a.cmp(&b)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test_case::test_case;
 
     use alloc::borrow::ToOwned;
     use alloc::boxed::Box;
     use alloc::ffi::CString;
     use alloc::string::{String, ToString};
+    use Ordering::*;
 
     #[test]
     fn test_lowlevel() {
@@ -171,5 +302,12 @@ mod tests {
         // };
         // assert_ne!(8, diff);
         // assert_eq!(8, diff);
+    }
+
+    #[test_case("Hello, world!", Equal, "HEllO, wOrld!")]
+    #[test_case("11", Less, "12")]
+    #[test_case("12", Greater, "11")]
+    fn test_string_cmp(lhs: &str, order: Ordering, rhs: &str) {
+        assert_eq!(order, evolve_string_cmp(lhs, rhs))
     }
 }

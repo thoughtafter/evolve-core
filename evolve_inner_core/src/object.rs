@@ -1,3 +1,4 @@
+pub mod convert;
 mod default;
 mod hash;
 
@@ -6,7 +7,7 @@ use crate::intrinsic::evolve_intrinsic_eq;
 use core::cmp::Ordering;
 use core::ffi::CStr;
 use core::slice;
-use libc_print::libc_println;
+// use libc_print::libc_println;
 // #[no_mangle]
 // pub static NULLTHING: Object = Object::null();
 
@@ -90,16 +91,6 @@ impl Object {
         Self::static_class(0)
     }
 
-    #[export_name = "evolve_build_true"]
-    pub const extern "Rust" fn build_true() -> Self {
-        Self::static_class(TRUE_CLASS_ID)
-    }
-
-    #[export_name = "evolve_build_false"]
-    pub const extern "Rust" fn build_false() -> Self {
-        Self::static_class(FALSE_CLASS_ID)
-    }
-
     #[export_name = "evolve_core_tag"]
     pub(crate) const extern "Rust" fn tag(self) -> u64 {
         self.tag
@@ -138,32 +129,27 @@ impl Object {
         }
     }
 
-    #[export_name = "evolve_extract_ptr"]
-    pub const extern "Rust" fn extract_ptr(self) -> Ptr {
-        self.ptr
-    }
-
-    /// extract ptr value as i64, cannot be const
-    pub extern "Rust" fn extract_i64(self) -> i64 {
-        self.into()
-    }
-
-    pub fn extract_f64(self) -> f64 {
-        self.into()
-    }
-
     #[export_name = "evolve_core_is"]
-    extern "Rust" fn is_same(self, rhs: Object) -> bool {
-        (self.tag == rhs.tag) && (self.ptr == rhs.ptr)
+    const extern "Rust" fn is_same(self, rhs: Object) -> bool {
+        if self.tag != rhs.tag {
+            return false;
+        }
+
+        let option = self.ptr.guaranteed_eq(rhs.ptr);
+
+        match option {
+            None => false,
+            Some(bool) => bool,
+        }
     }
 
     #[export_name = "evolve_core_is_not"]
-    extern "Rust" fn is_not_same(self, rhs: Object) -> bool {
+    const extern "Rust" fn is_not_same(self, rhs: Object) -> bool {
         !self.is_same(rhs)
     }
 
     #[export_name = "evolve_core_null"]
-    pub extern "Rust" fn is_null(self) -> bool {
+    pub const extern "Rust" fn is_null(self) -> bool {
         self.tag == 0
     }
 
@@ -183,23 +169,6 @@ impl Object {
         unsafe { CStr::from_bytes_with_nul_unchecked(bytes) }
         // unsafe { from_raw_parts(ptr, len as usize) }
         // unsafe { core::slice::from_raw_parts(ptr, len as usize)  }
-    }
-}
-
-impl From<bool> for Object {
-    #[export_name = "evolve_from_i1"]
-    fn from(value: bool) -> Self {
-        if value {
-            Object::build_true()
-        } else {
-            Object::build_false()
-        }
-    }
-}
-
-impl From<Object> for bool {
-    fn from(val: Object) -> bool {
-        val.evolve_core_is_true()
     }
 }
 
@@ -263,11 +232,11 @@ impl PartialEq<Self> for Object {
             return true;
         }
 
-        libc_println!("NOT SAME");
+        // libc_println!("NOT SAME");
 
         let test = evolve_intrinsic_eq(*self, *other);
 
-        libc_println!("intrinsic_eq says: {:?}", test);
+        // libc_println!("intrinsic_eq says: {:?}", test);
 
         if test.is_same(Object::from(true)) {
             return true;
@@ -276,10 +245,10 @@ impl PartialEq<Self> for Object {
             return false;
         }
 
-        libc_println!("NEED TO DO SOMETHING");
+        panic!("NEED TO DO SOMETHING");
 
         // TODO: call interface for eq
-        false
+        // false
     }
 }
 

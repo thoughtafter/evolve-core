@@ -27,8 +27,8 @@ mod tests {
         }
         // TODO: libgc was slow at >= 64K but not now
         let layout = Layout::from_size_align(1 << 18, 8).unwrap();
-        for n in 1..=100 {
-            libc_println!("allocation {} for {:?}", n, layout);
+        for _n in 1..=100 {
+            // libc_println!("allocation {} for {:?}", n, layout);
             let x = unsafe { alloc::alloc::alloc(layout) };
             assert!(!x.is_null());
         }

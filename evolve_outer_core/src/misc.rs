@@ -1,4 +1,4 @@
-use crate::object::{evolve_build_ptr, Object, Ptr};
+use evolve_inner_core::object::{evolve_build_ptr, Object, Ptr};
 
 #[no_mangle]
 const extern "Rust" fn new_gc() -> Object {

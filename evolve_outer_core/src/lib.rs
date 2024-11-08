@@ -17,8 +17,9 @@ mod regex;
 mod string;
 // #[cfg(feature = "stringmap")]
 // mod stringmap;
-mod io;
+mod libc_helpers;
 mod map;
+mod misc;
 mod set;
 
 #[cfg(not(any(test, feature = "bdwgc_alloc")))]
