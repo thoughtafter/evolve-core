@@ -210,7 +210,7 @@ pub fn get_stack_base() -> GC_stack_base {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_gc_summary() -> Object {
+fn evolve_gc_summary() -> Object {
     let heap_usage = get_heap_usages();
     let summary = format!(
         "total = {}MB, since_gc = {}MB, heap = {}MB, unmapped = {}MB, free = {}MB",

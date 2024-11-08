@@ -8,13 +8,13 @@ use regex::Regex;
 #[allow(dead_code)]
 trait RegexExt {
     fn regex(self) -> &'static Regex;
-    extern "Rust" fn evolve_regex_has_match(self, string: &str) -> bool;
-    extern "Rust" fn evolve_regex_to_s2(self) -> Object;
+    fn evolve_regex_has_match(self, string: &str) -> bool;
+    fn evolve_regex_to_s2(self) -> Object;
 }
 
 // TODO: deal with dropping
 #[no_mangle]
-extern "Rust" fn evolve_regex_from_string(string: &str) -> Object {
+fn evolve_regex_from_string(string: &str) -> Object {
     let regex = Regex::new(string);
     match regex {
         Ok(regex_ok) => {
@@ -38,12 +38,12 @@ impl RegexExt for Object {
 
     /// see if regex matches string
     #[no_mangle]
-    extern "Rust" fn evolve_regex_has_match(self, string: &str) -> bool {
+    fn evolve_regex_has_match(self, string: &str) -> bool {
         self.regex().is_match(string)
     }
 
     #[no_mangle]
-    extern "Rust" fn evolve_regex_to_s2(self) -> Object {
+    fn evolve_regex_to_s2(self) -> Object {
         let re = self.regex();
         let str = re.as_str();
         str.into()
@@ -76,12 +76,12 @@ fn evolve_regex_match_raw<'a>(regex: &Regex, string: &'a str) -> Vec<&'a str> {
 // }
 
 #[no_mangle]
-extern "Rust" fn evolve_regex_match(regex: &Regex, string: &str) -> Object {
+fn evolve_regex_match(regex: &Regex, string: &str) -> Object {
     evolve_regex_match_raw(regex, string).into()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_regex_replace(regex: &Regex, haystack: &str, replacer: &str) -> Object {
+fn evolve_regex_replace(regex: &Regex, haystack: &str, replacer: &str) -> Object {
     let replaced = regex.replace_all(haystack, replacer);
     replaced.into()
 }

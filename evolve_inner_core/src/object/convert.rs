@@ -5,12 +5,12 @@ mod bool {
     impl Object {
         #[export_name = "evolve_build_true"]
         #[inline(always)]
-        const extern "Rust" fn build_true() -> Self {
+        const fn build_true() -> Self {
             Self::static_class(TRUE_CLASS_ID)
         }
 
         #[export_name = "evolve_build_false"]
-        const extern "Rust" fn build_false() -> Self {
+        const fn build_false() -> Self {
             Self::static_class(FALSE_CLASS_ID)
         }
 
@@ -23,7 +23,7 @@ mod bool {
         // xorl	%edx, %edx
         // retq
         // #[no_mangle]
-        // pub const extern "Rust" fn evolve_from_i1(value: bool) -> Object {
+        // pub const fn evolve_from_i1(value: bool) -> Object {
         //     if value {
         //         evolve_build_true()
         //     } else {
@@ -40,7 +40,7 @@ mod bool {
 
         #[export_name = "evolve_from_i1"]
         #[inline(always)]
-        const extern "Rust" fn from_i1(value: bool) -> Self {
+        pub(crate) const fn from_i1(value: bool) -> Self {
             if value {
                 Object::build_true()
             } else {
@@ -48,10 +48,12 @@ mod bool {
             }
         }
 
-        #[export_name = "evolve_core_is_true"]
+        #[export_name = "evolve.core.true?"]
         #[inline(always)]
-        const extern "Rust" fn is_true(self) -> bool {
-            self.class_id() >= Object::build_true().class_id()
+        /// truthy value of object
+        /// can use tag because u64 comparison and no falsy value currently uses aux4
+        pub(crate) const fn is_true(self) -> bool {
+            self.tag() >= Object::build_true().tag()
         }
     }
 
@@ -70,20 +72,24 @@ mod bool {
 
 mod ptr {
     use crate::class_ids::POINTER_CLASS_ID;
-    use crate::object::{Object, Ptr};
+    use crate::object::{Object, Ptr, PtrMut};
 
     impl Object {
         #[inline(always)]
         #[export_name = "evolve_from_ptr"]
-        const extern "Rust" fn from_ptr(value: Ptr) -> Object {
+        pub(crate) const fn from_ptr(value: Ptr) -> Object {
             Object::new(POINTER_CLASS_ID, value)
         }
 
         /// extract ptr value
-        #[export_name = "evolve_extract_ptr"]
+        #[export_name = "evolve.extract.ptr"]
         #[inline(always)]
         pub const fn extract_ptr(self) -> Ptr {
             self.ptr
+        }
+
+        pub const fn extract_ptr_mut(self) -> PtrMut {
+            self.ptr as *mut u8
         }
     }
 
@@ -103,17 +109,19 @@ mod ptr {
 mod i64 {
     use crate::class_ids::INT_CLASS_ID;
     use crate::object::{Object, Ptr};
+    use core::intrinsics::transmute;
 
     impl Object {
         #[export_name = "evolve_from_i64"]
         #[inline(always)]
         // needed by tuple
-        pub const extern "Rust" fn from_i64(value: i64) -> Object {
+        pub const fn from_i64(value: i64) -> Object {
             Object::new(INT_CLASS_ID, value as Ptr)
         }
 
-        pub fn extract_i64(self) -> i64 {
-            self.into()
+        #[allow(ptr_to_integer_transmute_in_consts)]
+        pub const fn extract_i64(self) -> i64 {
+            unsafe { transmute(self.ptr) }
         }
     }
 
@@ -125,10 +133,10 @@ mod i64 {
 
     impl From<Object> for i64 {
         /// extract ptr value as i64
-        #[export_name = "evolve_extract_i64"]
+        #[export_name = "evolve.extract.i64"]
         #[inline(always)]
         fn from(value: Object) -> i64 {
-            value.ptr as i64
+            value.extract_i64()
         }
     }
 }
@@ -136,16 +144,21 @@ mod i64 {
 mod f64 {
     use crate::class_ids::FLOAT_CLASS_ID;
     use crate::object::{Object, Ptr};
+    use ordered_float::OrderedFloat;
 
     impl Object {
         #[export_name = "evolve_from_f64"]
         #[inline(always)]
-        const extern "Rust" fn from_f64(value: f64) -> Object {
+        pub(crate) const fn from_f64(value: f64) -> Object {
             Object::new(FLOAT_CLASS_ID, value.to_bits() as Ptr)
         }
 
-        pub fn extract_f64(self) -> f64 {
-            self.into()
+        pub const fn extract_f64(self) -> f64 {
+            f64::from_bits(self.extract_i64() as u64)
+        }
+
+        pub const fn extract_o64(self) -> OrderedFloat<f64> {
+            OrderedFloat(self.extract_f64())
         }
     }
 
@@ -157,7 +170,7 @@ mod f64 {
 
     impl From<Object> for f64 {
         /// extract ptr value as f64
-        #[export_name = "evolve_extract_f64"]
+        #[export_name = "evolve.extract.f64"]
         #[inline(always)]
         fn from(value: Object) -> f64 {
             f64::from_bits(value.ptr as u64)

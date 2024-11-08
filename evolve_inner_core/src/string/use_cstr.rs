@@ -8,7 +8,7 @@ use crate::object::Object;
 use crate::object_from::evolve_from_string;
 
 #[no_mangle]
-extern "Rust" fn new_string(value: &CStr) -> Object {
+fn new_string(value: &CStr) -> Object {
     value.into()
 }
 

@@ -6,48 +6,48 @@ use min_max_heap::MinMaxHeap;
 type EvolveHeap = MinMaxHeap<Object>;
 
 #[no_mangle]
-extern "Rust" fn evolve_heap_new(capacity: usize) -> Object {
+fn evolve_heap_new(capacity: usize) -> Object {
     let heap = EvolveHeap::with_capacity(capacity);
     heap.into()
 }
 
 #[no_mangle]
-const extern "Rust" fn evolve_heap_size(heap: &EvolveHeap) -> usize {
+const fn evolve_heap_size(heap: &EvolveHeap) -> usize {
     heap.len()
 }
 
 #[no_mangle]
-const extern "Rust" fn evolve_heap_capacity(heap: &EvolveHeap) -> usize {
+const fn evolve_heap_capacity(heap: &EvolveHeap) -> usize {
     heap.capacity()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_heap_peek_min(heap: &EvolveHeap) -> Object {
+fn evolve_heap_peek_min(heap: &EvolveHeap) -> Object {
     *heap.peek_min().unwrap_or_default()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_heap_peek_max(heap: &EvolveHeap) -> Object {
+fn evolve_heap_peek_max(heap: &EvolveHeap) -> Object {
     *heap.peek_max().unwrap_or_default()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_heap_pop_min(heap: &mut EvolveHeap) -> Object {
+fn evolve_heap_pop_min(heap: &mut EvolveHeap) -> Object {
     heap.pop_min().unwrap_or_default()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_heap_pop_max(heap: &mut EvolveHeap) -> Object {
+fn evolve_heap_pop_max(heap: &mut EvolveHeap) -> Object {
     heap.pop_max().unwrap_or_default()
 }
 
 // #[no_mangle]
-// extern "Rust" fn evolve_heap_push(heap: &mut EvolveHeap, value: Object)  {
+// fn evolve_heap_push(heap: &mut EvolveHeap, value: Object)  {
 //     heap.push(value);
 // }
 
 // #[no_mangle]
-// extern "Rust" fn evolve_heap_sorted(heap: &EvolveHeap) -> Object  {
+// fn evolve_heap_sorted(heap: &EvolveHeap) -> Object  {
 //     unsafe { *heap }.into_vec_asc().into()
 // }
 

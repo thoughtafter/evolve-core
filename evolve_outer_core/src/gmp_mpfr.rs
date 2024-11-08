@@ -3,7 +3,7 @@ mod mem {
     use core::ffi::c_void;
 
     //extern "C" fn(alloc_size: usize) -> *mut c_void
-    //     extern "Rust" {
+    //     {
     //       fn evolve_gmp_allocate(alloc_size: usize) -> *mut c_void;
     //       fn evolve_gmp_reallocate(alloc_size: usize) -> *mut c_void;
     //     }
@@ -33,7 +33,7 @@ mod mem {
     }
 
     #[no_mangle]
-    extern "Rust" fn evolve_gmp_set_mem_func() {
+    fn evolve_gmp_set_mem_func() {
         unsafe {
             gmp_mpfr_sys::gmp::set_memory_functions(
                 Some(evolve_gmp_allocate),
@@ -45,32 +45,55 @@ mod mem {
 }
 
 mod mpz {
+    use alloc::boxed::Box;
+    use evolve_inner_core::class_ids::BIGINT_CLASS_ID;
+    use evolve_inner_core::object::{Object, Ptr};
+    use gmp_mpfr_sys::gmp::{mpz_even_p, mpz_init_set_ui, mpz_odd_p, mpz_sgn, mpz_srcptr, mpz_t};
 
-    use gmp_mpfr_sys::gmp::{mpz_even_p, mpz_odd_p, mpz_sgn, mpz_srcptr};
-
+    /// sign using converstion of macro by gmp_mpfr lib
+    /// zero checking can use this
     #[no_mangle]
-    extern "Rust" fn evolve_mpz_sgn(op: mpz_srcptr) -> i64 {
+    fn evolve_mpz_sgn(op: mpz_srcptr) -> i64 {
         let signum = unsafe { mpz_sgn(op) };
         signum as i64
     }
 
     #[no_mangle]
-    const extern "Rust" fn evolve_mpz_odd_p(op: mpz_srcptr) -> bool {
+    const fn evolve_mpz_odd_p(op: mpz_srcptr) -> bool {
         let odd = unsafe { mpz_odd_p(op) };
         odd != 0
     }
 
     #[no_mangle]
-    extern "Rust" fn evolve_mpz_even_p(op: mpz_srcptr) -> bool {
+    fn evolve_mpz_even_p(op: mpz_srcptr) -> bool {
         let even = unsafe { mpz_even_p(op) };
         even != 0
     }
 
     // #[no_mangle]
-    // extern "Rust" fn evolve_mpz_zero_p(op: mpz_srcptr) -> bool {
+    // fn evolve_mpz_zero_p(op: mpz_srcptr) -> bool {
     //     let zero = unsafe { gmp::mpz_cmp_si(op, 0) };
     //     zero != 0
     // }
+
+    fn object_from_mpz(mpz: mpz_srcptr) -> Object {
+        Object::new(BIGINT_CLASS_ID, mpz as Ptr)
+    }
+
+    // could call @int64.ffi-gmp.mpz_init_set_ui.1({ i64, ptr } %obj1, { i64, ptr } %obj1)
+    #[export_name = "evolve.int.new.u64"]
+    fn evolve_int_new_i64(value: i64) -> Object {
+        if value >= 0 {
+            value.into()
+        } else {
+            let mpz = unsafe {
+                let mut z = Box::<mpz_t>::new_uninit();
+                mpz_init_set_ui(z.as_mut_ptr(), value as u64);
+                Box::leak(z.assume_init())
+            };
+            object_from_mpz(mpz)
+        }
+    }
 
     #[cfg(test)]
     mod tests {
@@ -103,21 +126,35 @@ mod mpz {
 }
 
 mod mpq {
-    use crate::class_ids::BIGINT_CLASS_ID;
-    use crate::object::{Object, Ptr};
+    use evolve_inner_core::class_ids::BIGINT_CLASS_ID;
+    use evolve_inner_core::object::{Object, Ptr};
     use gmp_mpfr_sys::gmp::{mpq_denref_const, mpq_numref_const, mpq_srcptr};
 
     #[no_mangle]
-    const extern "Rust" fn evolve_mpq_numref(op: mpq_srcptr) -> Object {
+    const fn evolve_mpq_numref(op: mpq_srcptr) -> Object {
         let num = unsafe { mpq_numref_const(op) };
         //evolve_big_int_from_srcptr(num)
         Object::with_aux(BIGINT_CLASS_ID, 16, num as Ptr)
     }
 
     #[no_mangle]
-    const extern "Rust" fn evolve_mpq_denref(op: mpq_srcptr) -> Object {
+    const fn evolve_mpq_denref(op: mpq_srcptr) -> Object {
         let den = unsafe { mpq_denref_const(op) };
         //evolve_big_int_from_srcptr(den)
         Object::with_aux(BIGINT_CLASS_ID, 16, den as Ptr)
+    }
+}
+
+mod mpfr {
+    /// Could add code for macros like sgn and zero_p - would give compiler more insight into these
+    /// functions.
+    #[cfg(test)]
+    mod tests {
+
+        #[test]
+        fn test_sgn() {
+            // mpfr::sgn()
+            // mpfr::zero_p()
+        }
     }
 }

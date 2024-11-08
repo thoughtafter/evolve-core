@@ -2,23 +2,23 @@ use evolve_inner_core::array::{adjusted_index, EvolveArray};
 use evolve_inner_core::object::Object;
 
 #[no_mangle]
-extern "Rust" fn evolve_array_size(array: &EvolveArray) -> usize {
+fn evolve_array_size(array: &EvolveArray) -> usize {
     array.len()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_array_capacity(array: &EvolveArray) -> usize {
+fn evolve_array_capacity(array: &EvolveArray) -> usize {
     array.capacity()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_array_mut_reserve(array: &mut EvolveArray, capacity: usize) {
+fn evolve_array_mut_reserve(array: &mut EvolveArray, capacity: usize) {
     array.reserve(capacity);
 }
 
 // TODO: handle overflow, also, should 0 be 1 in this case?
 #[no_mangle]
-extern "Rust" fn evolve_array_mut_insert(array: &mut EvolveArray, index: usize, value: Object) {
+fn evolve_array_mut_insert(array: &mut EvolveArray, index: usize, value: Object) {
     // if index > array.len() {
     //     array.resize(index + 1, Object::default());
     // }
@@ -27,38 +27,38 @@ extern "Rust" fn evolve_array_mut_insert(array: &mut EvolveArray, index: usize, 
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_array_mut_remove(array: &mut EvolveArray, index: usize) -> Object {
+fn evolve_array_mut_remove(array: &mut EvolveArray, index: usize) -> Object {
     let adjusted_index = adjusted_index(index);
     array.remove(adjusted_index).unwrap_or_default()
 }
 
 // #[no_mangle]
 // #[inline(always)]
-// extern "Rust" fn evolve_array_mut_push_front(array: &mut EvolveArray, value: Object) {
+// fn evolve_array_mut_push_front(array: &mut EvolveArray, value: Object) {
 //     array.push_front(value);
 // }
 //
 // #[no_mangle]
 // #[inline(always)]
-// extern "Rust" fn evolve_array_mut_push_back(array: &mut EvolveArray, value: Object) {
+// fn evolve_array_mut_push_back(array: &mut EvolveArray, value: Object) {
 //     array.push_back(value);
 // }
 //
 // #[no_mangle]
 // #[inline(always)]
-// extern "Rust" fn evolve_array_mut_pop_front(array: &mut EvolveArray) -> Object {
+// fn evolve_array_mut_pop_front(array: &mut EvolveArray) -> Object {
 //     array.pop_front().unwrap_or_default()
 // }
 //
 // #[no_mangle]
 // #[inline(always)]
-// extern "Rust" fn evolve_array_mut_pop_back(array: &mut EvolveArray) -> Object {
+// fn evolve_array_mut_pop_back(array: &mut EvolveArray) -> Object {
 //     array.pop_back().unwrap_or_default()
 // }
 
 #[no_mangle]
 /// reverse this array
-extern "Rust" fn evolve_array_mut_reverse(array: &mut EvolveArray) {
+fn evolve_array_mut_reverse(array: &mut EvolveArray) {
     // let slice = array.make_contiguous();
     // let skip: &mut[Object] = slice.iter().skip(1).into();
     // skip.reverse()
@@ -67,7 +67,7 @@ extern "Rust" fn evolve_array_mut_reverse(array: &mut EvolveArray) {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_array_copy(array: &EvolveArray) -> Object {
+fn evolve_array_copy(array: &EvolveArray) -> Object {
     array.clone().into()
 }
 
@@ -75,11 +75,7 @@ extern "Rust" fn evolve_array_copy(array: &EvolveArray) -> Object {
 #[inline(always)]
 /// put inbounds - suitable for initializer
 /// returns true if overflow / error
-extern "Rust" fn evolve_array_put_inbounds(
-    array: &mut EvolveArray,
-    index: usize,
-    value: Object,
-) -> bool {
+fn evolve_array_put_inbounds(array: &mut EvolveArray, index: usize, value: Object) -> bool {
     let adjusted_index = adjusted_index(index);
     if let Some(store) = array.get_mut(adjusted_index) {
         *store = value;
@@ -99,7 +95,7 @@ extern "Rust" fn evolve_array_put_inbounds(
 #[inline(always)]
 /// put with resize
 /// returns true if overflow / error - which should not happen
-extern "Rust" fn evolve_array_put(array: &mut EvolveArray, index: usize, value: Object) -> bool {
+fn evolve_array_put(array: &mut EvolveArray, index: usize, value: Object) -> bool {
     if array.len() <= index {
         array.resize(index, Object::default());
         //array.resize_with(index + 1, Default::default);
@@ -110,7 +106,7 @@ extern "Rust" fn evolve_array_put(array: &mut EvolveArray, index: usize, value: 
 
 // #[no_mangle]
 // #[inline(always)]
-// extern "Rust" fn evolve_array_mut_resize(
+// fn evolve_array_mut_resize(
 //     array: &mut EvolveArray,
 //     size: usize,
 // )  {

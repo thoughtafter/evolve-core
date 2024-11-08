@@ -8,7 +8,9 @@ use crate::object::{Object, Ptr};
 - but this means all string functions need to be allocator aware
 **/
 use core::cmp::Ordering;
-use core::str::from_raw_parts;
+use core::slice::from_raw_parts;
+use core::str::from_utf8_unchecked;
+// use core::str::from_raw_parts;
 // use libc_print::libc_println;
 
 mod use_str;
@@ -17,14 +19,14 @@ mod use_str;
 #[no_mangle]
 #[inline(always)]
 /// compare bytes in str using memcmp
-extern "Rust" fn evolve_string_bytes_cmp(value1: &str, value2: &str) -> i64 {
+fn evolve_string_bytes_cmp(value1: &str, value2: &str) -> i64 {
     value1.cmp(value2) as i64
 }
 
 #[no_mangle]
 #[inline(always)]
 /// compare bytes in str using memcmp
-pub extern "Rust" fn evolve_string_bytes_eq(value1: &str, value2: &str) -> bool {
+pub fn evolve_string_bytes_eq(value1: &str, value2: &str) -> bool {
     if value1.len() != value2.len() {
         return false;
     }
@@ -34,15 +36,20 @@ pub extern "Rust" fn evolve_string_bytes_eq(value1: &str, value2: &str) -> bool 
 impl Object {
     #[export_name = "evolve_from_string"]
     #[inline(always)]
-    pub const extern "Rust" fn from_string(len: u32, ptr: Ptr) -> Self {
+    pub const fn from_string(len: u32, ptr: Ptr) -> Self {
         Self::with_aux(STRING_CLASS_ID, len, ptr)
     }
 
+    // https://users.rust-lang.org/t/string-from-raw-parts/50578
     pub const fn extract_str(self) -> &'static str {
         let len = self.aux();
         let ptr = self.extract_ptr();
-        unsafe { from_raw_parts(ptr, len as usize) }
+        // unsafe { from_raw_parts(ptr, len as usize) }
         // unsafe { core::slice::from_raw_parts(ptr, len as usize)  }
+        unsafe {
+            let slice = from_raw_parts(ptr, len as usize);
+            from_utf8_unchecked(slice)
+        }
     }
 
     // pub fn as_cstr(self) -> &'static CStr {
@@ -61,25 +68,25 @@ impl Object {
 // }
 
 // #[no_mangle]
-// extern "Rust" fn evolve_string_trim_end(value: &str) -> Object {
+// fn evolve_string_trim_end(value: &str) -> Object {
 //     let trimmed = value.trim_end(); // slice
 //                                     // str_to_safe_object(trimmed)
 //     trimmed.to_owned().into()
 // }
 //
 // #[no_mangle]
-// extern "Rust" fn evolve_string_trim_start(value: &str) -> Object {
+// fn evolve_string_trim_start(value: &str) -> Object {
 //     let trimmed = value.trim_start(); // slice
 //                                       // str_to_safe_object(trimmed)
 //     trimmed.to_owned().into()
 // }
 
 // #[no_mangle]
-// extern "Rust" fn new_string_repeat(value: &str, times: usize) -> Object {
+// fn new_string_repeat(value: &str, times: usize) -> Object {
 //     value.repeat(times).into()
 // }
 
 // #[no_mangle]
-// pub extern "Rust" fn evolve_string_extract(o: Object) -> &str {
+// pub fn evolve_string_extract(o: Object) -> &str {
 //   from_p o.ptr
 // }

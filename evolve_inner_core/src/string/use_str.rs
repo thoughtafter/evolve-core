@@ -1,9 +1,9 @@
 use crate::object::Object;
 use alloc::string::{String, ToString};
-use core::str::from_raw_parts;
+// use core::str::from_raw_parts;
 
 #[no_mangle]
-extern "Rust" fn new_string(value: &str) -> Object {
+fn new_string(value: &str) -> Object {
     value.into()
 }
 
@@ -17,9 +17,7 @@ extern "Rust" fn new_string(value: &str) -> Object {
 
 impl From<Object> for &str {
     fn from(value: Object) -> &'static str {
-        let len = value.aux();
-        let ptr = value.extract_ptr();
-        unsafe { from_raw_parts(ptr, len as usize) }
+        value.extract_str()
     }
 }
 
