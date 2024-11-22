@@ -204,6 +204,30 @@ extern "Rust" fn evolve_string_cmp(lhs: &str, rhs: &str) -> Ordering {
     a.cmp(&b)
 }
 
+mod i64 {
+    use evolve_inner_core::object::Object;
+    use itoa::Buffer;
+
+    #[export_name = "evolve.string.from.i64"]
+    fn evolve_string_from_i64(value: i64) -> Object {
+        let mut buffer = Buffer::new();
+        let printed = buffer.format(value);
+        printed.into()
+    }
+}
+
+mod f64 {
+    use evolve_inner_core::object::Object;
+    use ryu::Buffer;
+
+    #[export_name = "evolve.string.from.f64"]
+    fn evolve_string_from_f64(value: f64) -> Object {
+        let mut buffer = Buffer::new();
+        let printed = buffer.format(value);
+        printed.into()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
