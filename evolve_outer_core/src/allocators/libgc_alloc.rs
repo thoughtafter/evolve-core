@@ -190,20 +190,20 @@ fn verify_thread_registration_or_fail(layout: Layout) {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_mem_malloc(bytes: usize) -> *mut u8 {
+fn evolve_mem_malloc(bytes: usize) -> *mut u8 {
     let layout = Layout::from_size_align(bytes, 8).unwrap();
     unsafe { GcAllocator.alloc(layout) }
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_mem_calloc(size: usize, num: usize) -> *mut u8 {
+fn evolve_mem_calloc(size: usize, num: usize) -> *mut u8 {
     let bytes = size.checked_mul(num).unwrap();
     let layout = Layout::from_size_align(bytes, 8).unwrap();
     unsafe { GcAllocator.alloc_zeroed(layout) }
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_mem_malloc_atomic(bytes: usize) -> *mut u8 {
+fn evolve_mem_malloc_atomic(bytes: usize) -> *mut u8 {
     let layout = Layout::from_size_align(bytes, 8).unwrap();
     unsafe { GcAllocator.alloc(layout) }
 }
@@ -211,7 +211,7 @@ extern "Rust" fn evolve_mem_malloc_atomic(bytes: usize) -> *mut u8 {
 static ALLOCS: AtomicU64 = AtomicU64::new(0);
 
 #[no_mangle]
-extern "Rust" fn evolve_mem_allocs() -> u64 {
+fn evolve_mem_allocs() -> u64 {
     ALLOCS.load(Relaxed)
 }
 

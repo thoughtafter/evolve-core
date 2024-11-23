@@ -11,20 +11,20 @@
     trait StringMapExt {
         const MIN_CAPACITY: usize = 8;
 
-        extern "Rust" fn evolve_stringmap_new(capacity: usize) -> Object;
-        extern "Rust" fn evolve_stringmap_size(self) -> usize;
-        extern "Rust" fn evolve_stringmap_capacity(self) -> usize;
+        fn evolve_stringmap_new(capacity: usize) -> Object;
+        fn evolve_stringmap_size(self) -> usize;
+        fn evolve_stringmap_capacity(self) -> usize;
         fn string_map(self) -> &'static EvolveStringMap;
-        extern "Rust" fn evolve_stringmap_get(self, key: &str) -> Object;
+        fn evolve_stringmap_get(self, key: &str) -> Object;
         fn string_map_mut(&mut self) -> &'static mut EvolveStringMap;
-        extern "Rust" fn evolve_stringmap_put(self, key: &str, value: Object);
+        fn evolve_stringmap_put(self, key: &str, value: Object);
         // TODO: need to compare objects for equality
-        extern "Rust" fn evolve_stringmap_eq(self, other: Object) -> bool;
+        fn evolve_stringmap_eq(self, other: Object) -> bool;
     }
 
     impl StringMapExt for Object {
         #[no_mangle]
-        extern "Rust" fn evolve_stringmap_new(capacity: usize) -> Object {
+        fn evolve_stringmap_new(capacity: usize) -> Object {
             let capacity = capacity.max(Self::MIN_CAPACITY);
             let hash_builder = RandomState::with_seed(42);
             let string_map = Box::new(EvolveStringMap::with_capacity_and_hasher(
@@ -49,29 +49,29 @@
         }
 
         #[no_mangle]
-        extern "Rust" fn evolve_stringmap_size(self) -> usize {
+        fn evolve_stringmap_size(self) -> usize {
             self.string_map().len()
         }
 
         #[no_mangle]
-        extern "Rust" fn evolve_stringmap_capacity(self) -> usize {
+        fn evolve_stringmap_capacity(self) -> usize {
             self.string_map().capacity()
         }
 
         #[no_mangle]
-        extern "Rust" fn evolve_stringmap_get(self, key: &str) -> Object {
+        fn evolve_stringmap_get(self, key: &str) -> Object {
             let value = self.string_map().get(key).copied().unwrap_or_default();
             value
         }
 
         #[no_mangle]
-        extern "Rust" fn evolve_stringmap_put(mut self, key: &str, value: Object) {
+        fn evolve_stringmap_put(mut self, key: &str, value: Object) {
             self.string_map_mut().insert(key.into(), value);
         }
 
         // TODO: need to compare objects for equality
         #[no_mangle]
-        extern "Rust" fn evolve_stringmap_eq(self, _other: Object) -> bool {
+        fn evolve_stringmap_eq(self, _other: Object) -> bool {
             // let lhs = self.regex();
             // let rhs = other.regex();
             // lhs == rhs

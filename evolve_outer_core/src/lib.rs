@@ -17,6 +17,7 @@ mod regex;
 mod string;
 // #[cfg(feature = "stringmap")]
 // mod stringmap;
+mod gmp_mpfr;
 mod libc_helpers;
 mod map;
 mod misc;

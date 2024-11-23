@@ -12,7 +12,7 @@ const MIN_CAPACITY: usize = 8;
 
 #[allow(dead_code)]
 trait StringMapExt {
-    extern "Rust" fn evolve_map_new(capacity: usize) -> Object;
+    fn evolve_map_new(capacity: usize) -> Object;
     fn map(self) -> &'static EvolveMap;
     fn map_mut(&mut self) -> &'static mut EvolveMap;
     fn map_size(self) -> usize;
@@ -25,7 +25,7 @@ trait StringMapExt {
 
 impl StringMapExt for Object {
     #[no_mangle]
-    extern "Rust" fn evolve_map_new(capacity: usize) -> Object {
+    fn evolve_map_new(capacity: usize) -> Object {
         let map = evolve_map_new_raw(capacity);
         Self::from_ref(MAP_CLASS_ID, map)
     }
@@ -65,7 +65,7 @@ impl StringMapExt for Object {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_map_new_raw(capacity: usize) -> &'static EvolveMap {
+fn evolve_map_new_raw(capacity: usize) -> &'static EvolveMap {
     let capacity = capacity.max(MIN_CAPACITY);
     let hash_builder = RandomState::with_seed(42);
     let map = EvolveMap::with_capacity_and_hasher(capacity, hash_builder);
@@ -73,38 +73,38 @@ extern "Rust" fn evolve_map_new_raw(capacity: usize) -> &'static EvolveMap {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_map_get(map: &EvolveMap, key: Object) -> Object {
+fn evolve_map_get(map: &EvolveMap, key: Object) -> Object {
     map.get(&key).copied().unwrap_or_default()
 }
 
 #[no_mangle]
 #[inline]
-extern "Rust" fn evolve_map_size(map: &EvolveMap) -> usize {
+fn evolve_map_size(map: &EvolveMap) -> usize {
     map.len()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_map_capacity(map: &EvolveMap) -> usize {
+fn evolve_map_capacity(map: &EvolveMap) -> usize {
     map.capacity()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_map_put(map: &mut EvolveMap, key: Object, value: Object) {
+fn evolve_map_put(map: &mut EvolveMap, key: Object, value: Object) {
     map.insert(key, value);
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_map_eq(lhs: &EvolveMap, rhs: &EvolveMap) -> bool {
+fn evolve_map_eq(lhs: &EvolveMap, rhs: &EvolveMap) -> bool {
     lhs == rhs
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_map_keys(map: &EvolveMap) -> Object {
+fn evolve_map_keys(map: &EvolveMap) -> Object {
     EvolveArray::from_iter(map.keys().copied()).into()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_map_values(map: &EvolveMap) -> Object {
+fn evolve_map_values(map: &EvolveMap) -> Object {
     EvolveArray::from_iter(map.values().copied()).into()
 }
 

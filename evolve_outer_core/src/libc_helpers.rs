@@ -6,7 +6,7 @@ use libc_print::{libc_print, libc_println};
 // TODO: allocators-less, probably using writev and iovec
 // libc_print! may not allocate?
 #[no_mangle]
-extern "Rust" fn evolve_puts2(string: &str, newline: &str) -> u64 {
+fn evolve_puts2(string: &str, newline: &str) -> u64 {
     // let ptr = string.as_ptr() as *const c_void;
     // unsafe { libc::write(STDOUT_FILENO, ptr, string.len()); }
     libc_print!("{}{}", string, newline);
@@ -23,19 +23,19 @@ extern "Rust" fn evolve_puts2(string: &str, newline: &str) -> u64 {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_stdout() -> *mut FILE {
+fn evolve_stdout() -> *mut FILE {
     let mode = c"w";
     unsafe { libc::fdopen(libc::STDOUT_FILENO, mode.as_ptr()) }
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_stderr() -> *mut FILE {
+fn evolve_stderr() -> *mut FILE {
     let mode = c"w";
     unsafe { libc::fdopen(libc::STDERR_FILENO, mode.as_ptr()) }
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_stdin() -> *mut FILE {
+fn evolve_stdin() -> *mut FILE {
     let mode = c"r";
     unsafe { libc::fdopen(libc::STDIN_FILENO, mode.as_ptr()) }
 }
@@ -45,7 +45,7 @@ const fn calc(tv: timeval) -> f64 {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_write_resource_usage() {
+fn evolve_write_resource_usage() {
     let mut usage: libc::rusage = unsafe { mem::zeroed() };
     unsafe {
         libc::getrusage(RUSAGE_SELF, &mut usage);
@@ -63,7 +63,7 @@ mod time {
     }
 
     #[no_mangle]
-    extern "Rust" fn evolve_posix_clock_monotonic() -> f64 {
+    fn evolve_posix_clock_monotonic() -> f64 {
         let mut x = timespec {
             tv_sec: 0,
             tv_nsec: 0,

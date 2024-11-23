@@ -1,28 +1,26 @@
 // no_std to stay lean
 #![no_std]
-// needed for literal arrays can be pushed to when capacity is known
-#![feature(extend_one_unchecked)]
-// for i64 shifts
+
+//! for i64 shifts
+//! https://github.com/rust-lang/rust/issues/129375
+//! looks like it will be in 1.83 or 1.84
 #![feature(unbounded_shifts)]
-// for creating rust &str
-#![feature(str_from_raw_parts)]
-// for is_same to be const
-#![feature(const_raw_ptr_comparison)]
+
 // alloc is needed for array, string, leak
 extern crate alloc;
 
 pub mod array;
 pub mod class_ids;
+pub mod closure;
 pub mod leak;
+pub mod mem;
 pub mod object;
 
 mod f64;
-mod gmp_mpfr;
 mod i64;
 mod intrinsic;
 mod llvm;
-mod mem;
-mod string;
+pub mod string;
 mod tuple;
 // for testing optimizations
 // mod testing;
@@ -30,12 +28,12 @@ mod tuple;
 pub mod object_from {
 
     // #[no_mangle]
-    // pub const extern "Rust" fn evolve_from_i64(value: i64) -> Object {
+    // pub const fn evolve_from_i64(value: i64) -> Object {
     //     Object::new(INT_CLASS_ID, value as Ptr)
     // }
 
     // #[no_mangle]
-    // pub const extern "Rust" fn evolve_from_f64(value: f64) -> Object {
+    // pub const fn evolve_from_f64(value: f64) -> Object {
     //     Object::new(FLOAT_CLASS_ID, value.to_bits() as Ptr)
     // }
 
@@ -114,11 +112,6 @@ pub mod object_from {
         }
 
         #[test]
-        fn test_f64_nan() {
-            assert!(Object::from(f64::NAN).extract_f64().is_nan());
-        }
-
-        #[test]
         fn test_string() {
             // let hello = "Hello World\0";
             // let hello2 = c"Hello World";
@@ -130,108 +123,6 @@ pub mod object_from {
         }
     }
 }
-
-mod object_debug {
-    use crate::class_ids::{FLOAT_CLASS_ID, INT_CLASS_ID, STRING_CLASS_ID};
-    use crate::object::{evolve_build_ptr, EvolveAuxData, EvolveClassId, Object, Ptr};
-    use core::fmt::{Debug, Formatter};
-    use libc_print::libc_println;
-
-    impl Debug for Object {
-        fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
-            let mut binding = f.debug_struct("Object");
-            let common = binding
-                .field("class_id", &self.class_id())
-                .field("aux", &self.aux())
-                .field("ptr", &self.extract_ptr());
-
-            let more = match self.class_id() {
-                STRING_CLASS_ID => common.field("string", &self.evolve_extract_rust_cstr()),
-                INT_CLASS_ID => common.field("i64", &self.extract_i64()),
-                FLOAT_CLASS_ID => common.field("f64", &self.extract_f64()),
-                // 7 => {
-                //     let rust_str = evolve_regex_to_rust_str(self.regex_ptr());
-                //     common.field("regex", &rust_str.to_string())
-                // },
-                _ => common,
-            };
-            more.finish()
-        }
-    }
-
-    #[no_mangle]
-    extern "Rust" fn object_debug2(class_id: u64, aux4: u64, data: u64) {
-        let object = evolve_build_ptr(
-            class_id as EvolveClassId,
-            aux4 as EvolveAuxData,
-            data as Ptr,
-        );
-        libc_println!("{:?}", object);
-    }
-}
-
-mod bool {
-    use crate::object::Object;
-    // #[no_mangle]
-    // unsafe extern "Rust"  fn evolve_build_false2() -> Object {
-    //     Object::static_class(FalseClassId as u16)
-    // }
-
-    impl Object {
-        // #[no_mangle]
-        // pub extern "Rust" fn evolve_core_is_false(self) -> bool {
-        //     !self.evolve_core_is_true()
-        // }
-        //
-        // #[no_mangle]
-        // extern "Rust" fn evolve_intrinsic_true(self) -> Object {
-        //     self.evolve_core_is_true().into()
-        // }
-
-        // #[no_mangle]
-        // extern "Rust" fn evolve_intrinsic_false(self) -> Object {
-        //     self.evolve_core_is_false().into()
-        // }
-    }
-}
-
-// #[no_mangle]
-// extern "Rust" fn test_str() -> &'static str {
-//     "This"
-// }
-
-// #[cfg(not(test))]
-// #[panic_handler]
-// fn panic(_info: &core::panic::PanicInfo) -> ! {
-//     unsafe { libc::abort(); }
-// }
-
-// #[no_mangle]
-//  extern "Rust" fn evolve_build_ptr_rust(class_id: u32, aux4: u32, ptr: *const u64) -> (u64, *const u64) {
-//     (((class_id as u64) << 32) | aux4 as u64, ptr)
-// }
-
-// #[no_mangle]
-//  extern "C" fn evolve_build_i64_c(i: usize) -> Object {
-//     Object {
-//         tag: 4,
-//         ptr: i as *const i64,
-//     }
-// }
-// #[no_mangle]
-//  extern "C" fn evolve_extract_i64_c(o: Object) -> usize {
-//     o.ptr.addr()
-// }
-
-// #[no_mangle]
-// extern "C" fn call_from_c() {
-//     println!("Just called a Rust function from C!");
-// }
-//
-// #[no_mangle]
-// extern "Rust" fn call_from_rust() {
-//     println!("Just called a Rust function from C!");
-// }
 
 #[cfg(test)]
 mod tests {

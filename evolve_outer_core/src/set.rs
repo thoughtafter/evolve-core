@@ -8,7 +8,7 @@ type EvolveSet = IndexSet<Object, ahash::RandomState>;
 const MIN_CAPACITY: usize = 8;
 
 #[no_mangle]
-extern "Rust" fn evolve_set_static_new(capacity: usize) -> &'static EvolveSet {
+fn evolve_set_static_new(capacity: usize) -> &'static EvolveSet {
     let capacity = capacity.max(MIN_CAPACITY);
     let hash_builder = RandomState::with_seed(42);
     let set = EvolveSet::with_capacity_and_hasher(capacity, hash_builder);

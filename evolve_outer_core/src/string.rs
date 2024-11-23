@@ -4,7 +4,7 @@
 // use core::ptr::NonNull;
 
 // #[no_mangle]
-// extern "Rust" fn evolve_string_trim_end(value: &str) -> Object {
+// fn evolve_string_trim_end(value: &str) -> Object {
 //     let trimmed = value.trim_end(); // slice
 //     // str_to_safe_object(trimmed)
 //     //trimmed.to_owned().into()
@@ -27,7 +27,7 @@ mod parse_f64 {
     /// could use nan to signal error
     /// or success bool to match similar calls
     /// better than strtod needing to check errno
-    extern "Rust" fn evolve_string_parse_f64(value: &str) -> (f64, bool) {
+    fn evolve_string_parse_f64(value: &str) -> (f64, bool) {
         // let parsed = value.parse::<f64>();
         let parsed = f64::from_str(value);
         match parsed {
@@ -87,7 +87,7 @@ mod parse_i64 {
     /// replace strtoll, no errno
     ///
     #[no_mangle]
-    extern "Rust" fn evolve_string_parse_i64(value: &str, radix: u32) -> (i64, bool) {
+    fn evolve_string_parse_i64(value: &str, radix: u32) -> (i64, bool) {
         let (value, radix) = if radix == 0 {
             auto_radix(value)
         } else {
@@ -140,19 +140,19 @@ mod parse_i64 {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_string_trim_end(value: &str) -> Object {
+fn evolve_string_trim_end(value: &str) -> Object {
     let trimmed = value.trim_end(); // slice
     trimmed.to_string().into()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_string_trim_start(value: &str) -> Object {
+fn evolve_string_trim_start(value: &str) -> Object {
     let trimmed = value.trim_start(); // slice
     trimmed.to_string().into()
 }
 
 #[no_mangle]
-extern "Rust" fn new_string_repeat(value: &str, times: usize) -> Object {
+fn new_string_repeat(value: &str, times: usize) -> Object {
     // let bytes = value.as_bytes();
     // let repeat = bytes.repeat(times);
     // unsafe { CString::from_vec_unchecked(repeat).into() }
@@ -163,7 +163,7 @@ extern "Rust" fn new_string_repeat(value: &str, times: usize) -> Object {
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_string_new_append2(string1: &str, string2: &str) -> Object {
+fn evolve_string_new_append2(string1: &str, string2: &str) -> Object {
     // let mut appended = string1.to_string();
     // appended.push_str(string2);
     // // libc_println!("\"{}\" + \"{}\" == \"{}\"", string1, string2, appended);
@@ -178,7 +178,7 @@ extern "Rust" fn evolve_string_new_append2(string1: &str, string2: &str) -> Obje
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_string_new_append3(string1: &str, string2: &str, string3: &str) -> Object {
+fn evolve_string_new_append3(string1: &str, string2: &str, string3: &str) -> Object {
     let capacity = string1.len() + string2.len() + string3.len();
     let mut buffer = String::with_capacity(capacity);
     buffer.push_str(string1);
@@ -188,17 +188,17 @@ extern "Rust" fn evolve_string_new_append3(string1: &str, string2: &str, string3
 }
 
 #[no_mangle]
-const extern "Rust" fn evolve_string_is_ascii(value: &str) -> bool {
+const fn evolve_string_is_ascii(value: &str) -> bool {
     value.is_ascii()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_string_is_blank(value: &str) -> bool {
+fn evolve_string_is_blank(value: &str) -> bool {
     value.trim().is_empty()
 }
 
 #[no_mangle]
-extern "Rust" fn evolve_string_cmp(lhs: &str, rhs: &str) -> Ordering {
+fn evolve_string_cmp(lhs: &str, rhs: &str) -> Ordering {
     let a = UniCase::new(lhs);
     let b = UniCase::new(rhs);
     a.cmp(&b)

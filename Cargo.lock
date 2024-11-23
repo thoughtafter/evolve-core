@@ -90,12 +90,11 @@ version = "0.1.0"
 name = "evolve_inner_core"
 version = "0.1.0"
 dependencies = [
- "gmp-mpfr-sys",
  "libc",
  "libc-print",
+ "num-traits",
  "ordered-float",
  "pretty_assertions",
- "rug",
  "test-case",
 ]
 
@@ -119,6 +118,7 @@ dependencies = [
  "pretty_assertions",
  "regex",
  "roaring",
+ "rug",
  "ryu",
  "test-case",
  "unicase",
