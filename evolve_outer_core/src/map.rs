@@ -1,3 +1,4 @@
+use alloc::string::ToString;
 use ahash::RandomState;
 
 use evolve_inner_core::array::EvolveArray;
@@ -30,20 +31,20 @@ impl StringMapExt for Object {
         Self::from_ref(MAP_CLASS_ID, map)
     }
 
-    fn map_size(self) -> usize {
-        evolve_map_size(self.map())
-    }
-
-    fn map_capacity(self) -> usize {
-        evolve_map_capacity(self.map())
-    }
-
     fn map(self) -> &'static EvolveMap {
         self.to_ref::<EvolveMap>()
     }
 
     fn map_mut(&mut self) -> &'static mut EvolveMap {
         self.to_mut::<EvolveMap>()
+    }
+
+    fn map_size(self) -> usize {
+        evolve_map_size(self.map())
+    }
+
+    fn map_capacity(self) -> usize {
+        evolve_map_capacity(self.map())
     }
 
     fn map_get(self, key: Object) -> Object {
@@ -55,12 +56,12 @@ impl StringMapExt for Object {
     }
 
     fn map_get_str(self, key: &str) -> Object {
-        self.map_get(key.into())
+        self.map_get(key.to_string().into())
     }
 
     #[allow(unused_mut)]
     fn map_put_str(mut self, key: &str, value: Object) {
-        self.map_put(key.into(), value)
+        self.map_put(key.to_string().into(), value)
     }
 }
 
@@ -194,7 +195,7 @@ mod tests {
         let a = &EvolveArray::from(vec![42.into()]);
         let b = evolve_map_values(&map.map()).array();
         assert_eq!(a, b);
-        let c = &EvolveArray::from(vec!["foo".into()]);
+        let c = &EvolveArray::from(vec!["foo".to_string().into()]);
         let d = evolve_map_keys(&map.map()).array();
         assert_eq!(c, d);
         assert_ne!(vec![Object::from(1)], vec![Object::from(2)]);

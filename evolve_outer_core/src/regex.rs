@@ -1,8 +1,9 @@
+use alloc::borrow::Cow;
+use alloc::string::String;
 use alloc::vec::Vec;
 use evolve_inner_core::class_ids::REGEX_CLASS_ID;
 use evolve_inner_core::leak::leak_heap_ptr;
 use evolve_inner_core::object::{evolve_build_ptr, Object, Ptr};
-use libc_print::libc_println;
 use regex::Regex;
 
 #[allow(dead_code)]
@@ -22,8 +23,8 @@ fn evolve_regex_from_string(string: &str) -> Object {
             let ptr = leak_heap_ptr(regex_ok);
             evolve_build_ptr(REGEX_CLASS_ID, 0, ptr as Ptr)
         }
-        Err(e) => {
-            libc_println!("regex fail: {} {}", string, e);
+        Err(_) => {
+            // libc_println!("regex fail: {} {}", string, e);
 
             Object::null()
         }
@@ -44,13 +45,11 @@ impl RegexExt for Object {
 
     #[no_mangle]
     fn evolve_regex_to_s2(self) -> Object {
-        let re = self.regex();
-        let str = re.as_str();
-        str.into()
+        Object::from_str(self.regex().as_str())
     }
 }
 
-fn evolve_regex_match_raw<'a>(regex: &Regex, string: &'a str) -> Vec<&'a str> {
+fn evolve_regex_match_raw(regex: &Regex, string: &str) -> Vec<String> {
     // let vec = regex
     //     .find_iter(string)
     //     .map(|re| Object::from(re.as_str()))
@@ -60,9 +59,9 @@ fn evolve_regex_match_raw<'a>(regex: &Regex, string: &'a str) -> Vec<&'a str> {
     let captures = regex.captures(string);
 
     if let Some(captures) = captures {
-        let matches = captures.iter().flatten().collect::<Vec<_>>();
-        let strs = matches.iter().map(|c| c.as_str()).collect::<Vec<_>>();
-        strs
+        let matches = captures.iter().flatten();
+        let strings = matches.into_iter().map(|c| c.as_str().into()).collect();
+        strings
     } else {
         [].into()
     }
@@ -83,7 +82,10 @@ fn evolve_regex_match(regex: &Regex, string: &str) -> Object {
 #[no_mangle]
 fn evolve_regex_replace(regex: &Regex, haystack: &str, replacer: &str) -> Object {
     let replaced = regex.replace_all(haystack, replacer);
-    replaced.into()
+    match replaced {
+        Cow::Borrowed(_) => Object::from_str(haystack),
+        Cow::Owned(changed) => changed.into(),
+    }
 }
 
 #[cfg(test)]
@@ -170,7 +172,7 @@ mod tests {
         => vec!["HX1138", "H", "X", "113", "8"];
         "test 1"
     )]
-    fn test_regex_match_raw<'a>(re_str: &str, haystack: &'a str) -> Vec<&'a str> {
+    fn test_regex_match_raw(re_str: &str, haystack: &str) -> Vec<String> {
         let re = Regex::new(re_str).expect("should work");
         evolve_regex_match_raw(&re, haystack)
     }

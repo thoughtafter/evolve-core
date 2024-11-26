@@ -56,15 +56,15 @@ pub mod object_from {
             }
         }
 
-        impl From<Vec<&str>> for Object {
-            fn from(value: Vec<&str>) -> Self {
-                value
-                    .into_iter()
-                    .map(Object::from)
-                    .collect::<Vec<_>>()
-                    .into()
-            }
-        }
+        // impl From<Vec<&str>> for Object {
+        //     fn from(value: Vec<&str>) -> Self {
+        //         value
+        //             .into_iter()
+        //             .map(|value| value.to_owned())
+        //             .collect::<Vec<_>>()
+        //             .into()
+        //     }
+        // }
 
         impl From<Vec<Object>> for Object {
             fn from(value: Vec<Object>) -> Self {
@@ -155,7 +155,7 @@ mod tests {
     #[test]
     fn test_object_from_str() {
         let str = "HELLO";
-        let o = Object::from(str);
+        let o = Object::from_str(str);
         let x: &str = o.into();
         assert_eq!(str, x);
     }
