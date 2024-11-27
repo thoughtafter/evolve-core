@@ -159,7 +159,7 @@ fn new_string_repeat(value: &str, times: usize) -> Object {
     // let mut repeat = bytes.repeat(times);
     // repeat.push(0);
     // unsafe { CString::from_vec_with_nul_unchecked(repeat) }.into()
-    value.repeat(times).into()
+    value.repeat(times).leak().into()
 }
 
 #[no_mangle]
@@ -205,6 +205,7 @@ fn evolve_string_cmp(lhs: &str, rhs: &str) -> Ordering {
 }
 
 mod i64 {
+    use alloc::borrow::ToOwned;
     use evolve_inner_core::object::Object;
     use itoa::Buffer;
 
@@ -212,11 +213,12 @@ mod i64 {
     fn evolve_string_from_i64(value: i64) -> Object {
         let mut buffer = Buffer::new();
         let printed = buffer.format(value);
-        printed.into()
+        printed.to_owned().into()
     }
 }
 
 mod f64 {
+    use alloc::borrow::ToOwned;
     use evolve_inner_core::object::Object;
     use ryu::Buffer;
 
@@ -224,7 +226,7 @@ mod f64 {
     fn evolve_string_from_f64(value: f64) -> Object {
         let mut buffer = Buffer::new();
         let printed = buffer.format(value);
-        printed.into()
+        printed.to_owned().into()
     }
 }
 

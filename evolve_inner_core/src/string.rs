@@ -40,6 +40,11 @@ impl Object {
         Self::with_aux(STRING_CLASS_ID, len, ptr)
     }
 
+    #[inline(always)]
+    pub const fn from_str(value: &str) -> Self {
+        Self::from_string(value.len() as u32, value.as_ptr())
+    }
+
     // https://users.rust-lang.org/t/string-from-raw-parts/50578
     pub const fn extract_str(self) -> &'static str {
         let len = self.aux();
