@@ -22,21 +22,6 @@ impl From<Object> for &str {
     }
 }
 
-/// create object from &str
-/// allocates
-// impl From<&str> for Object {
-//     fn from(value: &str) -> Self {
-//         // let bytes = s.as_bytes();
-//         // slice_from_raw_parts(bytes.as_ptr(), bytes.len());
-//         // evolve_from_string(s.len() as u32, s.as_ptr() as *const _)
-//         // let leaked = value.to_owned().leak().as_str();
-//         // evolve_from_string(leaked.len() as u32, leaked.as_ptr() as *const _)
-//         // value.to_string().into()
-//         // Object::from_string(value.len() as u32, value.as_ptr())
-//         value.to_owned().into()
-//     }
-// }
-
 /// create object from &mut str
 /// has already been leaked
 impl From<&mut str> for Object {
@@ -48,11 +33,8 @@ impl From<&mut str> for Object {
 
 impl From<String> for Object {
     #[export_name = "from_string_to_object"]
-    fn from(s: String) -> Self {
-        let leaked = s.leak();
-        // leaked.deref().into()
-        //Object::from_string(leaked.len() as u32, leaked.as_ptr() as _)
-        leaked.into()
+    fn from(value: String) -> Self {
+        value.leak().into()
     }
 }
 

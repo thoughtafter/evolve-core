@@ -176,4 +176,19 @@ mod tests {
         assert_eq!((-i64::MAX, 0), evolve_i64_checked_div_rem(i64::MAX, -1));
         assert_eq!((-1, -1), evolve_i64_checked_div_rem(i64::MIN, -1));
     }
+
+    #[test]
+    fn test_bit_rotate() {
+        assert_eq!(0x5555555555555555, 0x5555555555555555_i64.rotate_right(2));
+        assert_eq!(0x5555555555555555, 0x5555555555555555_i64.rotate_left(2));
+
+        assert_eq!(-6148914691236517206, 0x5555555555555555_i64.rotate_right(1));
+        assert_eq!(-6148914691236517206, 0x5555555555555555_i64.rotate_left(1));
+
+        assert_eq!(-6148914691236517206, 0x5555555555555555_i64.rotate_right(3));
+        assert_eq!(-6148914691236517206, 0x5555555555555555_i64.rotate_left(3));
+
+        assert_eq!(-0x5555555555555554, -3074457345618258602_i64.rotate_left(1));
+        assert_eq!(0x5555555555555555, 0xaaaaaaaaaaaaaaaa_u64.rotate_right(1))
+    }
 }

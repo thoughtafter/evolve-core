@@ -1,5 +1,5 @@
-use alloc::string::ToString;
 use ahash::RandomState;
+use alloc::string::ToString;
 
 use evolve_inner_core::array::EvolveArray;
 use evolve_inner_core::class_ids::MAP_CLASS_ID;
@@ -107,6 +107,13 @@ fn evolve_map_keys(map: &EvolveMap) -> Object {
 #[no_mangle]
 fn evolve_map_values(map: &EvolveMap) -> Object {
     EvolveArray::from_iter(map.values().copied()).into()
+}
+
+#[export_name = "evolve.map.get.index"]
+fn evolve_map_get_index(map: &EvolveMap, index: usize, tuple: Object) {
+    let pair = map.get_index(index - 1).unwrap_or_default();
+    tuple.tuple_put(1, *(pair.0));
+    tuple.tuple_put(2, *(pair.1));
 }
 
 #[cfg(test)]

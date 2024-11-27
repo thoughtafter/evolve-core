@@ -34,7 +34,7 @@ fn evolve_regex_from_string(string: &str) -> Object {
 impl RegexExt for Object {
     /// get regex reference from object
     fn regex(self) -> &'static Regex {
-        self.to_ref::<Regex>()
+        self.to_ref()
     }
 
     /// see if regex matches string
@@ -55,6 +55,11 @@ fn evolve_regex_match_raw(regex: &Regex, string: &str) -> Vec<String> {
     //     .map(|re| Object::from(re.as_str()))
     //     .collect::<Vec<_>>();
     // vec.into()
+
+    if regex.captures_len() == 1 {
+        let matches = regex.find_iter(string);
+        return matches.map(|c| c.as_str().into()).collect();
+    }
 
     let captures = regex.captures(string);
 
