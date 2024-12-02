@@ -2,16 +2,6 @@ use evolve_inner_core::array::{adjusted_index, EvolveArray};
 use evolve_inner_core::object::Object;
 
 #[no_mangle]
-fn evolve_array_size(array: &EvolveArray) -> usize {
-    array.len()
-}
-
-#[no_mangle]
-fn evolve_array_capacity(array: &EvolveArray) -> usize {
-    array.capacity()
-}
-
-#[no_mangle]
 fn evolve_array_mut_reserve(array: &mut EvolveArray, capacity: usize) {
     array.reserve(capacity);
 }
