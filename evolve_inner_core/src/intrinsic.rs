@@ -43,25 +43,24 @@ pub const fn evolve_intrinsic_is_false(value: Object) -> bool {
     !value.is_true()
 }
 
-// mod indexable {
-//     use crate::object::Object;
-//     use crate::class_ids::{ARRAY_CLASS_ID, TUPLE_CLASS_ID, INT_CLASS_ID};
-//
-//     #[inline(always)]
-//     #[export_name = "evolve.intrinsic2.get"]
-//     fn evolve_intrinsic_get(value: Object, index: Object) -> Object {
-//         if index.tag() != INT_CLASS_ID as u64 {
-//             return Object::null();
-//         }
-//
-//         match value.class_id() {
-//             TUPLE_CLASS_ID => { value.tuple_get(index.extract_i64() as usize)},
-//             ARRAY_CLASS_ID => { value.array_get(index.extract_i64() as usize)},
-//             _ => Object::null(),
-//         }
-//
-//     }
-// }
+mod indexable {
+    use crate::object::Object;
+    use crate::class_ids::{ARRAY_CLASS_ID, TUPLE_CLASS_ID, INT_CLASS_ID};
+
+    #[inline(always)]
+    #[export_name = "evolve.intrinsic2.get"]
+    fn evolve_intrinsic_get(value: Object, index: Object) -> Object {
+        if index.tag() != INT_CLASS_ID as u64 {
+            return Object::intrinsic_fail();
+        }
+
+        match value.class_id() {
+            TUPLE_CLASS_ID => { value.tuple_get(index.extract_i64() as usize)},
+            ARRAY_CLASS_ID => { value.array_get(index.extract_i64() as usize)},
+            _ => Object::intrinsic_fail(),
+        }
+    }
+}
 
 mod closure {
     use crate::class_ids::CLOSURE_CLASS_ID;
