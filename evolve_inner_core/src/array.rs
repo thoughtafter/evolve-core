@@ -40,6 +40,18 @@ pub fn evolve_array_get(array: &EvolveArray, index: usize) -> Object {
     *(array.get(adjusted_index).unwrap_or_default())
 }
 
+#[no_mangle]
+#[inline(always)]
+fn evolve_array_size(array: &EvolveArray) -> usize {
+    array.len()
+}
+
+#[no_mangle]
+#[inline(always)]
+fn evolve_array_capacity(array: &EvolveArray) -> usize {
+    array.capacity()
+}
+
 /// adjust index from 1-index to 0-indexed
 /// 0 case is best handled above
 /// get: should be fine because it will be out of range and this null

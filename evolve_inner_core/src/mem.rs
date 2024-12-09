@@ -52,7 +52,7 @@ unsafe fn evolve_mem_load_i32(ptr: Ptr, offset: isize) -> i32 {
 /// # Safety
 /// caller has to verify this is safe location to read/load from
 #[export_name = "evolve.mem.load.object"]
-pub unsafe fn evolve_mem_load_object(ptr: Ptr, offset: isize) -> Object {
+unsafe fn evolve_mem_load_object(ptr: Ptr, offset: isize) -> Object {
     evolve_mem_gep::<Object>(ptr, offset).read()
 }
 
