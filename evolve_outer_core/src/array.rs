@@ -116,6 +116,4 @@ mod tests {
 
         assert_eq!(Object::from(42), b);
     }
-
-
 }

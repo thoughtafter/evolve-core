@@ -44,8 +44,8 @@ pub const fn evolve_intrinsic_is_false(value: Object) -> bool {
 }
 
 mod indexable {
+    use crate::class_ids::{ARRAY_CLASS_ID, INT_CLASS_ID, TUPLE_CLASS_ID};
     use crate::object::Object;
-    use crate::class_ids::{ARRAY_CLASS_ID, TUPLE_CLASS_ID, INT_CLASS_ID};
 
     #[inline(always)]
     #[export_name = "evolve.intrinsic2.get"]
@@ -55,8 +55,8 @@ mod indexable {
         }
 
         match value.class_id() {
-            TUPLE_CLASS_ID => { value.tuple_get(index.extract_i64() as usize)},
-            ARRAY_CLASS_ID => { value.array_get(index.extract_i64() as usize)},
+            TUPLE_CLASS_ID => value.tuple_get(index.extract_i64() as usize),
+            ARRAY_CLASS_ID => value.array_get(index.extract_i64() as usize),
             _ => Object::intrinsic_fail(),
         }
     }
