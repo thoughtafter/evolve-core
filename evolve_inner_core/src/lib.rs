@@ -1,11 +1,6 @@
 // no_std to stay lean
 #![no_std]
 
-//! for i64 shifts
-//! https://github.com/rust-lang/rust/issues/129375
-//! looks like it will be in 1.83 or 1.84
-#![feature(unbounded_shifts)]
-
 // alloc is needed for array, string, leak
 extern crate alloc;
 
