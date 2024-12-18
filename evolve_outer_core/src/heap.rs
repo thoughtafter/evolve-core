@@ -2,14 +2,19 @@
 #[path = "heap_tests.rs"]
 mod tests;
 
+use evolve_inner_core::leak::leak_heap_ref_mut;
 use evolve_inner_core::object::Object;
 use min_max_heap::MinMaxHeap;
 
 type EvolveHeap = MinMaxHeap<Object>;
 
+const MIN_CAPACITY: usize = 8;
+
 #[no_mangle]
-fn evolve_heap_new(capacity: usize) -> EvolveHeap {
-    EvolveHeap::with_capacity(capacity)
+fn evolve_heap_new(capacity: usize) -> &'static mut EvolveHeap {
+    let capacity = capacity.max(MIN_CAPACITY);
+    let heap = EvolveHeap::with_capacity(capacity);
+    leak_heap_ref_mut(heap)
 }
 
 #[no_mangle]
@@ -64,4 +69,3 @@ fn evolve_heap_push(heap: &mut EvolveHeap, value: Object) {
 //         Object::with_aux(HEAP_CLASS_ID, 0, ptr as Ptr)
 //     }
 // }
-

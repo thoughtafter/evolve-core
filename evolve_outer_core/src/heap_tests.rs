@@ -1,5 +1,5 @@
-use evolve_inner_core::object::Object;
 use crate::heap::EvolveHeap;
+use evolve_inner_core::object::Object;
 
 #[allow(dead_code)]
 trait HeapExt {
