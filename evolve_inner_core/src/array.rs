@@ -61,20 +61,3 @@ fn evolve_array_capacity(array: &EvolveArray) -> usize {
 pub const fn adjusted_index(index: usize) -> usize {
     index.wrapping_sub(1)
 }
-
-impl Object {
-    #[allow(dead_code)]
-    fn array(self) -> &'static EvolveArray {
-        self.to_ref()
-    }
-
-    #[allow(dead_code)]
-    fn array_mut(mut self) -> &'static mut EvolveArray {
-        self.to_mut()
-    }
-
-    #[allow(dead_code)]
-    pub(crate) fn array_get(self, index: usize) -> Object {
-        evolve_array_get(self.array(), index)
-    }
-}
