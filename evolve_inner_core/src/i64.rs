@@ -89,38 +89,137 @@ const fn evolve_i64_nabs(value: i64) -> i64 {
     }
 }
 
-#[no_mangle]
-/// ashr
+/// signed shift right - llvm ashr
 /// - https://llvm.org/docs/LangRef.html#ashr-instruction
+// lhs.unbounded_shr(rhs)
+// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
+// define noundef i64 @evolve_i64_ashr(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 {
+// start:
+//   %narrow = tail call i32 @llvm.umin.i32(i32 %rhs, i32 63)
+//   %.pn = zext nneg i32 %narrow to i64
+//   %_0.sroa.0.0 = ashr i64 %lhs, %.pn
+//   ret i64 %_0.sroa.0.0
+// }
+// current
+// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
+// define noundef i64 @evolve.i64.signed-shift-right(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 personality ptr @rust_eh_personality {
+// start:
+//   %_0.sroa.0.0.sroa.speculated.i = tail call noundef i32 @llvm.umin.i32(i32 %rhs, i32 63)
+//   %0 = zext nneg i32 %_0.sroa.0.0.sroa.speculated.i to i64
+//   %_0 = ashr i64 %lhs, %0
+//   ret i64 %_0
+// }
+#[export_name = "evolve.i64.signed-shift-right"]
 fn evolve_i64_ashr(lhs: i64, rhs: u32) -> i64 {
     // if stabilized:
-    lhs.unbounded_shr(rhs)
+    // lhs.unbounded_shr(rhs)
 
-    // let rhs = rhs.min(63);
-    // lhs >> rhs
+    let rhs = rhs.min(63);
+    lhs.checked_shr(rhs).unwrap_or_default()
 }
 
-#[no_mangle]
-/// lshr - note lhs is u64, but accepts i64
+/// unsigned shift right - llvm lshr - note lhs is u64, but accepts i64
 /// - https://llvm.org/docs/LangRef.html#lshr-instruction
+// lhs.unbounded_shr(rhs)
+// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
+// define noundef i64 @evolve_i64_lshr(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 {
+// start:
+//   %_3 = icmp ult i32 %rhs, 64
+//   %0 = zext nneg i32 %rhs to i64
+//   %1 = lshr i64 %lhs, %0
+//   %_0.sroa.0.0 = select i1 %_3, i64 %1, i64 0
+//   ret i64 %_0.sroa.0.0
+// }
+// current:
+// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
+// define noundef i64 @evolve.i64.unsigned-shift-right(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 personality ptr @rust_eh_personality {
+// start:
+//   %_0.sroa.0.0.sroa.speculated.i = tail call noundef i32 @llvm.umin.i32(i32 %rhs, i32 63)
+//   %0 = zext nneg i32 %_0.sroa.0.0.sroa.speculated.i to i64
+//   %_6 = lshr i64 %lhs, %0
+//   ret i64 %_6
+// }
+#[export_name = "evolve.i64.unsigned-shift-right"]
 fn evolve_i64_lshr(lhs: u64, rhs: u32) -> u64 {
     // if stabilized:
-    lhs.unbounded_shr(rhs)
+    // lhs.unbounded_shr(rhs)
 
-    // lhs.checked_shr(rhs).unwrap_or_default()
+    let rhs = rhs.min(63);
+    lhs.checked_shr(rhs).unwrap_or_default()
 }
 
 // overflowing_shl - checks for overflow of bits, not result
+// was:
+// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
+// define { i64, i1 } @evolve_i64_overflowing_shl(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 {
+// start:
+//   %_9 = icmp ult i32 %rhs, 64
+//   %0 = zext nneg i32 %rhs to i64
+//   %1 = shl i64 %lhs, %0
+//   %shl.sroa.0.0 = select i1 %_9, i64 %1, i64 0
+//   %.pn = select i1 %_9, i64 %0, i64 63
+//   %shr.sroa.0.0 = ashr i64 %shl.sroa.0.0, %.pn
+//   %_7 = icmp ne i64 %shr.sroa.0.0, %lhs
+//   %2 = insertvalue { i64, i1 } poison, i64 %shl.sroa.0.0, 0
+//   %3 = insertvalue { i64, i1 } %2, i1 %_7, 1
+//   ret { i64, i1 } %3
+// }
+// current:
+// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
+// define { i64, i1 } @evolve_i64_overflowing_shl(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 personality ptr @rust_eh_personality {
+// start:
+//   %_0.sroa.0.0.sroa.speculated.i = tail call noundef i32 @llvm.umin.i32(i32 %rhs, i32 63)
+//   %0 = zext nneg i32 %_0.sroa.0.0.sroa.speculated.i to i64
+//   %shl = shl i64 %lhs, %0
+//   %lhs2 = ashr exact i64 %shl, %0
+//   %_6 = icmp ne i64 %lhs2, %lhs
+//   %1 = insertvalue { i64, i1 } poison, i64 %shl, 0
+//   %2 = insertvalue { i64, i1 } %1, i1 %_6, 1
+//   ret { i64, i1 } %2
+// }
 #[no_mangle]
 fn evolve_i64_overflowing_shl(lhs: i64, rhs: u32) -> (i64, bool) {
-    let shl = lhs.unbounded_shl(rhs);
-    let shr = shl.unbounded_shr(rhs);
-    (shl, lhs != shr)
+    let rhs = rhs.min(63);
+    let shl = lhs.checked_shl(rhs).unwrap_or_default();
+    let lhs2 = shl.checked_shr(rhs).unwrap_or_default();
+    (shl, lhs != lhs2)
+    // let shr = shl.unbounded_shr(rhs);
+    // (shl, lhs != shr)
+    // let zeroes = lhs.leading_zeros();
+    // if rhs > zeroes {
+    //     (0, true)
+    // } else {
+    //     (lhs << rhs, false)
+    // }
+    // let shl = lhs.unbounded_shl(rhs);
+    // let shr = shl.unbounded_shr(rhs);
+    // (shl, lhs != shr)
 }
 
 #[no_mangle]
+// lhs.unbounded_shl(rhs)
+// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
+// define noundef i64 @evolve_i64_unbounded_shl(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 {
+// start:
+//   %_3 = icmp ult i32 %rhs, 64
+//   %0 = zext nneg i32 %rhs to i64
+//   %1 = shl i64 %lhs, %0
+//   %_0.sroa.0.0 = select i1 %_3, i64 %1, i64 0
+//   ret i64 %_0.sroa.0.0
+// }
+// current:
+// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
+// define noundef i64 @evolve_i64_unbounded_shl(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 personality ptr @rust_eh_personality {
+// start:
+//   %_0.sroa.0.0.sroa.speculated.i = tail call noundef i32 @llvm.umin.i32(i32 %rhs, i32 63)
+//   %0 = zext nneg i32 %_0.sroa.0.0.sroa.speculated.i to i64
+//   %_6 = shl i64 %lhs, %0
+//   ret i64 %_6
+// }
 fn evolve_i64_unbounded_shl(lhs: i64, rhs: u32) -> i64 {
-    lhs.unbounded_shl(rhs)
+    // lhs.unbounded_shl(rhs)
+    let rhs = rhs.min(63);
+    lhs.checked_shl(rhs).unwrap_or_default()
 }
 
 #[cfg(test)]
