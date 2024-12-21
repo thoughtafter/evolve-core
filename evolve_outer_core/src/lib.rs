@@ -1,6 +1,6 @@
-#![feature(ptr_sub_ptr)]
-#![feature(allocator_api)]
-#![feature(str_as_str)]
+// #![feature(ptr_sub_ptr)]
+// #![feature(allocator_api)]
+// #![feature(str_as_str)]
 #![no_std]
 
 extern crate alloc;

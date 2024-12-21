@@ -4,7 +4,7 @@
 //! for i64 shifts
 //! https://github.com/rust-lang/rust/issues/129375
 //! looks like it will be in 1.84, 1.85
-#![feature(unbounded_shifts)]
+// #![feature(unbounded_shifts)]
 
 // alloc is needed for array, string, leak
 extern crate alloc;
