@@ -209,13 +209,13 @@ fn evolve_i64_overflowing_shl(lhs: i64, rhs: u32) -> (i64, bool) {
 
     // shift of 0 never overflows
     if rhs == 0 {
-        return (lhs, false)
+        return (lhs, false);
     }
 
     // if not 0, any shift of > 63 overflows
     // -1 << 63 is valid
     if rhs > 63 {
-        return (0, true)
+        return (0, true);
     }
 
     let shl = lhs << rhs;
@@ -297,7 +297,10 @@ mod tests {
 
         assert_eq!(evolve_i64_overflowing_shl(1, 1), (2, false));
         assert_eq!(evolve_i64_overflowing_shl(-1, 1), (-2, false));
-        assert_eq!(evolve_i64_overflowing_shl(-1, 63), (-9223372036854775808, false));
+        assert_eq!(
+            evolve_i64_overflowing_shl(-1, 63),
+            (-9223372036854775808, false)
+        );
         assert_eq!(evolve_i64_overflowing_shl(-1, 64), (0, true));
     }
 
