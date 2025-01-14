@@ -179,24 +179,50 @@ fn evolve_i64_lshr(lhs: u64, rhs: u32) -> u64 {
 // }
 #[no_mangle]
 fn evolve_i64_overflowing_shl(lhs: i64, rhs: u32) -> (i64, bool) {
-    let rhs = rhs.min(63);
-    let shl = lhs.checked_shl(rhs).unwrap_or_default();
-    let lhs2 = shl.checked_shr(rhs).unwrap_or_default();
-    (shl, lhs != lhs2)
+    // let rhs = rhs.min(63);
+    // let shl = lhs.checked_shl(rhs).unwrap_or_default();
+    // let lhs2 = shl.checked_shr(rhs).unwrap_or_default();
+    // (shl, lhs != lhs2)
     // let shr = shl.unbounded_shr(rhs);
     // (shl, lhs != shr)
-    // let zeroes = lhs.leading_zeros();
-    // if rhs > zeroes {
-    //     (0, true)
-    // } else {
-    //     (lhs << rhs, false)
+
+    // if rhs == 0 {
+    //     return (lhs, false)
     // }
+    //
+    // let abs = lhs.checked_abs();
+    // if let Some(pos) = abs {
+    //     let zeroes = pos.leading_zeros();
+    //     // (lhs.checked_shl(rhs).unwrap_or_default(), rhs >= zeroes)
+    //     if rhs <= zeroes {
+    //         (lhs << rhs, false)
+    //     } else {
+    //         (0, true)
+    //     }
+    // } else {
+    //     (lhs, rhs != 0)
+    // }
+
     // let shl = lhs.unbounded_shl(rhs);
     // let shr = shl.unbounded_shr(rhs);
     // (shl, lhs != shr)
+
+    // shift of 0 never overflows
+    if rhs == 0 {
+        return (lhs, false)
+    }
+
+    // if not 0, any shift of > 63 overflows
+    // -1 << 63 is valid
+    if rhs > 63 {
+        return (0, true)
+    }
+
+    let shl = lhs << rhs;
+    let shr = shl >> rhs;
+    (shl, lhs != shr)
 }
 
-#[no_mangle]
 // lhs.unbounded_shl(rhs)
 // ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
 // define noundef i64 @evolve_i64_unbounded_shl(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 {
@@ -216,10 +242,18 @@ fn evolve_i64_overflowing_shl(lhs: i64, rhs: u32) -> (i64, bool) {
 //   %_6 = shl i64 %lhs, %0
 //   ret i64 %_6
 // }
+#[no_mangle]
 fn evolve_i64_unbounded_shl(lhs: i64, rhs: u32) -> i64 {
     // lhs.unbounded_shl(rhs)
     let rhs = rhs.min(63);
     lhs.checked_shl(rhs).unwrap_or_default()
+}
+
+#[no_mangle]
+fn evolve_i64_unbounded_shr(lhs: i64, rhs: u32) -> i64 {
+    // lhs.unbounded_shl(rhs)
+    let rhs = rhs.min(63);
+    lhs.checked_shr(rhs).unwrap_or_default()
 }
 
 #[cfg(test)]
@@ -263,6 +297,8 @@ mod tests {
 
         assert_eq!(evolve_i64_overflowing_shl(1, 1), (2, false));
         assert_eq!(evolve_i64_overflowing_shl(-1, 1), (-2, false));
+        assert_eq!(evolve_i64_overflowing_shl(-1, 63), (-9223372036854775808, false));
+        assert_eq!(evolve_i64_overflowing_shl(-1, 64), (0, true));
     }
 
     #[test]
