@@ -35,7 +35,7 @@ evolve_inner_core = { path = "../evolve_inner_core" }
 ctor = {  version = "^0.2", default-features = false }
 pretty_assertions = "^1.4"
 test-case = "^3.3"
-rug = "^1.26"
+rug = "^1.27"
 
 # temporary, probably
 gmp-mpfr-sys = { version = "^1.6", default-features = false, features = ["mpfr"] }
