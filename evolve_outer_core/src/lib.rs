@@ -31,6 +31,21 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
     }
 }
 
+mod debug {
+    use evolve_inner_core::object::{evolve_build_ptr, EvolveAuxData, EvolveClassId, Ptr};
+    use libc_print::libc_println;
+
+    #[no_mangle]
+    fn object_debug2(class_id: u64, aux4: u64, data: u64) {
+        let object = evolve_build_ptr(
+            class_id as EvolveClassId,
+            aux4 as EvolveAuxData,
+            data as Ptr,
+        );
+        libc_println!("{:?}", object);
+    }
+}
+
 // #[lang = "eh_personality"]
 // extern "C" fn rust_eh_personality() {}
 

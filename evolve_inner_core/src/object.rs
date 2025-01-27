@@ -12,7 +12,6 @@ use crate::class_ids::*;
 use core::cmp::Ordering;
 use core::ffi::CStr;
 use core::slice;
-use libc_print::libc_println;
 // use crate::intrinsic;
 // use libc_print::libc_println;
 // #[no_mangle]
@@ -29,8 +28,8 @@ use libc_print::libc_println;
 
 pub type Ptr = *const u8;
 pub type PtrMut = *mut u8;
-pub(crate) type EvolveClassId = u16;
-pub(crate) type EvolveAuxData = u32;
+pub type EvolveClassId = u16;
+pub type EvolveAuxData = u32;
 
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -337,16 +336,6 @@ impl Ord for Object {
 
         tag_cmp(*self, *other)
     }
-}
-
-#[no_mangle]
-fn object_debug2(class_id: u64, aux4: u64, data: u64) {
-    let object = evolve_build_ptr(
-        class_id as EvolveClassId,
-        aux4 as EvolveAuxData,
-        data as Ptr,
-    );
-    libc_println!("{:?}", object);
 }
 
 #[export_name = "evolve.from.ptr.app"]

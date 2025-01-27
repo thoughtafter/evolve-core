@@ -1,3 +1,7 @@
+#[cfg(test)]
+#[path = "llvm_tests.rs"]
+mod tests;
+
 /// `%_0 = sitofp i64 %value to double`
 /// never poison: https://llvm.org/docs/LangRef.html#sitofp-to-instruction
 /// round using default round mode
@@ -11,39 +15,26 @@ pub const fn evolve_llvm_sitofp(value: i64) -> f64 {
 /// may be poison: https://llvm.org/docs/LangRef.html#fptosi-to-instruction
 #[no_mangle]
 #[inline(always)]
+// TODO: const
 fn evolve_llvm_fptosi(value: f64) -> i64 {
     unsafe { value.to_int_unchecked::<i64>() }
 }
 
-pub mod depends_num_traits {
-
-    use num_traits::cast::FromPrimitive;
-
-    #[no_mangle]
-    #[inline(always)]
-    // TODO: const
-    pub fn evolve_llvm_fptosi_checked(value: f64) -> (i64, bool) {
-        // if value >= i64::MIN as f64 && value <= i64::MAX as f64 {
-        //     // (evolve_llvm_fptosi(value), false)
-        //     (value as i64, false)
-        // } else {
-        //     (0, true)
-        // }
-        let convert = i64::from_f64(value);
-        match convert {
-            Some(i64) => (i64, false),
-            None => (0, true),
-        }
-    }
-
-    #[no_mangle]
-    #[inline(always)]
-    pub fn evolve_llvm_sitofp_checked(value: i64) -> (f64, bool) {
-        let convert = f64::from_i64(value);
-        match convert {
-            Some(i64) => (i64, false),
-            None => (0.0, true),
-        }
+/// fptosi checked
+// i64 will never be poison
+// why < instead of <= MAX?
+// - conforms with num_traits
+// - eliminates problems with positive and negative conversions not matching
+// the range is -9223372036854775808 to 9223372036854774784
+#[no_mangle]
+#[inline(always)]
+// TODO: const
+pub fn evolve_llvm_fptosi_checked(value: f64) -> (i64, bool) {
+    if value >= i64::MIN as f64 && value < i64::MAX as f64 {
+        (evolve_llvm_fptosi(value), false)
+        // (value as i64, false) // saturated
+    } else {
+        (0, true)
     }
 }
 

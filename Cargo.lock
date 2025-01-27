@@ -90,9 +90,6 @@ version = "0.2.0"
 name = "evolve_inner_core"
 version = "0.1.0"
 dependencies = [
- "libc",
- "libc-print",
- "num-traits",
  "ordered-float",
  "pretty_assertions",
  "test-case",

@@ -96,7 +96,7 @@ mod closure {
 
 mod convert {
     use crate::class_ids::*;
-    use crate::llvm::depends_num_traits::evolve_llvm_fptosi_checked;
+    use crate::llvm::evolve_llvm_fptosi_checked;
     use crate::llvm::evolve_llvm_sitofp;
     use crate::object::Object;
 
