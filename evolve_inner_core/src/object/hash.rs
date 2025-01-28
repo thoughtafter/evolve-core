@@ -1,6 +1,5 @@
 use super::*;
 use core::hash::{Hash, Hasher};
-use libc_print::libc_println;
 
 impl Hash for Object {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -17,7 +16,7 @@ impl Hash for Object {
             //     // self.extract_f64().to_string().hash(state);
             // }
             _ => {
-                libc_println!("CANNOT HASH THIS TYPE: {}", class_id);
+                // libc_println!("CANNOT HASH THIS TYPE: {}", class_id);
                 class_id.hash(state);
             }
         };
