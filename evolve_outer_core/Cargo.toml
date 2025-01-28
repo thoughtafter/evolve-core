@@ -22,7 +22,7 @@ mimalloc = { version = "0.1.43", optional = true }
 min-max-heap = { git = "https://github.com/thoughtafter/min-max-heap-rs", default-features = false, branch = "no_std-support", optional = true }
 roaring = { version = "0.10.10",  default-features = false }
 unicase = { version = "2.8.1",  default-features = false }
-ryu = { version = "1.0.18",  default-features = false }
+ryu = { version = "1.0.19",  default-features = false }
 itoa = { version = "1.0.14",  default-features = false, features = ["no-panic"] }
 
 evolve_inner_core = { path = "../evolve_inner_core" }
