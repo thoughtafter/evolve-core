@@ -8,31 +8,41 @@ edition = "2021"
 
 [dependencies]
 # no-std
-ahash = { version = "^0.8", default-features = false, optional = true }
-hashbrown = { version = "^0.15", default-features = false, optional = true }
-indexmap = { version = "^2.7",default-features = false, optional = true }
 libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"] }
 libc-print = {  version = "^0.1", default-features = false }
 gmp-mpfr-sys = { version = "^1.6", default-features = false, features = ["mpfr"] }
-regex = { version = "^1.11", default-features = false, optional = true, features = ["unicode-perl"] }
+evolve_inner_core = { path = "../evolve_inner_core" }
+ordered-float = { version = "4.6.0", default-features = false }
+smallvec = { version = "1.13.2", default-features = false }
+
+# data structures
+ahash = { version = "^0.8", default-features = false }
+hashbrown = { version = "^0.15", default-features = false }
+indexmap = { version = "^2.7",default-features = false }
+regex = { version = "^1.11", default-features = false, features = ["unicode-perl"] }
+# min-max-heap = { version = "1.3.0",  default-features = false, optional = true }
+min-max-heap = { git = "https://github.com/thoughtafter/min-max-heap-rs", default-features = false, branch = "no_std-support"  }
+roaring = { version = "0.10.10",  default-features = false }
+
+# strings
+lexical = {  version = "7.0.4", default-features = false, features = ["radix", "parse-floats", "parse-integers", "write-floats", "write-integers"] }
+#lexical-core = { version = "1.0.5", default-features = false, features = ["write-floats", "write-integers"] }
+ryu = { version = "1.0.19",  default-features = false }
+itoa = { version = "1.0.14",  default-features = false, features = ["no-panic"] }
+unicase = { version = "2.8.1",  default-features = false }
+
+# allocators
 bdwgc-alloc = { version = "0.6.9", default-features = false, features = ["cmake"], optional = true}
 libc_alloc = { version = "1.0.7", default-features = false, optional = true }
 mimalloc = { version = "0.1.43", optional = true }
-# min-max-heap = { version = "1.3.0",  default-features = false, optional = true }
-min-max-heap = { git = "https://github.com/thoughtafter/min-max-heap-rs", default-features = false, branch = "no_std-support", optional = true }
-roaring = { version = "0.10.10",  default-features = false }
-unicase = { version = "2.8.1",  default-features = false }
-ryu = { version = "1.0.19",  default-features = false }
-itoa = { version = "1.0.14",  default-features = false, features = ["no-panic"] }
 
-evolve_inner_core = { path = "../evolve_inner_core" }
 #inject_global_allocator = { path = "../inject_global_allocator", optional = true }
 # std
 # llvm-sys = { version = "191.0.0-rc1", default-features = false }
 # postgres = { version = "0.19.8", default-features = false }
 
 [dev-dependencies]
-ctor = {  version = "^0.2", default-features = false }
+ctor = { version = "^0.2", default-features = false }
 pretty_assertions = "^1.4"
 test-case = "^3.3"
 rug = "^1.27"
@@ -41,17 +51,12 @@ rug = "^1.27"
 gmp-mpfr-sys = { version = "^1.6", default-features = false, features = ["mpfr"] }
 
 [features]
-default = ["string", "stringmap", "regex", "min_max_heap"]
-regex = ["dep:regex"]
-string = []
-stringmap = ["dep:indexmap", "dep:ahash", "dep:hashbrown"]
+default = []
 bdwgc_alloc = ["dep:bdwgc-alloc"]
 libgc_alloc = []
 libc_alloc = ["dep:libc_alloc"]
 mimalloc_alloc = ["dep:mimalloc", "redirect_malloc"]
 redirect_malloc = []
-min_max_heap = ["dep:min-max-heap"]
-binary_heap = []
 
 [profile.release]
 lto = "fat"

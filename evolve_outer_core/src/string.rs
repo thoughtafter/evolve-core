@@ -1,3 +1,7 @@
+#[cfg(test)]
+#[path = "string_tests.rs"]
+mod tests;
+
 // use crate::libgc::GC_malloc_atomic_ignore_off_page;
 // use core::alloc::{AllocError, Allocator, Layout};
 // use core::ptr;
@@ -19,49 +23,62 @@ use core::cmp::Ordering;
 use evolve_inner_core::object::Object;
 use unicase::UniCase;
 
-mod parse_f64 {
+pub mod parse_f64 {
+    use alloc::ffi::CString;
+    use core::ptr::null;
     use core::str::FromStr;
+    use libc::c_char;
+    use ordered_float::OrderedFloat;
 
-    #[no_mangle]
+    fn handle_errors(_original_str: &str, value: f64) -> (OrderedFloat<f64>, bool) {
+        match value {
+            f64::INFINITY | f64::NEG_INFINITY => (OrderedFloat(value), true),
+            _ if value.is_nan() => (OrderedFloat(value), false),
+            _ => (OrderedFloat(value), false),
+        }
+    }
+
     /// return f64 from string, replace strtod
     /// could use nan to signal error
     /// or success bool to match similar calls
     /// better than strtod needing to check errno
-    fn evolve_string_parse_f64(value: &str) -> (f64, bool) {
+    #[export_name = "evolve_string_parse_f64"]
+    pub fn string_parse_f64_core(text: &str) -> (OrderedFloat<f64>, bool) {
         // let parsed = value.parse::<f64>();
-        let parsed = f64::from_str(value);
+        let parsed = f64::from_str(text);
         match parsed {
-            Ok(f64::INFINITY) => (f64::INFINITY, true),
-            Ok(f64::NEG_INFINITY) => (f64::NEG_INFINITY, true),
-            Ok(value) => (value, false),
-            Err(_) => (0.0, true),
+            Ok(result) => handle_errors(text, result),
+            Err(_) => (OrderedFloat(f64::NAN), true),
         }
     }
 
-    #[cfg(test)]
-    mod tests {
-        use super::*;
-        use test_case::test_case;
+    // errno set when out of range
+    #[allow(dead_code)]
+    pub fn string_parse_f64_strtod(value: &str) -> (OrderedFloat<f64>, bool) {
+        let nul_terminated = CString::new(value);
 
-        #[test_case("0" => (0.0, false))]
-        #[test_case("+1.7976931348623157e+308" => (f64::MAX, false))]
-        #[test_case("-1.7976931348623157e+308" => (f64::MIN, false))]
-        #[test_case("+2.2250738585072014e-308" => (f64::MIN_POSITIVE, false))]
-        #[test_case("inf" => (f64::INFINITY, true))]
-        #[test_case("1e500" => (f64::INFINITY, true))]
-        #[test_case("-inf" => (f64::NEG_INFINITY, true))]
-        #[test_case("-1e500" => (f64::NEG_INFINITY, true))]
-        fn test_parse_f64(value: &str) -> (f64, bool) {
-            let parsed = evolve_string_parse_f64(value);
-            assert!(!parsed.0.is_nan());
-            parsed
+        match nul_terminated {
+            Ok(nul_terminated) => {
+                let result = unsafe {
+                    libc::strtod(
+                        nul_terminated.into_raw(),
+                        null::<c_char>() as *mut *mut c_char,
+                    )
+                };
+                let errno = unsafe { *libc::__errno_location() };
+                let flag = errno != 0;
+                (OrderedFloat(result), flag)
+            }
+            Err(_) => (OrderedFloat(f64::NAN), true),
         }
+    }
 
-        #[test]
-        fn test_parse_f64_nan() {
-            let parsed = evolve_string_parse_f64("NaN");
-            assert!(parsed.0.is_nan());
-            assert_eq!(parsed.1, false);
+    #[allow(dead_code)]
+    pub fn string_parse_f64_lexical(text: &str) -> (OrderedFloat<f64>, bool) {
+        let parsed = lexical::parse::<f64, _>(text.as_bytes());
+        match parsed {
+            Ok(result) => handle_errors(text, result),
+            Err(_) => (OrderedFloat(f64::NAN), true),
         }
     }
 }
@@ -86,8 +103,8 @@ mod parse_i64 {
     /// return i64 from string
     /// replace strtoll, no errno
     ///
-    #[no_mangle]
-    fn evolve_string_parse_i64(value: &str, radix: u32) -> (i64, bool) {
+    #[export_name = "evolve_string_parse_i64"]
+    pub fn string_parse_i64_core(value: &str, radix: u32) -> (i64, bool) {
         let (value, radix) = if radix == 0 {
             auto_radix(value)
         } else {
@@ -102,39 +119,16 @@ mod parse_i64 {
             Err(_) => (0, true),
         }
     }
-    #[cfg(test)]
-    mod tests {
-        use super::*;
 
-        #[test]
-        fn test_i64_radix() {
-            assert_eq!(i64::from_str_radix("A", 16), Ok(10));
-            // assert_eq!(i64::from_str_radix("-0xa", 16), Ok(10));
-        }
+    #[allow(dead_code)]
+    pub fn string_parse_i64_lexical(text: &str, _radix: u32) -> (i64, bool) {
+        // const FORMAT: u128 = NumberFormatBuilder::from_radix(radix);
+        // let parsed = lexical::parse_with_options<i64, _>(text, );
+        let parsed = lexical::parse::<i64, _>(text.as_bytes());
 
-        #[test]
-        fn test_evolve_string_parse_i64_hex() {
-            assert_eq!((255, false), evolve_string_parse_i64("0xff", 0));
-            assert_eq!((255, false), evolve_string_parse_i64("+0xff", 0));
-            // TODO: assert_eq!((-255, false), evolve_string_parse_i64("-0xff", 0));
-
-            assert_eq!((255, false), evolve_string_parse_i64("ff", 16));
-            assert_eq!((255, false), evolve_string_parse_i64("+ff", 16));
-            assert_eq!((-255, false), evolve_string_parse_i64("-ff", 16));
-
-            // TODO:
-            // assert_eq!((255, false), evolve_string_parse_i64("0xff", 16));
-        }
-
-        #[test]
-        fn test_evolve_string_parse_i64_bin() {
-            assert_eq!((7, false), evolve_string_parse_i64("111", 2));
-            assert_eq!((7, false), evolve_string_parse_i64("+111", 2));
-            assert_eq!((-7, false), evolve_string_parse_i64("-111", 2));
-
-            // TODO:
-            // assert_eq!((7, false), evolve_string_parse_i64("0b111", 0));
-            // assert_eq!((7, false), evolve_string_parse_i64("0b111", 2));
+        match parsed {
+            Ok(result) => (result, false),
+            Err(_) => (0, true),
         }
     }
 }
@@ -206,134 +200,53 @@ fn evolve_string_cmp(lhs: &str, rhs: &str) -> Ordering {
 
 mod i64 {
     use alloc::borrow::ToOwned;
+    use alloc::string::ToString;
     use evolve_inner_core::object::Object;
     use itoa::Buffer;
 
-    #[export_name = "evolve.string.from.i64"]
-    fn evolve_string_from_i64(value: i64) -> Object {
+    #[allow(dead_code)]
+    // extra allocations
+    fn string_from_i64_core(value: i64) -> Object {
+        let string = value.to_string();
+        string.into()
+    }
+
+    #[allow(dead_code)]
+    fn evolve_string_from_i64_itoa(value: i64) -> Object {
         let mut buffer = Buffer::new();
         let printed = buffer.format(value);
         printed.to_owned().into()
     }
+
+    #[allow(dead_code)]
+    #[export_name = "evolve.string.from.i64"]
+    fn string_from_i64_lexical(value: i64) -> Object {
+        lexical::to_string(value).into()
+    }
 }
 
-mod f64 {
+pub mod f64 {
     use alloc::borrow::ToOwned;
+    use alloc::string::ToString;
     use evolve_inner_core::object::Object;
     use ryu::Buffer;
 
-    #[export_name = "evolve.string.from.f64"]
-    fn evolve_string_from_f64(value: f64) -> Object {
+    #[allow(dead_code)]
+    fn string_from_f64_core(value: f64) -> Object {
+        let string = value.to_string();
+        string.into()
+    }
+
+    #[allow(dead_code)]
+    fn string_from_f64_ryu(value: f64) -> Object {
         let mut buffer = Buffer::new();
         let printed = buffer.format(value);
         printed.to_owned().into()
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use test_case::test_case;
-
-    use alloc::borrow::ToOwned;
-    use alloc::boxed::Box;
-    use alloc::ffi::CString;
-    use alloc::string::{String, ToString};
-    use Ordering::*;
-
-    #[test]
-    fn test_lowlevel() {
-        let str = "evolve";
-        let x = str;
-        assert_eq!(str.as_ptr(), x.as_ptr());
-
-        // cloning the reference
-        // let clone = str.clone();
-        // assert_eq!(str.as_ptr(), clone.as_ptr());
-
-        // new but dropped
-        let string = str.to_string();
-        assert_ne!(str.as_ptr(), string.as_str().as_ptr());
-
-        // new but dropped
-        let owned = str.to_owned();
-        assert_ne!(str.as_ptr(), owned.as_str().as_ptr());
-
-        // boxed, raw, box duplicates reference
-        let raw = Box::into_raw(Box::new(str));
-        assert_eq!(str.as_ptr(), unsafe { *raw }.as_ptr());
-
-        // to_string + leak
-        let string = str.to_string();
-        let save = string.as_str().as_ptr();
-        assert_ne!(str.as_ptr(), save);
-        let box_string = Box::new(string);
-        assert_eq!(save, box_string.as_ptr());
-        let leak_string = Box::leak(box_string);
-        assert_eq!(save, leak_string.as_ptr());
-        assert_ne!(str.as_ptr(), leak_string.as_str().as_ptr());
-
-        // to_owned + leak
-        let owned = str.to_owned();
-        let save = owned.as_str().as_ptr();
-        assert_ne!(str.as_ptr(), save);
-        let box_string = Box::new(owned);
-        assert_eq!(save, box_string.as_ptr());
-        let leak_string = Box::leak(box_string);
-        assert_eq!(save, leak_string.as_ptr());
-
-        let c_string = CString::new(str).unwrap();
-        let _ptr = c_string.as_ptr();
-        assert_eq!(str.to_string(), c_string.to_string_lossy());
-    }
-
-    #[test]
-    fn test_trim_end() {
-        // let o = {
-        //     let x =
-        //     let o = evolve_string_trim_end(x);
-        //     x.zeroize();
-        //     o
-        //  };
-        let str = "Hello, world!    ";
-        let obj = evolve_string_trim_end(str);
-        // let extract = obj.evolve_extract_rust_cstr();
-        // assert_eq!(c"Hello, world!", extract);
-        let extract = String::from(obj);
-        assert_eq!("Hello, world!", extract);
-        assert_ne!(obj.extract_ptr(), str.as_ptr());
-    }
-
-    #[test]
-    fn test_trim_start() {
-        // let o = {
-        //     let x =
-        //     let o = evolve_string_trim_end(x);
-        //     x.zeroize();
-        //     o
-        //  };
-        let str = "        Hello, world!";
-        let obj = evolve_string_trim_start(str);
-        let extract = String::from(obj);
-        assert_eq!("Hello, world!", extract);
-
-        // let new_ptr = obj.evolve_extract_ptr();
-        // let old_ptr = str.as_ptr();
-        // let diff = unsafe {
-        //     if new_ptr > old_ptr {
-        //         new_ptr.sub_ptr(old_ptr)
-        //     } else {
-        //         old_ptr.sub_ptr(new_ptr)
-        //     }
-        // };
-        // assert_ne!(8, diff);
-        // assert_eq!(8, diff);
-    }
-
-    #[test_case("Hello, world!", Equal, "HEllO, wOrld!")]
-    #[test_case("11", Less, "12")]
-    #[test_case("12", Greater, "11")]
-    fn test_string_cmp(lhs: &str, order: Ordering, rhs: &str) {
-        assert_eq!(order, evolve_string_cmp(lhs, rhs))
+    #[allow(dead_code)]
+    #[export_name = "evolve.string.from.f64"]
+    fn string_from_f64_lexical(value: f64) -> Object {
+        lexical::to_string(value).into()
     }
 }

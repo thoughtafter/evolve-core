@@ -47,7 +47,7 @@ pub fn evolve_llvm_fptosi_checked(value: f64) -> (i64, bool) {
 /// - https://llvm.org/docs/LangRef.html#and-instruction
 #[no_mangle]
 #[inline(always)]
-fn evolve_llvm_and(lhs: i64, rhs: i64) -> i64 {
+const fn evolve_llvm_and(lhs: i64, rhs: i64) -> i64 {
     lhs & rhs
 }
 
@@ -56,7 +56,7 @@ fn evolve_llvm_and(lhs: i64, rhs: i64) -> i64 {
 /// - https://llvm.org/docs/LangRef.html#or-instruction
 #[no_mangle]
 #[inline(always)]
-fn evolve_llvm_or(lhs: i64, rhs: i64) -> i64 {
+const fn evolve_llvm_or(lhs: i64, rhs: i64) -> i64 {
     lhs | rhs
 }
 
@@ -65,48 +65,48 @@ fn evolve_llvm_or(lhs: i64, rhs: i64) -> i64 {
 /// - https://llvm.org/docs/LangRef.html#xor-instruction
 #[no_mangle]
 #[inline(always)]
-fn evolve_llvm_xor(lhs: i64, rhs: i64) -> i64 {
+const fn evolve_llvm_xor(lhs: i64, rhs: i64) -> i64 {
     lhs ^ rhs
 }
 
 #[no_mangle]
 #[inline(always)]
 /// `%_0 = fneg double %value`
-fn evolve_llvm_fneg(value: f64) -> f64 {
+const fn evolve_llvm_fneg(value: f64) -> f64 {
     -value
 }
 
 #[no_mangle]
 #[inline(always)]
 /// `%_0 = fadd double %lhs, %rhs`
-fn evolve_llvm_fadd(lhs: f64, rhs: f64) -> f64 {
+const fn evolve_llvm_fadd(lhs: f64, rhs: f64) -> f64 {
     lhs + rhs
 }
 
 #[no_mangle]
 #[inline(always)]
 /// `%_0 = fsub double %lhs, %rhs`
-fn evolve_llvm_fsub(lhs: f64, rhs: f64) -> f64 {
+const fn evolve_llvm_fsub(lhs: f64, rhs: f64) -> f64 {
     lhs - rhs
 }
 
 #[no_mangle]
 #[inline(always)]
 /// `%_0 = fmul double %lhs, %rhs`
-fn evolve_llvm_fmul(lhs: f64, rhs: f64) -> f64 {
+const fn evolve_llvm_fmul(lhs: f64, rhs: f64) -> f64 {
     lhs * rhs
 }
 
 #[no_mangle]
 #[inline(always)]
 /// `%_0 = fdiv double %lhs, %rhs`
-fn evolve_llvm_fdiv(lhs: f64, rhs: f64) -> f64 {
+const fn evolve_llvm_fdiv(lhs: f64, rhs: f64) -> f64 {
     lhs / rhs
 }
 
 #[no_mangle]
 #[inline(always)]
 /// `%_0 = frem double %lhs, %rhs`
-fn evolve_llvm_frem(lhs: f64, rhs: f64) -> f64 {
+const fn evolve_llvm_frem(lhs: f64, rhs: f64) -> f64 {
     lhs % rhs
 }

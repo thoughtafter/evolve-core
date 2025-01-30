@@ -1,43 +1,84 @@
-// use alloc::ffi::CString;
+use core::ffi::c_void;
 use core::mem;
 use libc::{timeval, FILE, RUSAGE_SELF};
-use libc_print::{libc_print, libc_println};
+use ryu::Buffer;
+use smallvec::SmallVec;
 
-// TODO: allocators-less, probably using writev and iovec
-// libc_print! may not allocate?
-#[no_mangle]
-fn evolve_puts2(string: &str, newline: &str) -> u64 {
-    // let ptr = string.as_ptr() as *const c_void;
-    // unsafe { libc::write(STDOUT_FILENO, ptr, string.len()); }
-    libc_print!("{}{}", string, newline);
-    0
-    //let output = format!("{}{}", string, newline);
-    //fwrite(file, )
-    // let iov = libc::iovec { iov_base: string.as_ptr() as *mut c_void, iov_len: string.len() };
-    //
-    // let count = unsafe {
-    //     libc::writev(libc::STDOUT_FILENO, &iov, 1)
-    // };
-    //
-    // count as u64
+#[export_name = "evolve_puts2"]
+/// puts 2 &str using writev
+/// this is very efficient, assuming writev is efficient
+/// writev is atomic
+/// currently no error checking - will return -1 on error
+/// writes to stdout
+// #[inline(always)]
+pub fn puts2_writev(string: &str, newline: &str) -> u64 {
+    // writev(&[string, newline])
+    let iov = [
+        libc::iovec {
+            iov_base: string.as_ptr() as *mut c_void,
+            iov_len: string.len(),
+        },
+        libc::iovec {
+            iov_base: newline.as_ptr() as *mut c_void,
+            iov_len: newline.len(),
+        },
+    ];
+
+    let count = unsafe { libc::writev(libc::STDOUT_FILENO, &iov as *const libc::iovec, 2) };
+
+    count as u64
+}
+
+#[export_name = "evolve.puts"]
+// #[inline(always)]
+fn evolve_puts(string: &str) -> u64 {
+    puts2_writev(string, "\n")
+}
+
+// fn writev(strings: &[&str]) -> u64 {
+//     let iov = strings.iter().map(|s| {
+//         libc::iovec {
+//             iov_base: s.as_ptr() as *mut c_void,
+//             iov_len: s.len(),
+//         }
+//     }).collect::<[libc::iovec]>();
+//     let iovcnt = iov.len() as libc::c_int;
+//     let iov = iov.as_ptr();
+//     let count = unsafe { libc::writev(libc::STDOUT_FILENO, iov, iovcnt) };
+//     count as u64
+// }
+
+#[inline(always)]
+fn writev(strings: &[&str]) -> u64 {
+    let iov: SmallVec<[libc::iovec; 8]> = strings
+        .iter()
+        .map(|s| libc::iovec {
+            iov_base: s.as_ptr() as *mut c_void,
+            iov_len: s.len(),
+        })
+        .collect();
+    let iovcnt = iov.len() as libc::c_int;
+    let iov = iov.as_ptr();
+    let count = unsafe { libc::writev(libc::STDOUT_FILENO, iov, iovcnt) };
+    count as u64
 }
 
 #[no_mangle]
 fn evolve_stdout() -> *mut FILE {
-    let mode = c"w";
-    unsafe { libc::fdopen(libc::STDOUT_FILENO, mode.as_ptr()) }
+    let mode = c"w".as_ptr();
+    unsafe { libc::fdopen(libc::STDOUT_FILENO, mode) }
 }
 
 #[no_mangle]
 fn evolve_stderr() -> *mut FILE {
-    let mode = c"w";
-    unsafe { libc::fdopen(libc::STDERR_FILENO, mode.as_ptr()) }
+    let mode = c"w".as_ptr();
+    unsafe { libc::fdopen(libc::STDERR_FILENO, mode) }
 }
 
 #[no_mangle]
 fn evolve_stdin() -> *mut FILE {
-    let mode = c"r";
-    unsafe { libc::fdopen(libc::STDIN_FILENO, mode.as_ptr()) }
+    let mode = c"r".as_ptr();
+    unsafe { libc::fdopen(libc::STDIN_FILENO, mode) }
 }
 
 const fn calc(tv: timeval) -> f64 {
@@ -52,7 +93,17 @@ fn evolve_write_resource_usage() {
     }
     let utime = calc(usage.ru_utime);
     let stime = calc(usage.ru_stime);
-    libc_println!("user: {} kernel: {}", utime, stime);
+    // let x = format!("user: {} kernel: {}", utime, stime);
+    let mut buffer = Buffer::new();
+    let utime = buffer.format(utime);
+    let mut buffer = Buffer::new();
+    let stime = buffer.format(stime);
+
+    let strings = ["user: ", utime, "kernel: ", stime, "\n"];
+
+    writev(&strings);
+
+    // puts2_writev(&x, "\n");
 }
 
 mod time {
