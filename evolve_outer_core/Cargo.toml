@@ -27,6 +27,7 @@ itoa = { version = "1.0.14",  default-features = false, features = ["no-panic"] 
 
 evolve_inner_core = { path = "../evolve_inner_core" }
 lexical = {  version = "7.0.4", default-features = false, features = ["radix", "parse-floats", "parse-integers", "write-floats", "write-integers"] }
+#lexical-core = { version = "1.0.5", default-features = false, features = ["write-floats", "write-integers"] }
 ordered-float = { version = "4.6.0", default-features = false }
 #inject_global_allocator = { path = "../inject_global_allocator", optional = true }
 # std

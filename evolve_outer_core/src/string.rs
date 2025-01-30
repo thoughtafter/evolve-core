@@ -53,7 +53,7 @@ pub mod parse_f64 {
     }
 
     // errno set when out of range
-    #[allow(unused)]
+    #[allow(dead_code)]
     pub fn string_parse_f64_strtod(value: &str) -> (OrderedFloat<f64>, bool) {
         let nul_terminated = CString::new(value);
 
@@ -73,7 +73,7 @@ pub mod parse_f64 {
         }
     }
 
-    #[allow(unused)]
+    #[allow(dead_code)]
     pub fn string_parse_f64_lexical(text: &str) -> (OrderedFloat<f64>, bool) {
         let parsed = lexical::parse::<f64, _>(text.as_bytes());
         match parsed {
@@ -120,8 +120,8 @@ mod parse_i64 {
         }
     }
 
-    #[allow(unused)]
-    pub fn string_parse_i64_lexical(text: &str, radix: u32) -> (i64, bool) {
+    #[allow(dead_code)]
+    pub fn string_parse_i64_lexical(text: &str, _radix: u32) -> (i64, bool) {
         // const FORMAT: u128 = NumberFormatBuilder::from_radix(radix);
         // let parsed = lexical::parse_with_options<i64, _>(text, );
         let parsed = lexical::parse::<i64, _>(text.as_bytes());
@@ -204,20 +204,22 @@ mod i64 {
     use evolve_inner_core::object::Object;
     use itoa::Buffer;
 
-    #[export_name = "evolve.string.from.i64"]
+    #[allow(dead_code)]
+    // extra allocations
     fn string_from_i64_core(value: i64) -> Object {
         let string = value.to_string();
         string.into()
     }
 
-    #[allow(unused)]
+    #[allow(dead_code)]
     fn evolve_string_from_i64_itoa(value: i64) -> Object {
         let mut buffer = Buffer::new();
         let printed = buffer.format(value);
         printed.to_owned().into()
     }
 
-    #[allow(unused)]
+    #[allow(dead_code)]
+    #[export_name = "evolve.string.from.i64"]
     fn string_from_i64_lexical(value: i64) -> Object {
         lexical::to_string(value).into()
     }
@@ -229,20 +231,21 @@ mod f64 {
     use evolve_inner_core::object::Object;
     use ryu::Buffer;
 
-    #[export_name = "evolve.string.from.f64"]
+    #[allow(dead_code)]
     fn string_from_f64_core(value: f64) -> Object {
         let string = value.to_string();
         string.into()
     }
 
-    #[allow(unused)]
+    #[allow(dead_code)]
     fn string_from_f64_ryu(value: f64) -> Object {
         let mut buffer = Buffer::new();
         let printed = buffer.format(value);
         printed.to_owned().into()
     }
 
-    #[allow(unused)]
+    #[allow(dead_code)]
+    #[export_name = "evolve.string.from.f64"]
     fn string_from_f64_lexical(value: f64) -> Object {
         lexical::to_string(value).into()
     }

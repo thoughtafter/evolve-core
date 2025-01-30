@@ -50,7 +50,7 @@ const fn evolve_i64_checked_rem(lhs: i64, rhs: i64) -> (i64, bool) {
 /// min / -1 = 0, though overflow there is no remainder
 /// x / 0 = x, can be checked or used
 #[no_mangle]
-#[allow(unused)]
+#[allow(dead_code)]
 const fn evolve_i64_safe_rem(lhs: i64, rhs: i64) -> i64 {
     match rhs {
         0 => lhs,
