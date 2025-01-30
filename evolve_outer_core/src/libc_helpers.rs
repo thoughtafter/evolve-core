@@ -1,43 +1,47 @@
-// use alloc::ffi::CString;
+use core::ffi::c_void;
 use core::mem;
 use libc::{timeval, FILE, RUSAGE_SELF};
-use libc_print::{libc_print, libc_println};
+use libc_print::libc_println;
 
-// TODO: allocators-less, probably using writev and iovec
-// libc_print! may not allocate?
-#[no_mangle]
-fn evolve_puts2(string: &str, newline: &str) -> u64 {
-    // let ptr = string.as_ptr() as *const c_void;
-    // unsafe { libc::write(STDOUT_FILENO, ptr, string.len()); }
-    libc_print!("{}{}", string, newline);
-    0
-    //let output = format!("{}{}", string, newline);
-    //fwrite(file, )
-    // let iov = libc::iovec { iov_base: string.as_ptr() as *mut c_void, iov_len: string.len() };
-    //
-    // let count = unsafe {
-    //     libc::writev(libc::STDOUT_FILENO, &iov, 1)
-    // };
-    //
-    // count as u64
+#[export_name = "evolve_puts2"]
+/// puts 2 &str using writev
+/// this is very efficient, assuming writev is efficient
+/// writev is atomic
+/// currently no error checking - will return -1 on error
+/// writes to stdout
+fn puts2_writev(string: &str, newline: &str) -> u64 {
+    let iov = [
+        libc::iovec {
+            iov_base: string.as_ptr() as *mut c_void,
+            iov_len: string.len(),
+        },
+        libc::iovec {
+            iov_base: newline.as_ptr() as *mut c_void,
+            iov_len: newline.len(),
+        },
+    ];
+
+    let count = unsafe { libc::writev(libc::STDOUT_FILENO, &iov as *const libc::iovec, 2) };
+
+    count as u64
 }
 
 #[no_mangle]
 fn evolve_stdout() -> *mut FILE {
-    let mode = c"w";
-    unsafe { libc::fdopen(libc::STDOUT_FILENO, mode.as_ptr()) }
+    let mode = c"w".as_ptr();
+    unsafe { libc::fdopen(libc::STDOUT_FILENO, mode) }
 }
 
 #[no_mangle]
 fn evolve_stderr() -> *mut FILE {
-    let mode = c"w";
-    unsafe { libc::fdopen(libc::STDERR_FILENO, mode.as_ptr()) }
+    let mode = c"w".as_ptr();
+    unsafe { libc::fdopen(libc::STDERR_FILENO, mode) }
 }
 
 #[no_mangle]
 fn evolve_stdin() -> *mut FILE {
-    let mode = c"r";
-    unsafe { libc::fdopen(libc::STDIN_FILENO, mode.as_ptr()) }
+    let mode = c"r".as_ptr();
+    unsafe { libc::fdopen(libc::STDIN_FILENO, mode) }
 }
 
 const fn calc(tv: timeval) -> f64 {
