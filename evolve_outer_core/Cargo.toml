@@ -26,13 +26,15 @@ ryu = { version = "1.0.19",  default-features = false }
 itoa = { version = "1.0.14",  default-features = false, features = ["no-panic"] }
 
 evolve_inner_core = { path = "../evolve_inner_core" }
+lexical = {  version = "7.0.4", default-features = false, features = ["radix", "parse-floats", "parse-integers", "write-floats", "write-integers"] }
+ordered-float = { version = "4.6.0", default-features = false }
 #inject_global_allocator = { path = "../inject_global_allocator", optional = true }
 # std
 # llvm-sys = { version = "191.0.0-rc1", default-features = false }
 # postgres = { version = "0.19.8", default-features = false }
 
 [dev-dependencies]
-ctor = {  version = "^0.2", default-features = false }
+ctor = { version = "^0.2", default-features = false }
 pretty_assertions = "^1.4"
 test-case = "^3.3"
 rug = "^1.27"

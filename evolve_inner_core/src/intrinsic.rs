@@ -129,6 +129,16 @@ mod convert {
             _ => Object::intrinsic_fail(),
         }
     }
+
+    // #[export_name = "evolve.intrinsic2.to_s"]
+    // #[inline(always)]
+    // pub const fn evolve_intrinsic_to_s(value: Object) -> Object {
+    //     let tag = value.tag();
+    //     match tag as u16 {
+    //         STRING_CLASS_ID => value,
+    //         _ => Object::intrinsic_fail(),
+    //     }
+    // }
 }
 
 pub mod cmp {
