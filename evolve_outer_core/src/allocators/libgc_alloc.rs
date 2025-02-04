@@ -6,8 +6,6 @@ use core::alloc::{GlobalAlloc, Layout};
 use core::ffi::CStr;
 use core::sync::atomic::AtomicU64;
 use core::sync::atomic::Ordering::Relaxed;
-use libc_print::libc_println;
-use libc_print::std_name::println;
 use libgc::*;
 
 #[global_allocator]
@@ -21,12 +19,10 @@ mod ctor {
     // use core::sync::atomic::Ordering::Relaxed;
     use crate::allocators::libgc_alloc::GcAllocator;
     use ctor::{ctor, dtor};
-    use libc_print::libc_println;
-    // use libc_print::std_name::println;
 
     #[ctor]
     fn libgc_init() {
-        libc_println!("libgc_init");
+        // libc_println!("libgc_init");
         // let foo =  unsafe { GC_thread_is_registered() };
         // libc_println!("is_reg: {}", foo);
         unsafe {
@@ -50,7 +46,7 @@ mod ctor {
 
     #[dtor]
     fn libgc_deinit() {
-        libc_println!("GC_deinit");
+        // libc_println!("GC_deinit");
         // unsafe {
         //     GC_deinit();
         // }
@@ -151,7 +147,7 @@ static FILENAME: &CStr = c"GcAllocator";
 // const will require removing atomic
 fn verify_alloc_success(ptr: *mut u8, layout: Layout) -> *mut u8 {
     if ptr.is_null() {
-        libc_println!("libgc null pointer allocation");
+        // libc_println!("libgc null pointer allocation");
         handle_alloc_error(layout);
     }
     ALLOCS.fetch_add(1, Relaxed);
@@ -162,19 +158,19 @@ fn verify_alloc_success(ptr: *mut u8, layout: Layout) -> *mut u8 {
 fn verify_thread_registration(layout: Layout) {
     let is_registered = unsafe { GC_thread_is_registered() == 1 };
     if !is_registered {
-        libc_println!("libgc unregistered thread");
+        // libc_println!("libgc unregistered thread");
         unsafe {
-            libc_println!("GC_allow_register_threads");
+            // libc_println!("GC_allow_register_threads");
             // GC_allow_register_threads();
-            libc_println!("get_stack_base");
+            // libc_println!("get_stack_base");
             let stack_base = get_stack_base();
-            libc_println!("GC_register_my_thread");
+            // libc_println!("GC_register_my_thread");
             GC_register_my_thread(&stack_base);
         }
 
         let is_registered = unsafe { GC_thread_is_registered() == 1 };
         if !is_registered {
-            libc_println!("failed to enable registration");
+            // libc_println!("failed to enable registration");
             handle_alloc_error(layout);
         };
     }
@@ -184,7 +180,7 @@ fn verify_thread_registration(layout: Layout) {
 fn verify_thread_registration_or_fail(layout: Layout) {
     let is_registered = unsafe { GC_thread_is_registered() == 1 };
     if !is_registered {
-        libc_println!("libgc unregistered thread: unrecoverable");
+        // libc_println!("libgc unregistered thread: unrecoverable");
         handle_alloc_error(layout);
     }
 }
@@ -263,18 +259,18 @@ unsafe impl GlobalAlloc for GcAllocator {
 impl GcAllocator {
     #[allow(dead_code)]
     pub unsafe fn setup() {
-        println!("libgc setup");
+        // println!("libgc setup");
         GC_init();
 
-        libc_println!("is_reg");
+        // libc_println!("is_reg");
 
-        let reg = unsafe { GC_thread_is_registered() };
-        libc_println!("is_reg: {}", reg);
+        // let reg = unsafe { GC_thread_is_registered() };
+        // libc_println!("is_reg: {}", reg);
 
         GC_allow_register_threads();
 
-        let reg = unsafe { GC_thread_is_registered() };
-        libc_println!("is_reg: {}", reg);
+        // let reg = unsafe { GC_thread_is_registered() };
+        // libc_println!("is_reg: {}", reg);
 
         GC_disable();
     }
@@ -311,7 +307,7 @@ mod tests {
         // assert!(!x.is_null());
         // let x = unsafe { GLOBAL.allocators(layout) };
         // assert!(!x.is_null());
-        libc_println!("DONE")
+        // libc_println!("DONE")
     }
 }
 

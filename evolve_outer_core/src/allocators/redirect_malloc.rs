@@ -96,7 +96,7 @@ mod tests {
     use gmp_mpfr_sys::gmp;
 
     use core::mem::MaybeUninit;
-    use libc_print::libc_println;
+    use libc_print::libc_println; // tests
 
     #[test]
     fn test_alloc() {

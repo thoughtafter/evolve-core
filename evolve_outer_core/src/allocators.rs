@@ -17,7 +17,7 @@ mod tests {
     #[allow(unused_imports)]
     use core::alloc::Layout;
     #[allow(unused_imports)]
-    use libc_print::libc_println;
+    use libc_print::libc_println; // tests
 
     #[test]
     fn test_allocs() {
