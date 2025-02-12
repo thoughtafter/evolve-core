@@ -16,6 +16,7 @@ mod misc;
 mod regex;
 mod set;
 mod string;
+mod rustix;
 
 #[cfg(not(any(test, feature = "bdwgc_alloc")))]
 #[panic_handler]
@@ -27,9 +28,8 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 
 mod debug {
     use alloc::format;
-    // use alloc::format;
-    use crate::libc_helpers::puts2_writev;
     use evolve_inner_core::object::{evolve_build_ptr, EvolveAuxData, EvolveClassId, Ptr};
+    use crate::rustix::io::{evolve_puts};
     // use libc_print::libc_println;
 
     #[no_mangle]
@@ -42,7 +42,7 @@ mod debug {
         // libc_println!("{:?}", object);
 
         let debug = format!("{:?}", object);
-        puts2_writev(&debug, "\n");
+        evolve_puts(&debug);
     }
 }
 
