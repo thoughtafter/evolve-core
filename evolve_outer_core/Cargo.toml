@@ -42,7 +42,7 @@ mimalloc = { version = "0.1.43", optional = true }
 # postgres = { version = "0.19.8", default-features = false }
 
 [dev-dependencies]
-ctor = { version = "^0.2", default-features = false }
+ctor = { version = "^0.3", default-features = false }
 pretty_assertions = "^1.4"
 test-case = "^3.3"
 rug = "^1.27"
