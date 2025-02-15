@@ -18,7 +18,7 @@ mod tests;
 //     boxxed.deref().into()
 // }
 
-use alloc::string::{String, ToString};
+use alloc::string::ToString;
 use core::cmp::Ordering;
 use evolve_inner_core::object::Object;
 use unicase::UniCase;
@@ -153,32 +153,7 @@ fn new_string_repeat(value: &str, times: usize) -> Object {
     // let mut repeat = bytes.repeat(times);
     // repeat.push(0);
     // unsafe { CString::from_vec_with_nul_unchecked(repeat) }.into()
-    value.repeat(times).leak().into()
-}
-
-#[no_mangle]
-fn evolve_string_new_append2(string1: &str, string2: &str) -> Object {
-    // let mut appended = string1.to_string();
-    // appended.push_str(string2);
-    // // libc_println!("\"{}\" + \"{}\" == \"{}\"", string1, string2, appended);
-    // appended.into()
-
-    // format!("{}{}", string1, string2).into()
-
-    let mut buffer = String::with_capacity(string1.len() + string2.len());
-    buffer.push_str(string1);
-    buffer.push_str(string2);
-    buffer.into()
-}
-
-#[no_mangle]
-fn evolve_string_new_append3(string1: &str, string2: &str, string3: &str) -> Object {
-    let capacity = string1.len() + string2.len() + string3.len();
-    let mut buffer = String::with_capacity(capacity);
-    buffer.push_str(string1);
-    buffer.push_str(string2);
-    buffer.push_str(string3);
-    buffer.into()
+    value.repeat(times).into()
 }
 
 #[no_mangle]
@@ -196,6 +171,26 @@ fn evolve_string_cmp(lhs: &str, rhs: &str) -> Ordering {
     let a = UniCase::new(lhs);
     let b = UniCase::new(rhs);
     a.cmp(&b)
+}
+
+#[export_name = "evolve.string.begins?"]
+fn evolve_string_starts_with(lhs: &str, rhs: &str) -> bool {
+    lhs.starts_with(rhs)
+}
+
+#[export_name = "evolve.string.ends?"]
+fn evolve_string_ends_with(lhs: &str, rhs: &str) -> bool {
+    lhs.ends_with(rhs)
+}
+
+#[export_name = "evolve.string.valid?"]
+fn evolve_string_valid(lhs: &str) -> bool {
+    core::str::from_utf8(lhs.as_bytes()).is_ok()
+}
+
+#[export_name = "evolve.string.chars"]
+fn evolve_string_chars(lhs: &str) -> usize {
+    lhs.chars().count()
 }
 
 mod i64 {

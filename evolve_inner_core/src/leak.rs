@@ -1,6 +1,7 @@
 // extern crate alloc;
 
 use alloc::boxed::Box;
+
 pub fn leak_heap_ptr<T>(thing: T) -> *const T {
     Box::into_raw(Box::new(thing))
 }
