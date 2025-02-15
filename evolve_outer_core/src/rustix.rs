@@ -5,10 +5,8 @@ pub mod io {
 
     #[inline(always)]
     pub fn evolve_writev(strings: &[&str]) -> u64 {
-        let iov: SmallVec<[IoSlice; 8]> = strings
-            .iter()
-            .map(|s| IoSlice::new(s.as_bytes()))
-            .collect();
+        let iov: SmallVec<[IoSlice; 8]> =
+            strings.iter().map(|s| IoSlice::new(s.as_bytes())).collect();
         let stdout = unsafe { stdout() };
         let result = rustix::io::writev(stdout, &iov);
         result.unwrap_or_default() as u64
@@ -16,7 +14,10 @@ pub mod io {
 
     #[export_name = "evolve_puts2"]
     pub fn puts2_writev(string: &str, newline: &str) -> u64 {
-        let iov = [IoSlice::new(string.as_bytes()), IoSlice::new(newline.as_bytes())];
+        let iov = [
+            IoSlice::new(string.as_bytes()),
+            IoSlice::new(newline.as_bytes()),
+        ];
         let stdout = unsafe { stdout() };
         let result = rustix::io::writev(stdout, &iov);
         result.unwrap_or_default() as u64

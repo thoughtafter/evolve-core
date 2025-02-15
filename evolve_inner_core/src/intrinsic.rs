@@ -515,6 +515,33 @@ mod loops {
         this
     }
 
+    #[inline(always)]
+    #[allow(dead_code)]
+    fn evolve_intrinsic2_times2(this: Object, closure: Object) -> Object {
+        if (this.tag(), closure.class_id()) != (INT_CLASS_ID as u64, CLOSURE_CLASS_ID) {
+            return Object::intrinsic_fail();
+        }
+
+        let times = this.extract_i64();
+
+        let raw_tuple = [Object::null(); 2];
+
+        let obj_tuple = evolve_from_ptr_tuple(2, raw_tuple.as_ptr() as Ptr);
+        // let mut tuple = evolve_tuple_alloc(5);
+        let closure_caller_self = evolve_closure_get_self(closure);
+        let closure_fun = evolve_closure_get_fun(closure);
+        let closure_env = evolve_closure_get_env(closure);
+
+        let mut index = 1;
+        // this fails on i64 max times due to overflow
+        while index <= times {
+            obj_tuple.tuple_put(1, Object::from_i64(index));
+            closure_fun(closure_caller_self, obj_tuple, closure_env);
+            index += 1;
+        }
+        this
+    }
+
     // ; Function Attrs: alwaysinline nounwind
     // define fastcc { i64, ptr } @"evolve.intrinsic2.upto!"({ i64, ptr } %self, { i64, ptr } %limit, { i64, ptr } %closure) local_unnamed_addr #8 {
     // entry:

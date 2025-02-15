@@ -1,7 +1,7 @@
+use crate::rustix::io::evolve_writev;
 use core::mem;
 use libc::{timeval, RUSAGE_SELF};
 use ryu::Buffer;
-use crate::rustix::io::evolve_writev;
 // #[export_name = "evolve_puts2"]
 // /// puts 2 &str using writev
 // /// this is very efficient, assuming writev is efficient

@@ -69,6 +69,22 @@ const fn evolve_llvm_xor(lhs: i64, rhs: i64) -> i64 {
     lhs ^ rhs
 }
 
+/// add nsw
+/// - %_0 = add nsw i64 %rhs, %lhs
+#[export_name = "evolve.llvm.add_nsw"]
+#[inline(always)]
+const unsafe fn evolve_llvm_add_nsw(lhs: i64, rhs: i64) -> i64 {
+    lhs.unchecked_add(rhs)
+}
+
+/// add
+/// add i64 %rhs, %lhs
+#[export_name = "evolve.llvm.add"]
+#[inline(always)]
+const fn evolve_llvm_add(lhs: i64, rhs: i64) -> i64 {
+    lhs.wrapping_add(rhs)
+}
+
 #[no_mangle]
 #[inline(always)]
 /// `%_0 = fneg double %value`
