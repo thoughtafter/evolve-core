@@ -305,7 +305,7 @@ fn i64_cmp(lhs: Object, rhs: Object) -> Ordering {
 }
 
 fn o64_cmp(lhs: Object, rhs: Object) -> Ordering {
-    lhs.extract_o64().cmp(&rhs.extract_o64())
+    lhs.extract_f64().cmp(&rhs.extract_f64())
 }
 
 fn str_cmp(lhs: Object, rhs: Object) -> Ordering {

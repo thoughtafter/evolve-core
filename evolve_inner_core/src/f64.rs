@@ -54,6 +54,6 @@ mod tests {
 
     #[test]
     fn test_f64_nan() {
-        assert!(Object::from(f64::NAN).extract_f64().is_nan());
+        assert!(Object::from(f64::NAN).extract_raw_f64().is_nan());
     }
 }
