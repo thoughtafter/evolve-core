@@ -16,8 +16,8 @@ pub const fn evolve_llvm_sitofp(value: i64) -> f64 {
 #[no_mangle]
 #[inline(always)]
 // TODO: const
-fn evolve_llvm_fptosi(value: f64) -> i64 {
-    unsafe { value.to_int_unchecked::<i64>() }
+unsafe fn evolve_llvm_fptosi(value: f64) -> i64 {
+    value.to_int_unchecked::<i64>()
 }
 
 /// fptosi checked
@@ -31,7 +31,10 @@ fn evolve_llvm_fptosi(value: f64) -> i64 {
 // TODO: const
 pub fn evolve_llvm_fptosi_checked(value: f64) -> (i64, bool) {
     if value >= i64::MIN as f64 && value < i64::MAX as f64 {
-        (evolve_llvm_fptosi(value), false)
+        // SAFETY:
+        // above conditions mean this will never be poison
+        let safe_f64 = unsafe { evolve_llvm_fptosi(value) };
+        (safe_f64, false)
         // (value as i64, false) // saturated
     } else {
         (0, true)
