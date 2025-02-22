@@ -1,10 +1,12 @@
 pub mod io {
+    use arrayvec::ArrayVec;
     use rustix::io::IoSlice;
     use rustix::stdio::stdout;
     use smallvec::SmallVec;
 
     #[inline(always)]
-    pub fn evolve_writev(strings: &[&str]) -> u64 {
+    #[allow(dead_code)]
+    fn evolve_writev_upto_any(strings: &[&str]) -> u64 {
         let iov: SmallVec<[IoSlice; 8]> =
             strings.iter().map(|s| IoSlice::new(s.as_bytes())).collect();
         let stdout = unsafe { stdout() };
@@ -12,11 +14,35 @@ pub mod io {
         result.unwrap_or_default() as u64
     }
 
-    #[export_name = "evolve_puts2"]
-    pub fn puts2_writev(string: &str, newline: &str) -> u64 {
+    const WRITEV_LIMIT: usize = 5;
+    #[inline(always)]
+    pub fn evolve_writev_first_5(strings: &[&str]) -> u64 {
+        let iov: ArrayVec<IoSlice, WRITEV_LIMIT> = strings
+            .iter()
+            .take(WRITEV_LIMIT)
+            .map(|s| IoSlice::new(s.as_bytes()))
+            .collect();
+        let stdout = unsafe { stdout() };
+        let result = rustix::io::writev(stdout, &iov);
+        result.unwrap_or_default() as u64
+    }
+
+    /// optimized writev for 1 string
+    #[allow(dead_code)]
+    fn evolve_writev1(string: &str) -> u64 {
+        let iov = [IoSlice::new(string.as_bytes())];
+        let stdout = unsafe { stdout() };
+        let result = rustix::io::writev(stdout, &iov);
+        result.unwrap_or_default() as u64
+    }
+
+    /// optimized writev for 2 strings
+    /// useful for puts where string2 is newline
+    #[allow(dead_code)]
+    fn evolve_writev2(string1: &str, string2: &str) -> u64 {
         let iov = [
-            IoSlice::new(string.as_bytes()),
-            IoSlice::new(newline.as_bytes()),
+            IoSlice::new(string1.as_bytes()),
+            IoSlice::new(string2.as_bytes()),
         ];
         let stdout = unsafe { stdout() };
         let result = rustix::io::writev(stdout, &iov);
@@ -26,8 +52,15 @@ pub mod io {
     #[export_name = "evolve.puts"]
     // #[inline(always)]
     pub fn evolve_puts(string: &str) -> u64 {
-        puts2_writev(string, "\n")
-        // writev(&[string, "\n"])
+        // evolve_writev2(string, "\n")
+        // evolve_writev(&[string, "\n"])
+        evolve_writev_first_5(&[string, "\n"])
+    }
+
+    #[export_name = "evolve.puts_only"]
+    pub fn evolve_puts_only(string: &str) -> u64 {
+        // evolve_writev1(string)
+        evolve_writev_first_5(&[string])
     }
 }
 

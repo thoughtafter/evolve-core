@@ -1,4 +1,4 @@
-use crate::rustix::io::evolve_writev;
+use crate::rustix::io::evolve_writev_first_5;
 use core::mem;
 use libc::{timeval, RUSAGE_SELF};
 use ryu::Buffer;
@@ -100,7 +100,7 @@ fn evolve_write_resource_usage() {
 
     let strings = ["user: ", utime, " kernel: ", stime, "\n"];
 
-    evolve_writev(&strings);
+    evolve_writev_first_5(&strings);
 
     // puts2_writev(&x, "\n");
 }
