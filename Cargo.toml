@@ -1,47 +1,17 @@
-# cargo-features = ["test-dummy-unstable"]
-# cargo-features = ["set_ptr_value"]
-
 [package]
 name = "evolve-core"
-version = "0.2.0"
-edition = "2021"
-rust-version = "1.84"
+version = "0.3.0"
+edition = "2024"
+rust-version = "1.85"
 resolver = "3"
 
-#[lib]
-#crate-type = ["staticlib"]
-
 [workspace]
-
 members = [
     "evolve_inner_core",
     "evolve_outer_core",
 ]
 #    "inject_global_allocator",
 
-#[dependencies]
-## no-std
-#ahash = { version = "0.8.11", default-features = false }
-#gmp-mpfr-sys = { version = "1.6.4", default-features = false, features = ["mpfr"] }
-#indexmap = { version = "2.5.0",default-features = false }
-#ordered-float = { version = "4.2.2",  default-features = false }
-#regex = { version = "1.10.6", default-features = false }
-#
-## std
-## llvm-sys = { version = "191.0.0-rc1", default-features = false }
-## postgres = { version = "0.19.8", default-features = false }
-#
-## sub-dependencies
-## sub of gmp-mpfr-sys
-#libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"] }
-#once_cell = { version = "1.19.0", default-features = false }
-#
-#[dev-dependencies]
-#libc-print = "0.1.23"
-#pretty_assertions = "1.4.0"
-#rug = "1.26.0"
-#test-case = "3.3.1"
-#
 [profile.release]
 lto = "fat"
 panic = "abort"

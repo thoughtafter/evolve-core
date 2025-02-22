@@ -111,7 +111,7 @@ dependencies = [
 
 [[package]]
 name = "evolve-core"
-version = "0.2.0"
+version = "0.3.0"
 
 [[package]]
 name = "evolve_inner_core"
