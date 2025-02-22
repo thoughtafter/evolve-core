@@ -153,12 +153,12 @@ mod f64 {
             Object::new(FLOAT_CLASS_ID, value.to_bits() as Ptr)
         }
 
-        pub const fn extract_f64(self) -> f64 {
+        pub const fn extract_raw_f64(self) -> f64 {
             f64::from_bits(self.extract_i64() as u64)
         }
 
-        pub const fn extract_o64(self) -> OrderedFloat<f64> {
-            OrderedFloat(self.extract_f64())
+        pub const fn extract_f64(self) -> OrderedFloat<f64> {
+            OrderedFloat(self.extract_raw_f64())
         }
     }
 

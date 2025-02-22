@@ -108,7 +108,7 @@ mod convert {
         match tag as u16 {
             INT_CLASS_ID => value,
             FLOAT_CLASS_ID => {
-                let fptosi = evolve_llvm_fptosi_checked(value.extract_f64());
+                let fptosi = evolve_llvm_fptosi_checked(*value.extract_f64());
                 if !fptosi.1 {
                     Object::from_i64(fptosi.0)
                 } else {
@@ -155,9 +155,7 @@ pub mod cmp {
 
         match lhs_tag as u16 {
             INT_CLASS_ID => Some(lhs.extract_i64() == rhs.extract_i64()),
-            FLOAT_CLASS_ID => {
-                Some(OrderedFloat(lhs.extract_f64()) == OrderedFloat(rhs.extract_f64()))
-            }
+            FLOAT_CLASS_ID => Some(lhs.extract_f64() == rhs.extract_f64()),
             _ => {
                 if lhs.extract_i64() == rhs.extract_i64() {
                     Some(true)
@@ -222,8 +220,8 @@ pub mod cmp {
         match lhs_tag as u16 {
             INT_CLASS_ID => int_fn(&lhs.extract_i64(), &rhs.extract_i64()).into(),
             FLOAT_CLASS_ID => float_fn(
-                &OrderedFloat(lhs.extract_f64()),
-                &OrderedFloat(rhs.extract_f64()),
+                &OrderedFloat(lhs.extract_raw_f64()),
+                &OrderedFloat(rhs.extract_raw_f64()),
             )
             .into(),
             _ => Object::intrinsic_fail(),
@@ -357,7 +355,7 @@ mod math {
                 }
             }
             FLOAT_CLASS_ID => {
-                let math = float_fn(left.extract_f64(), right.extract_f64());
+                let math = float_fn(left.extract_raw_f64(), right.extract_raw_f64());
                 if !math.is_infinite() & !math.is_subnormal() {
                     return Object::from_f64(math);
                 }
@@ -457,7 +455,7 @@ mod math {
         let tag = value.tag();
         match tag as u16 {
             INT_CLASS_ID => Object::from_i1(value.extract_i64() == 0),
-            FLOAT_CLASS_ID => Object::from_i1(value.extract_f64() == 0.0),
+            FLOAT_CLASS_ID => Object::from_i1(value.extract_raw_f64() == 0.0),
             _ => Object::intrinsic_fail(),
         }
     }

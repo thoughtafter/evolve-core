@@ -34,7 +34,7 @@ target triple = "x86_64-unknown-linux-gnu"
 @alloc_0869314c06f5536ea9cfbda8e3d75f40 = private unnamed_addr constant <{ [6 x i8] }> <{ [6 x i8] c"STRING" }>, align 1
 @vtable.6 = private unnamed_addr constant <{ [24 x i8], ptr }> <{ [24 x i8] c"\00\00\00\00\00\00\00\00\08\00\00\00\00\00\00\00\08\00\00\00\00\00\00\00", ptr @"_ZN4core3fmt3num50_$LT$impl$u20$core..fmt..Debug$u20$for$u20$i64$GT$3fmt17h955cc7e275d123c8E" }>, align 8
 @alloc_f4db005b851b7259d0b6ded255335a8c = private unnamed_addr constant <{ [3 x i8] }> <{ [3 x i8] c"I64" }>, align 1
-@vtable.7 = private unnamed_addr constant <{ [24 x i8], ptr }> <{ [24 x i8] c"\00\00\00\00\00\00\00\00\08\00\00\00\00\00\00\00\08\00\00\00\00\00\00\00", ptr @"_ZN4core3fmt5float50_$LT$impl$u20$core..fmt..Debug$u20$for$u20$f64$GT$3fmt17h2df7e3d8e6b421a1E" }>, align 8
+@vtable.7 = private unnamed_addr constant <{ [24 x i8], ptr }> <{ [24 x i8] c"\00\00\00\00\00\00\00\00\08\00\00\00\00\00\00\00\08\00\00\00\00\00\00\00", ptr @"_ZN73_$LT$ordered_float..OrderedFloat$LT$T$GT$$u20$as$u20$core..fmt..Debug$GT$3fmt17h8df0d7d14a33e87eE" }>, align 8
 @alloc_82b1bf185e1b461c8b8241303ddf0563 = private unnamed_addr constant <{ [3 x i8] }> <{ [3 x i8] c"F64" }>, align 1
 @alloc_22f0e91223dabf1bef5f103b8560c3f1 = private unnamed_addr constant <{ [5 x i8] }> <{ [5 x i8] c"TUPLE" }>, align 1
 @alloc_a2e5f6be2a03b9f5ed256baff3399a84 = private unnamed_addr constant <{ [4 x i8] }> <{ [4 x i8] c"size" }>, align 1
@@ -372,6 +372,15 @@ define internal noundef zeroext i1 @"_ZN69_$LT$core..alloc..layout..LayoutError$
 start:
 ; call core::fmt::Formatter::write_str
   %_0 = tail call noundef zeroext i1 @_ZN4core3fmt9Formatter9write_str17hfa9270c90c899f5bE(ptr noalias noundef nonnull align 8 dereferenceable(64) %f, ptr noalias noundef nonnull readonly align 1 @alloc_477d6fd19596379e27b9bd4358550877, i64 noundef 11) #31
+  ret i1 %_0
+}
+
+; <ordered_float::OrderedFloat<T> as core::fmt::Debug>::fmt
+; Function Attrs: inlinehint nounwind nonlazybind
+define internal noundef zeroext i1 @"_ZN73_$LT$ordered_float..OrderedFloat$LT$T$GT$$u20$as$u20$core..fmt..Debug$GT$3fmt17h8df0d7d14a33e87eE"(ptr noalias noundef readonly align 8 dereferenceable(8) %self, ptr noalias noundef align 8 dereferenceable(64) %f) unnamed_addr #1 {
+start:
+; call core::fmt::float::<impl core::fmt::Debug for f64>::fmt
+  %_0 = tail call noundef zeroext i1 @"_ZN4core3fmt5float50_$LT$impl$u20$core..fmt..Debug$u20$for$u20$f64$GT$3fmt17h2df7e3d8e6b421a1E"(ptr noalias noundef nonnull readonly align 8 dereferenceable(8) %self, ptr noalias noundef nonnull align 8 dereferenceable(64) %f) #31
   ret i1 %_0
 }
 
@@ -937,8 +946,8 @@ bb7:                                              ; preds = %start
 
 bb6:                                              ; preds = %start
   call void @llvm.lifetime.start.p0(i64 8, ptr nonnull %_49)
-  %_91 = ptrtoint ptr %_6.1 to i64
-  store i64 %_91, ptr %_49, align 8
+  %_92 = ptrtoint ptr %_6.1 to i64
+  store i64 %_92, ptr %_49, align 8
 ; call core::fmt::builders::DebugStruct::field
   %_45 = call noundef align 8 dereferenceable(16) ptr @_ZN4core3fmt8builders11DebugStruct5field17hfd32f5d402fba42aE(ptr noalias noundef nonnull align 8 dereferenceable(16) %common, ptr noalias noundef nonnull readonly align 1 @alloc_82b1bf185e1b461c8b8241303ddf0563, i64 noundef 3, ptr noundef nonnull align 1 %_49, ptr noalias noundef nonnull readonly align 8 dereferenceable(32) @vtable.7) #31
   call void @llvm.lifetime.end.p0(i64 8, ptr nonnull %_49)
@@ -1722,9 +1731,9 @@ bb3:                                              ; preds = %start
 
 bb2:                                              ; preds = %start
   %_10 = ptrtoint ptr %value.1 to i64
-  %_5 = bitcast i64 %_10 to double
-  %_2.i1 = fcmp ult double %_5, 0xC3E0000000000000
-  %_3.i = fcmp uge double %_5, 0x43E0000000000000
+  %_8 = bitcast i64 %_10 to double
+  %_2.i1 = fcmp ult double %_8, 0xC3E0000000000000
+  %_3.i = fcmp uge double %_8, 0x43E0000000000000
   %or.cond.not.i = or i1 %_2.i1, %_3.i
   br i1 %or.cond.not.i, label %bb8, label %bb5
 
@@ -1736,7 +1745,7 @@ bb8:                                              ; preds = %bb2, %start, %bb5, 
   ret { i64, ptr } %1
 
 bb5:                                              ; preds = %bb2
-  %2 = fptosi double %_5 to i64
+  %2 = fptosi double %_8 to i64
   %_2.i = inttoptr i64 %2 to ptr
   br label %bb8
 }
@@ -1782,21 +1791,21 @@ bb4.i:                                            ; preds = %start
   ]
 
 bb5.i:                                            ; preds = %bb4.i
-  %_15.i = icmp eq ptr %left.1, %right.1
-  br i1 %_15.i, label %bb2.thread, label %bb3
+  %_13.i = icmp eq ptr %left.1, %right.1
+  br i1 %_13.i, label %bb2.thread, label %bb3
 
 bb7.i:                                            ; preds = %bb4.i
   %_7.i = icmp eq ptr %left.1, %right.1
   br i1 %_7.i, label %bb2.thread, label %bb3
 
 bb2:                                              ; preds = %bb4.i
-  %_19.i = ptrtoint ptr %left.1 to i64
-  %_12.i = bitcast i64 %_19.i to double
+  %_18.i = ptrtoint ptr %left.1 to i64
+  %_16.i = bitcast i64 %_18.i to double
   %_21.i = ptrtoint ptr %right.1 to i64
-  %_22.i = fcmp uno double %_12.i, 0.000000e+00
-  %_14.i = bitcast i64 %_21.i to double
-  %_0.i1.i = fcmp uno double %_14.i, 0.000000e+00
-  %_0.i.i = fcmp oeq double %_12.i, %_14.i
+  %_22.i = fcmp uno double %_16.i, 0.000000e+00
+  %_19.i = bitcast i64 %_21.i to double
+  %_0.i1.i = fcmp uno double %_19.i, 0.000000e+00
+  %_0.i.i = fcmp oeq double %_16.i, %_19.i
   %_10.sroa.0.0.in.i = select i1 %_22.i, i1 %_0.i1.i, i1 %_0.i.i
   br i1 %_10.sroa.0.0.in.i, label %bb2.thread, label %bb3
 
@@ -1824,21 +1833,21 @@ bb4.i:                                            ; preds = %start
   ]
 
 bb5.i:                                            ; preds = %bb4.i
-  %_15.i = icmp eq ptr %left.1, %right.1
-  br i1 %_15.i, label %bb2.thread, label %bb3
+  %_13.i = icmp eq ptr %left.1, %right.1
+  br i1 %_13.i, label %bb2.thread, label %bb3
 
 bb7.i:                                            ; preds = %bb4.i
   %_7.i = icmp eq ptr %left.1, %right.1
   br i1 %_7.i, label %bb2.thread, label %bb3
 
 bb2:                                              ; preds = %bb4.i
-  %_19.i = ptrtoint ptr %left.1 to i64
-  %_12.i = bitcast i64 %_19.i to double
+  %_18.i = ptrtoint ptr %left.1 to i64
+  %_16.i = bitcast i64 %_18.i to double
   %_21.i = ptrtoint ptr %right.1 to i64
-  %_22.i = fcmp uno double %_12.i, 0.000000e+00
-  %_14.i = bitcast i64 %_21.i to double
-  %_0.i1.i = fcmp uno double %_14.i, 0.000000e+00
-  %_0.i.i = fcmp oeq double %_12.i, %_14.i
+  %_22.i = fcmp uno double %_16.i, 0.000000e+00
+  %_19.i = bitcast i64 %_21.i to double
+  %_0.i1.i = fcmp uno double %_19.i, 0.000000e+00
+  %_0.i.i = fcmp oeq double %_16.i, %_19.i
   %_10.sroa.0.0.in.i = select i1 %_22.i, i1 %_0.i1.i, i1 %_0.i.i
   br i1 %_10.sroa.0.0.in.i, label %bb2.thread, label %bb3
 
@@ -2010,21 +2019,21 @@ bb4.i:                                            ; preds = %start
   ]
 
 bb5.i:                                            ; preds = %bb4.i
-  %_15.i = icmp eq ptr %lhs.1, %rhs.1
-  br i1 %_15.i, label %bb2.i.thread, label %"evolve.intrinsic2.eq?.exit"
+  %_13.i = icmp eq ptr %lhs.1, %rhs.1
+  br i1 %_13.i, label %bb2.i.thread, label %"evolve.intrinsic2.eq?.exit"
 
 bb7.i:                                            ; preds = %bb4.i
   %_7.i = icmp eq ptr %lhs.1, %rhs.1
   br i1 %_7.i, label %bb2.i.thread, label %"evolve.intrinsic2.eq?.exit"
 
 bb2.i:                                            ; preds = %bb4.i
-  %_19.i = ptrtoint ptr %lhs.1 to i64
-  %_12.i = bitcast i64 %_19.i to double
+  %_18.i = ptrtoint ptr %lhs.1 to i64
+  %_16.i = bitcast i64 %_18.i to double
   %_21.i = ptrtoint ptr %rhs.1 to i64
-  %_22.i = fcmp uno double %_12.i, 0.000000e+00
-  %_14.i = bitcast i64 %_21.i to double
-  %_0.i1.i = fcmp uno double %_14.i, 0.000000e+00
-  %_0.i.i = fcmp oeq double %_12.i, %_14.i
+  %_22.i = fcmp uno double %_16.i, 0.000000e+00
+  %_19.i = bitcast i64 %_21.i to double
+  %_0.i1.i = fcmp uno double %_19.i, 0.000000e+00
+  %_0.i.i = fcmp oeq double %_16.i, %_19.i
   %_10.sroa.0.0.in.i = select i1 %_22.i, i1 %_0.i1.i, i1 %_0.i.i
   br i1 %_10.sroa.0.0.in.i, label %bb2.i.thread, label %"evolve.intrinsic2.eq?.exit"
 
@@ -3628,6 +3637,10 @@ declare void @_ZN5alloc7raw_vec12handle_error17h440b0d663dfeaaa6E(i64 noundef ra
 ; Function Attrs: nounwind nonlazybind
 declare noundef zeroext i1 @_ZN4core3fmt9Formatter9write_str17hfa9270c90c899f5bE(ptr noalias noundef align 8 dereferenceable(64), ptr noalias noundef nonnull readonly align 1, i64 noundef) unnamed_addr #0
 
+; core::fmt::float::<impl core::fmt::Debug for f64>::fmt
+; Function Attrs: nounwind nonlazybind
+declare noundef zeroext i1 @"_ZN4core3fmt5float50_$LT$impl$u20$core..fmt..Debug$u20$for$u20$f64$GT$3fmt17h2df7e3d8e6b421a1E"(ptr noalias noundef readonly align 8 dereferenceable(8), ptr noalias noundef align 8 dereferenceable(64)) unnamed_addr #0
+
 ; core::fmt::Formatter::debug_struct
 ; Function Attrs: nounwind nonlazybind
 declare void @_ZN4core3fmt9Formatter12debug_struct17h9bde06dcfe502c93E(ptr dead_on_unwind noalias nocapture noundef writable sret([16 x i8]) align 8 dereferenceable(16), ptr noalias noundef align 8 dereferenceable(64), ptr noalias noundef nonnull readonly align 1, i64 noundef) unnamed_addr #0
@@ -3635,10 +3648,6 @@ declare void @_ZN4core3fmt9Formatter12debug_struct17h9bde06dcfe502c93E(ptr dead_
 ; core::fmt::builders::DebugStruct::field
 ; Function Attrs: nounwind nonlazybind
 declare noundef align 8 dereferenceable(16) ptr @_ZN4core3fmt8builders11DebugStruct5field17hfd32f5d402fba42aE(ptr noalias noundef align 8 dereferenceable(16), ptr noalias noundef nonnull readonly align 1, i64 noundef, ptr noundef nonnull align 1, ptr noalias noundef readonly align 8 dereferenceable(32)) unnamed_addr #0
-
-; core::fmt::float::<impl core::fmt::Debug for f64>::fmt
-; Function Attrs: nounwind nonlazybind
-declare noundef zeroext i1 @"_ZN4core3fmt5float50_$LT$impl$u20$core..fmt..Debug$u20$for$u20$f64$GT$3fmt17h2df7e3d8e6b421a1E"(ptr noalias noundef readonly align 8 dereferenceable(8), ptr noalias noundef align 8 dereferenceable(64)) unnamed_addr #0
 
 ; core::fmt::builders::DebugStruct::finish
 ; Function Attrs: nounwind nonlazybind

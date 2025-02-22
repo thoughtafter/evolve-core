@@ -101,8 +101,8 @@ pub mod object_from {
         #[test_case(f64::INFINITY)]
         #[test_case(0.0)]
         fn test_f64(test_case: f64) {
-            assert_eq!(test_case, Object::from(test_case).extract_f64());
-            assert_eq!(-test_case, Object::from(-test_case).extract_f64());
+            assert_eq!(test_case, Object::from(test_case).extract_raw_f64());
+            assert_eq!(-test_case, Object::from(-test_case).extract_raw_f64());
 
             let x: f64 = Object::from(test_case).into();
             assert_eq!(test_case, x);
