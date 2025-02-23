@@ -1828,18 +1828,19 @@ bb2:                                              ; preds = %start
   %_2.i1 = fcmp ult double %_8, 0xC3E0000000000000
   %_3.i = fcmp uge double %_8, 0x43E0000000000000
   %or.cond.not.i = or i1 %_2.i1, %_3.i
-  %_4.i = tail call i64 @llvm.fptosi.sat.i64.f64(double %_8)
-  %_2.i = inttoptr i64 %_4.i to ptr
-  %spec.select = select i1 %or.cond.not.i, ptr null, ptr %_2.i
-  %spec.select2 = select i1 %or.cond.not.i, i64 257, i64 4
-  br label %bb8
+  br i1 %or.cond.not.i, label %bb8, label %bb5
 
-bb8:                                              ; preds = %bb2, %start, %bb3
-  %_0.sroa.5.0 = phi ptr [ %value.1, %bb3 ], [ null, %start ], [ %spec.select, %bb2 ]
-  %_0.sroa.0.0 = phi i64 [ %value.0, %bb3 ], [ 257, %start ], [ %spec.select2, %bb2 ]
+bb8:                                              ; preds = %bb2, %start, %bb5, %bb3
+  %_0.sroa.5.0 = phi ptr [ %_2.i, %bb5 ], [ %value.1, %bb3 ], [ null, %start ], [ null, %bb2 ]
+  %_0.sroa.0.0 = phi i64 [ 4, %bb5 ], [ %value.0, %bb3 ], [ 257, %start ], [ 257, %bb2 ]
   %0 = insertvalue { i64, ptr } poison, i64 %_0.sroa.0.0, 0
   %1 = insertvalue { i64, ptr } %0, ptr %_0.sroa.5.0, 1
   ret { i64, ptr } %1
+
+bb5:                                              ; preds = %bb2
+  %2 = fptosi double %_8 to i64
+  %_2.i = inttoptr i64 %2 to ptr
+  br label %bb8
 }
 
 ; Function Attrs: alwaysinline mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
@@ -3098,11 +3099,11 @@ start:
   %_2 = fcmp ult double %value, 0xC3E0000000000000
   %_3 = fcmp uge double %value, 0x43E0000000000000
   %or.cond.not = or i1 %_2, %_3
-  %_4 = tail call i64 @llvm.fptosi.sat.i64.f64(double %value)
-  %_0.sroa.0.0 = select i1 %or.cond.not, i64 0, i64 %_4
-  %0 = insertvalue { i64, i1 } poison, i64 %_0.sroa.0.0, 0
-  %1 = insertvalue { i64, i1 } %0, i1 %or.cond.not, 1
-  ret { i64, i1 } %1
+  %0 = fptosi double %value to i64
+  %spec.select = select i1 %or.cond.not, i64 0, i64 %0
+  %1 = insertvalue { i64, i1 } poison, i64 %spec.select, 0
+  %2 = insertvalue { i64, i1 } %1, i1 %or.cond.not, 1
+  ret { i64, i1 } %2
 }
 
 ; Function Attrs: alwaysinline mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
@@ -3772,9 +3773,6 @@ declare noundef align 8 dereferenceable(16) ptr @_ZN4core3fmt8builders11DebugStr
 ; core::fmt::builders::DebugStruct::finish
 ; Function Attrs: nounwind nonlazybind
 declare noundef zeroext i1 @_ZN4core3fmt8builders11DebugStruct6finish17hf74732e6aaf5f9e7E(ptr noalias noundef align 8 dereferenceable(16)) unnamed_addr #0
-
-; Function Attrs: mustprogress nocallback nofree nosync nounwind speculatable willreturn memory(none)
-declare i64 @llvm.fptosi.sat.i64.f64(double) #20
 
 ; Function Attrs: mustprogress nocallback nofree nosync nounwind willreturn memory(argmem: readwrite)
 declare void @llvm.lifetime.start.p0(i64 immarg, ptr nocapture) #28
