@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+
 // // inclusive between with ordered params
 // #[no_mangle]
 // fn evolve_i64_is_between_ordered(value: i64, min: i64, max: i64) -> bool {
@@ -10,8 +12,6 @@
 //     (value >= min && value <= max) | (value >= max && value <= min)
 // }
 
-use core::cmp::Ordering;
-
 #[export_name = "evolve_i64_cmp"]
 #[inline(always)]
 /// cmp for ints, will be optimized for other specific operations
@@ -19,7 +19,7 @@ pub fn evolve_i64_cmp(value1: i64, value2: i64) -> Ordering {
     value1.cmp(&value2)
 }
 
-// no need for signum when cmp(0) i sufficiently fast
+// no need for signum when cmp(0) is sufficiently fast
 // #[no_mangle]
 // fn evolve_i64_signum(value: i64) -> i64 {
 //     value.signum()
@@ -39,7 +39,7 @@ const fn evolve_i64_checked_div(lhs: i64, rhs: i64) -> (i64, bool) {
 
 #[no_mangle]
 const fn evolve_i64_checked_rem(lhs: i64, rhs: i64) -> (i64, bool) {
-    if let Some(rem) = lhs.checked_rem(rhs) {
+    if let Some(rem) = evolve_i64_safe_rem_option(lhs, rhs) {
         (rem, false)
     } else {
         (0, true)
@@ -59,6 +59,16 @@ const fn evolve_i64_safe_rem(lhs: i64, rhs: i64) -> i64 {
     }
 }
 
+/// since checked div already checks for this, this seems
+/// to perform better and is more inclusive
+pub const fn evolve_i64_safe_rem_option(lhs: i64, rhs: i64) -> Option<i64> {
+    // match rhs {
+    //     -1 => Some(0),
+    //     _ => lhs.checked_rem(rhs),
+    // }
+    Some(evolve_i64_safe_rem(lhs, rhs))
+}
+
 #[no_mangle]
 const fn evolve_i64_checked_div_rem(lhs: i64, rhs: i64) -> (i64, i64) {
     let div = lhs.checked_div(rhs);
@@ -67,6 +77,25 @@ const fn evolve_i64_checked_div_rem(lhs: i64, rhs: i64) -> (i64, i64) {
     match (div, rem) {
         (Some(div), Some(rem)) => (div, rem),
         _ => (-1, -1),
+    }
+}
+
+pub const fn evolve_i64_divisible_by(lhs: i64, rhs: i64) -> bool {
+    match rhs {
+        -1 => true,
+        0 => lhs == 0,
+        // _ => (lhs % rhs) == 0,
+        _ => matches!(lhs.checked_rem(rhs), Some(0)),
+    }
+}
+
+#[inline(always)]
+pub const fn evolve_i64_div_exact(lhs: i64, rhs: i64) -> Option<i64> {
+    let rem = lhs.checked_rem(rhs);
+    let div = lhs.checked_div(rhs);
+    match rem {
+        Some(0) => div,
+        _ => None,
     }
 }
 
