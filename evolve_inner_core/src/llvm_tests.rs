@@ -1,4 +1,5 @@
-use super::*;
+// use super::*;
+use crate::f64::evolve_f64_fptosi_checked;
 use pretty_assertions::assert_eq;
 use test_case::test_case;
 
@@ -17,7 +18,7 @@ use test_case::test_case;
 // #[test_case((i64::MAX, false), ((i64::MAX as i128) + 1025) as f64)]
 // #[test_case((0, true), ((i64::MAX as i128) + 1026) as f64)]
 fn test_evolve_llvm_fptosi_checked(expected_value: (i64, bool), test_value: f64) {
-    assert_eq!(expected_value, evolve_llvm_fptosi_checked(test_value));
+    assert_eq!(expected_value, evolve_f64_fptosi_checked(test_value));
 }
 
 #[test]

@@ -96,7 +96,7 @@ mod closure {
 
 mod convert {
     use crate::class_ids::*;
-    use crate::llvm::evolve_llvm_fptosi_checked;
+    use crate::f64::evolve_f64_fptosi_checked;
     use crate::llvm::evolve_llvm_sitofp;
     use crate::object::Object;
 
@@ -108,7 +108,7 @@ mod convert {
         match tag as u16 {
             INT_CLASS_ID => value,
             FLOAT_CLASS_ID => {
-                let fptosi = evolve_llvm_fptosi_checked(*value.extract_f64());
+                let fptosi = evolve_f64_fptosi_checked(*value.extract_f64());
                 if !fptosi.1 {
                     Object::from_i64(fptosi.0)
                 } else {

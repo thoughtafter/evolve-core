@@ -3,6 +3,8 @@
 mod tests;
 
 use crate::class_ids::{FLOAT_CLASS_ID, INT_CLASS_ID};
+use crate::f64::evolve_f64_is_divisible;
+use crate::i64::{evolve_i64_div_exact, evolve_i64_divisible_by, evolve_i64_safe_rem_option};
 use crate::object::Object;
 use core::num::FpCategory;
 use core::ops::{Add, Div, Mul, Rem, Sub};
@@ -79,29 +81,29 @@ fn evolve_intrinsic_mul(left: Object, right: Object) -> Object {
     math_helper(left, right, i64::checked_mul, f64::mul)
 }
 
-#[allow(dead_code)]
-const fn i64_safe_rem1(lhs: i64, rhs: i64) -> Option<i64> {
-    match rhs {
-        0 => Some(lhs),
-        -1 => Some(0),
-        _ => Some(lhs % rhs),
-    }
-}
-
-#[allow(dead_code)]
-const fn i64_safe_rem2(lhs: i64, rhs: i64) -> Option<i64> {
-    match rhs {
-        -1 => Some(0),
-        _ => lhs.checked_rem(rhs),
-    }
-}
-#[allow(dead_code)]
-const fn i64_safe_rem3(lhs: i64, rhs: i64) -> Option<i64> {
-    match rhs {
-        -1 => Some(0),
-        _ => Some(lhs % rhs),
-    }
-}
+// #[allow(dead_code)]
+// const fn i64_safe_rem1(lhs: i64, rhs: i64) -> Option<i64> {
+//     match rhs {
+//         0 => Some(lhs),
+//         -1 => Some(0),
+//         _ => Some(lhs % rhs),
+//     }
+// }
+//
+// #[allow(dead_code)]
+// const fn i64_safe_rem2(lhs: i64, rhs: i64) -> Option<i64> {
+//     match rhs {
+//         -1 => Some(0),
+//         _ => lhs.checked_rem(rhs),
+//     }
+// }
+// #[allow(dead_code)]
+// const fn i64_safe_rem3(lhs: i64, rhs: i64) -> Option<i64> {
+//     match rhs {
+//         -1 => Some(0),
+//         _ => Some(lhs % rhs),
+//     }
+// }
 
 #[export_name = "evolve.intrinsic2.rem"]
 #[inline(always)]
@@ -109,18 +111,18 @@ fn evolve_intrinsic_rem(left: Object, right: Object) -> Object {
     if right.extract_raw_f64() == 0.0 {
         return Object::intrinsic_fail();
     }
-    math_helper(left, right, i64_safe_rem2, f64::rem)
+    math_helper(left, right, evolve_i64_safe_rem_option, f64::rem)
 }
 
-#[inline(always)]
-#[allow(dead_code)]
-const fn evolve_div_exact(lhs: i64, rhs: i64) -> Option<i64> {
-    let math = lhs.checked_rem(rhs);
-    match math {
-        Some(0) => Some(lhs / rhs),
-        _ => None,
-    }
-}
+// #[inline(always)]
+// #[allow(dead_code)]
+// const fn evolve_div_exact(lhs: i64, rhs: i64) -> Option<i64> {
+//     let math = lhs.checked_rem(rhs);
+//     match math {
+//         Some(0) => Some(lhs / rhs),
+//         _ => None,
+//     }
+// }
 
 // #[inline(always)]
 // fn evolve_div_exact2(lhs: i64, rhs: i64) -> Option<i64> {
@@ -131,23 +133,13 @@ const fn evolve_div_exact(lhs: i64, rhs: i64) -> Option<i64> {
 //     }
 // }
 
-#[inline(always)]
-const fn evolve_div_exact3(lhs: i64, rhs: i64) -> Option<i64> {
-    let rem = lhs.checked_rem(rhs);
-    let div = lhs.checked_div(rhs);
-    match rem {
-        Some(0) => div,
-        _ => None,
-    }
-}
-
 #[export_name = "evolve.intrinsic2.div"]
 #[inline(always)]
 fn evolve_intrinsic_div(left: Object, right: Object) -> Object {
     if right.extract_raw_f64() == 0.0 {
         return Object::intrinsic_fail();
     }
-    math_helper(left, right, evolve_div_exact3, f64::div)
+    math_helper(left, right, evolve_i64_div_exact, f64::div)
 }
 
 #[inline(always)]
@@ -173,19 +165,6 @@ fn evolve_intrinsic_divided_by(left: Object, right: Object) -> Object {
     evolve_intrinsic_zero(evolve_intrinsic_rem(left, right))
 }
 
-const fn evolve_i64_is_divisible(lhs: i64, rhs: i64) -> bool {
-    match rhs {
-        -1 => true,
-        0 => lhs == 0,
-        // _ => (lhs % rhs) == 0,
-        _ => matches!(lhs.checked_rem(rhs), Some(0)),
-    }
-}
-
-const fn evolve_f64_is_divisible(lhs: f64, rhs: f64) -> bool {
-    (lhs % rhs) == 0.0
-}
-
 #[export_name = "evolve.intrinsic2.div?"]
 #[inline(always)]
 const fn evolve_intrinsic_is_div(left: Object, right: Object) -> Object {
@@ -203,7 +182,7 @@ const fn evolve_intrinsic_is_div(left: Object, right: Object) -> Object {
             //     Some(_) => Some(false),
             //     None => None,
             // }
-            let div = evolve_i64_is_divisible(left.extract_i64(), right.extract_i64());
+            let div = evolve_i64_divisible_by(left.extract_i64(), right.extract_i64());
             Some(div)
         }
         FLOAT_CLASS_ID => {

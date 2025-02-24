@@ -16,29 +16,8 @@ pub const fn evolve_llvm_sitofp(value: i64) -> f64 {
 #[no_mangle]
 #[inline(always)]
 // TODO: const
-unsafe fn evolve_llvm_fptosi(value: f64) -> i64 {
+pub unsafe fn evolve_llvm_fptosi(value: f64) -> i64 {
     value.to_int_unchecked::<i64>()
-}
-
-/// fptosi checked
-// i64 will never be poison
-// why < instead of <= MAX?
-// - conforms with num_traits
-// - eliminates problems with positive and negative conversions not matching
-// the range is -9223372036854775808 to 9223372036854774784
-#[no_mangle]
-#[inline(always)]
-// TODO: const
-pub fn evolve_llvm_fptosi_checked(value: f64) -> (i64, bool) {
-    if value >= i64::MIN as f64 && value < i64::MAX as f64 {
-        // SAFETY:
-        // above conditions mean this will never be poison
-        let safe_f64 = unsafe { evolve_llvm_fptosi(value) };
-        (safe_f64, false)
-        // (value as i64, false) // saturated
-    } else {
-        (0, true)
-    }
 }
 
 // # https://llvm.org/docs/LangRef.html#bitwise-binary-operations
@@ -74,16 +53,18 @@ const fn evolve_llvm_xor(lhs: i64, rhs: i64) -> i64 {
 
 /// add nsw
 /// - %_0 = add nsw i64 %rhs, %lhs
-#[export_name = "evolve.llvm.add_nsw"]
+// #[export_name = "evolve.llvm.add_nsw"]
 #[inline(always)]
+#[allow(dead_code)]
 const unsafe fn evolve_llvm_add_nsw(lhs: i64, rhs: i64) -> i64 {
     lhs.unchecked_add(rhs)
 }
 
 /// add
 /// add i64 %rhs, %lhs
-#[export_name = "evolve.llvm.add"]
+// #[export_name = "evolve.llvm.add"]
 #[inline(always)]
+#[allow(dead_code)]
 const fn evolve_llvm_add(lhs: i64, rhs: i64) -> i64 {
     lhs.wrapping_add(rhs)
 }
