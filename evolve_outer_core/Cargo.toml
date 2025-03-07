@@ -30,7 +30,7 @@ roaring = { version = "0.10.10",  default-features = false }
 lexical = {  version = "7.0.4", default-features = false, features = ["radix", "parse-floats", "parse-integers", "write-floats", "write-integers"] }
 #lexical-core = { version = "1.0.5", default-features = false, features = ["write-floats", "write-integers"] }
 ryu = { version = "1.0.20",  default-features = false }
-itoa = { version = "1.0.14",  default-features = false, features = ["no-panic"] }
+itoa = { version = "1.0.15",  default-features = false, features = ["no-panic"] }
 unicase = { version = "2.8.1",  default-features = false }
 
 # allocators
