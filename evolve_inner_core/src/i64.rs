@@ -69,6 +69,21 @@ pub const fn evolve_i64_safe_rem_option(lhs: i64, rhs: i64) -> Option<i64> {
     Some(evolve_i64_safe_rem(lhs, rhs))
 }
 
+/// safe mod - no checking needed
+/// min / -1 = 0, though overflow there is no remainder
+/// x / 0 = x, can be checked or used
+const fn evolve_i64_safe_mod(lhs: i64, rhs: i64) -> i64 {
+    match rhs {
+        0 => lhs.abs(),
+        -1 => 0,
+        _ => lhs.rem_euclid(rhs),
+    }
+}
+
+pub const fn evolve_i64_safe_mod_option(lhs: i64, rhs: i64) -> Option<i64> {
+    Some(evolve_i64_safe_mod(lhs, rhs))
+}
+
 #[no_mangle]
 const fn evolve_i64_checked_div_rem(lhs: i64, rhs: i64) -> (i64, i64) {
     let div = lhs.checked_div(rhs);
@@ -97,6 +112,12 @@ pub const fn evolve_i64_div_exact(lhs: i64, rhs: i64) -> Option<i64> {
         Some(0) => div,
         _ => None,
     }
+    // inferior:
+    // let div_rem = i64::checked_div_rem_euclid(&lhs, &rhs);
+    // match div_rem {
+    //     Some((rem, 0)) => Some(rem),
+    //     _ => None,
+    // }
 }
 
 #[no_mangle]

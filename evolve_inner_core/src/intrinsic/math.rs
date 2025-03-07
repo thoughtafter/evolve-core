@@ -4,7 +4,10 @@ mod tests;
 
 use crate::class_ids::{FLOAT_CLASS_ID, INT_CLASS_ID};
 use crate::f64::evolve_f64_is_divisible;
-use crate::i64::{evolve_i64_div_exact, evolve_i64_divisible_by, evolve_i64_safe_rem_option};
+use crate::i64::{
+    evolve_i64_div_exact, evolve_i64_divisible_by, evolve_i64_safe_mod_option,
+    evolve_i64_safe_rem_option,
+};
 use crate::object::Object;
 use core::num::FpCategory;
 use core::ops::{Add, Div, Mul, Rem, Sub};
@@ -105,15 +108,34 @@ fn evolve_intrinsic_mul(left: Object, right: Object) -> Object {
 //     }
 // }
 
-#[export_name = "evolve.intrinsic2.rem"]
+#[export_name = "evolve.intrinsic2.trem"]
 #[inline(always)]
-fn evolve_intrinsic_rem(left: Object, right: Object) -> Object {
+/// truncated remainder
+fn evolve_intrinsic_trem(left: Object, right: Object) -> Object {
     if right.extract_raw_f64() == 0.0 {
         return Object::intrinsic_fail();
     }
     math_helper(left, right, evolve_i64_safe_rem_option, f64::rem)
+    // math_helper(left, right, i64::checked_rem, f64::rem)
 }
 
+#[export_name = "evolve.intrinsic2.rem"]
+#[inline(always)]
+/// euclidean remainder, aka mod
+/// uses num_traits because rem_euclid requires std
+fn evolve_intrinsic_rem(left: Object, right: Object) -> Object {
+    if right.extract_raw_f64() == 0.0 {
+        return Object::intrinsic_fail();
+    }
+    // if right.extract_i64() == 0 {
+    //     return Object::intrinsic_fail();
+    // }
+    let f64_fun = |a, b| num_traits::ops::euclid::Euclid::rem_euclid(&a, &b);
+    math_helper(left, right, evolve_i64_safe_mod_option, f64_fun)
+    // math_helper(left, right, i64::checked_rem_euclid, f64_fun)
+    // let i64_fun = |a, b| num_traits::ops::euclid::CheckedEuclid::checked_rem_euclid(&a, &b);
+    // math_helper(left, right, i64_fun, f64_fun)
+}
 // #[inline(always)]
 // #[allow(dead_code)]
 // const fn evolve_div_exact(lhs: i64, rhs: i64) -> Option<i64> {
@@ -135,6 +157,9 @@ fn evolve_intrinsic_rem(left: Object, right: Object) -> Object {
 
 #[export_name = "evolve.intrinsic2.div"]
 #[inline(always)]
+/// division
+/// f64 - exact, as expected
+/// i64 - exact and falling back to create rationals
 fn evolve_intrinsic_div(left: Object, right: Object) -> Object {
     if right.extract_raw_f64() == 0.0 {
         return Object::intrinsic_fail();
