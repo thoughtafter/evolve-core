@@ -10,7 +10,7 @@ edition = "2021"
 # no-std
 libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"] }
 libc-print = {  version = "^0.1", default-features = false }
-rustix = { version = "^0.38", default-features = false, features = ["stdio", "time"] }
+rustix = { version = "^1.0", default-features = false, features = ["stdio", "time"] }
 gmp-mpfr-sys = { version = "^1.6", default-features = false, features = ["mpfr"] }
 evolve_inner_core = { path = "../evolve_inner_core" }
 ordered-float = { version = "5.0.0", default-features = false }
