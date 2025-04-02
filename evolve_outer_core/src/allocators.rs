@@ -4,9 +4,6 @@ mod libgc_alloc;
 #[cfg(feature = "redirect_malloc")]
 mod redirect_malloc;
 
-#[cfg(feature = "mimalloc_alloc")]
-mod mi_malloc;
-
 #[cfg(feature = "libc_alloc")]
 mod libc_alloc;
 

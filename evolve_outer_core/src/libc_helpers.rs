@@ -125,3 +125,24 @@ fn evolve_write_resource_usage() {
 //         timespec_to_f64(x)
 //     }
 // }
+
+// #[no_mangle]
+// pub unsafe extern "C" fn __fprintf_chk(
+//     _file: *mut FILE,
+//     _flag: c_int,
+//     _format: *const c_char,
+// ) -> c_int {
+//     0
+// }
+//
+// #[no_mangle]
+// pub extern "C" fn abort() -> ! {
+//     std::process::abort()
+// }
+//
+// #[no_mangle]
+// pub static mut stdin: *mut FILE = ptr::null_mut();
+// #[no_mangle]
+// pub static mut stdout: *mut FILE = ptr::null_mut();
+// #[no_mangle]
+// pub static mut stderr: *mut FILE = ptr::null_mut();
