@@ -1,3 +1,38 @@
+# evolve-core
+
+## Data Structures
+
+### Atoms
+
+- i64
+- f64
+- string
+- null / true / false
+- enums
+- regex
+
+### Collections / Containers
+
+- tuple
+- array
+- heap
+- hashmap
+- hashset
+
+### Consideration
+
+- btreemap
+- btreeset
+- rope
+- scc
+
+## Important implementations
+
+- uuid
+- crypto
+- threads / pools / concurrency
+- os interfacing - rustix / relibc / libc
+
 ## inner-core
 
 - nostd

@@ -7,12 +7,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+evolve_inner_core = { path = "../evolve_inner_core" }
+
 # no-std
 libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"] }
 libc-print = {  version = "^0.1", default-features = false }
 rustix = { version = "^1.0", default-features = false, features = ["stdio", "time"] }
 gmp-mpfr-sys = { version = "^1.6", default-features = false, features = ["mpfr"] }
-evolve_inner_core = { path = "../evolve_inner_core" }
 ordered-float = { version = "5.0.0", default-features = false }
 smallvec = { version = "1.14.0", default-features = false }
 arrayvec = { version = "0.7.6", default-features = false }
@@ -36,7 +37,6 @@ unicase = { version = "2.8.1",  default-features = false }
 # allocators
 bdwgc-alloc = { version = "0.6.9", default-features = false, features = ["cmake"], optional = true}
 libc_alloc = { version = "1.0.7", default-features = false, optional = true }
-mimalloc = { version = "0.1.43", optional = true }
 
 #inject_global_allocator = { path = "../inject_global_allocator", optional = true }
 # std
@@ -57,7 +57,6 @@ default = []
 bdwgc_alloc = ["dep:bdwgc-alloc"]
 libgc_alloc = []
 libc_alloc = ["dep:libc_alloc"]
-mimalloc_alloc = ["dep:mimalloc", "redirect_malloc"]
 redirect_malloc = []
 
 [profile.release]
