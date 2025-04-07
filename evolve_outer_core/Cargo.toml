@@ -21,7 +21,7 @@ arrayvec = { version = "0.7.6", default-features = false }
 # data structures
 ahash = { version = "^0.8", default-features = false }
 hashbrown = { version = "^0.15", default-features = false }
-indexmap = { version = "^2.8",default-features = false }
+indexmap = { version = "^2.9",default-features = false }
 regex = { version = "^1.11", default-features = false, features = ["unicode-perl"] }
 # min-max-heap = { version = "1.3.0",  default-features = false, optional = true }
 min-max-heap = { git = "https://github.com/thoughtafter/min-max-heap-rs", default-features = false, branch = "no_std-support"  }
