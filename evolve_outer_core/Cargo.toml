@@ -15,7 +15,7 @@ libc-print = {  version = "^0.1", default-features = false }
 rustix = { version = "^1.0", default-features = false, features = ["stdio", "time"] }
 gmp-mpfr-sys = { version = "^1.6", default-features = false, features = ["mpfr"] }
 ordered-float = { version = "5.0.0", default-features = false }
-smallvec = { version = "1.14.0", default-features = false }
+smallvec = { version = "1.15.0", default-features = false }
 arrayvec = { version = "0.7.6", default-features = false }
 
 # data structures
