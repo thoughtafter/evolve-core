@@ -109,7 +109,7 @@ mod ptr {
 mod i64 {
     use crate::class_ids::INT_CLASS_ID;
     use crate::object::{Object, Ptr};
-    use core::intrinsics::transmute;
+    use core::mem::transmute;
 
     impl Object {
         #[export_name = "evolve_from_i64"]
