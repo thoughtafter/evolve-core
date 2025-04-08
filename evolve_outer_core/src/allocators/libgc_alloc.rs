@@ -53,8 +53,8 @@ mod ctor {
     }
 }
 
-// // #[export_name = "pthread_create"]
-// #[no_mangle]
+// // #[unsafe(export_name = "pthread_create")]
+// #[unsafe(no_mangle)]
 //  pub unsafe extern "C" fn pthread_create(
 //     pt: *mut pthread_t,
 //     pta: *const pthread_attr_t,
@@ -77,8 +77,8 @@ mod ctor {
 //     }
 // }
 //
-// #[no_mangle]
-// #[export_name = "pthread_join"]
+// #[unsafe(no_mangle)]
+// #[unsafe(export_name = "pthread_join")]
 // pub extern "C" fn pthread_join(
 //     thread: pthread_t,
 //     value_ptr: *mut c_void,
@@ -87,8 +87,8 @@ mod ctor {
 //     unsafe { GC_pthread_join(thread, value_ptr) }
 // }
 //
-// #[no_mangle]
-// #[export_name = "pthread_detach"]
+// #[unsafe(no_mangle)]
+// #[unsafe(export_name = "pthread_detach")]
 // pub extern "C" fn pthread_detach(
 //     thread: pthread_t,
 // ) -> c_int {
@@ -96,8 +96,8 @@ mod ctor {
 //     unsafe { GC_pthread_detach(thread) }
 // }
 //
-// #[no_mangle]
-// #[export_name = "pthread_cancel"]
+// #[unsafe(no_mangle)]
+// #[unsafe(export_name = "pthread_cancel")]
 // pub extern "C" fn pthread_cancel(
 //     thread: pthread_t,
 // ) -> c_int {
@@ -105,8 +105,8 @@ mod ctor {
 //     unsafe { GC_pthread_cancel(thread) }
 // }
 //
-// #[no_mangle]
-// #[export_name = "pthread_exit"]
+// #[unsafe(no_mangle)]
+// #[unsafe(export_name = "pthread_exit")]
 // pub extern "C" fn pthread_exit(
 //     a:
 //     *const c_void,
@@ -115,8 +115,8 @@ mod ctor {
 //     unsafe { GC_pthread_exit(a) }
 // }
 //
-// // #[no_mangle]
-// // // #[export_name = "pthread_sigmask"]
+// // #[unsafe(no_mangle)]
+// // // #[unsafe(export_name = "pthread_sigmask")]
 // // pub extern "C" fn pthread_sigmask(
 // //     how: c_int,
 // //     set: *const libc::sigset_t,
@@ -126,8 +126,8 @@ mod ctor {
 // //     unsafe { GC_pthread_sigmask(how, set, oldset) }
 // // }
 //
-// #[no_mangle]
-// #[export_name = "dlopen"]
+// #[unsafe(no_mangle)]
+// #[unsafe(export_name = "dlopen")]
 // pub extern "C" fn dlopen(
 //     path: *const c_char, mode: c_int)
 //   {
@@ -185,20 +185,20 @@ fn verify_thread_registration_or_fail(layout: Layout) {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_mem_malloc(bytes: usize) -> *mut u8 {
     let layout = Layout::from_size_align(bytes, 8).unwrap();
     unsafe { GcAllocator.alloc(layout) }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_mem_calloc(size: usize, num: usize) -> *mut u8 {
     let bytes = size.checked_mul(num).unwrap();
     let layout = Layout::from_size_align(bytes, 8).unwrap();
     unsafe { GcAllocator.alloc_zeroed(layout) }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_mem_malloc_atomic(bytes: usize) -> *mut u8 {
     let layout = Layout::from_size_align(bytes, 8).unwrap();
     unsafe { GcAllocator.alloc(layout) }
@@ -206,7 +206,7 @@ fn evolve_mem_malloc_atomic(bytes: usize) -> *mut u8 {
 
 static ALLOCS: AtomicU64 = AtomicU64::new(0);
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_mem_allocs() -> u64 {
     ALLOCS.load(Relaxed)
 }
@@ -225,7 +225,7 @@ unsafe impl GlobalAlloc for GcAllocator {
         // let ptr = GC_memalign(align, size);
         // let ptr = GC_debug_malloc(size, FILENAME.as_ptr(), line!());
 
-        let ptr = GC_debug_malloc_ignore_off_page(size, FILENAME.as_ptr(), line!());
+        let ptr = unsafe { GC_debug_malloc_ignore_off_page(size, FILENAME.as_ptr(), line!()) };
         // let ptr = GC_malloc(size);
         // let ptr = GC_debug_malloc(bytes, FILENAME.as_ptr(), line!());
         // libc_println!("finish allocators: {:?}", layout);
@@ -235,44 +235,50 @@ unsafe impl GlobalAlloc for GcAllocator {
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, _layout: Layout) {
-        // verify_thread_registration_or_fail(layout);
-        GC_debug_free(ptr, FILENAME.as_ptr(), line!());
-        // GC_free(ptr);
+        unsafe {
+            // verify_thread_registration_or_fail(layout);
+            GC_debug_free(ptr, FILENAME.as_ptr(), line!());
+            // GC_free(ptr);
+        }
     }
 
     // usable if allocators is zeroed - which is the case for malloc, but unsure for memalign
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        self.alloc(layout)
+        unsafe { self.alloc(layout) }
     }
 
     unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
-        // #[cfg(test)]
-        // {
-        //     // verify_thread_registration(layout);
-        // }
-        let ptr = GC_debug_realloc(ptr, new_size, FILENAME.as_ptr(), line!());
-        // let ptr = GC_realloc(ptr, new_size);
-        verify_alloc_success(ptr, layout)
+        unsafe {
+            // #[cfg(test)]
+            // {
+            //     // verify_thread_registration(layout);
+            // }
+            let ptr = GC_debug_realloc(ptr, new_size, FILENAME.as_ptr(), line!());
+            // let ptr = GC_realloc(ptr, new_size);
+            verify_alloc_success(ptr, layout)
+        }
     }
 }
 
 impl GcAllocator {
     #[allow(dead_code)]
     pub unsafe fn setup() {
-        // println!("libgc setup");
-        GC_init();
+        unsafe {
+            // println!("libgc setup");
+            GC_init();
 
-        // libc_println!("is_reg");
+            // libc_println!("is_reg");
 
-        // let reg = unsafe { GC_thread_is_registered() };
-        // libc_println!("is_reg: {}", reg);
+            // let reg = unsafe { GC_thread_is_registered() };
+            // libc_println!("is_reg: {}", reg);
 
-        GC_allow_register_threads();
+            GC_allow_register_threads();
 
-        // let reg = unsafe { GC_thread_is_registered() };
-        // libc_println!("is_reg: {}", reg);
+            // let reg = unsafe { GC_thread_is_registered() };
+            // libc_println!("is_reg: {}", reg);
 
-        GC_disable();
+            GC_disable();
+        }
     }
 }
 

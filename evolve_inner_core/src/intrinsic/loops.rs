@@ -12,7 +12,7 @@ use crate::tuple::evolve_from_ptr_tuple;
 //   %ret = tail call fastcc { i64, ptr } @evolve.core.select(i1 %null, { i64, ptr } %step, { i64, ptr } %self)
 //   ret { i64, ptr } %ret
 // }
-#[export_name = "evolve.intrinsic2.times!"]
+#[unsafe(export_name = "evolve.intrinsic2.times!")]
 #[inline(always)]
 fn evolve_intrinsic2_times(this: Object, tuple: Object) -> Object {
     evolve_intrinsic2_step(1.into(), this, 1.into(), tuple);
@@ -55,7 +55,7 @@ fn evolve_intrinsic2_times2(this: Object, closure: Object) -> Object {
 //   %ret = tail call fastcc { i64, ptr } @evolve.core.select(i1 %null, { i64, ptr } %step, { i64, ptr } %self)
 //   ret { i64, ptr } %ret
 // }
-#[export_name = "evolve.intrinsic2.upto!"]
+#[unsafe(export_name = "evolve.intrinsic2.upto!")]
 #[inline(always)]
 fn evolve_intrinsic2_upto(this: Object, limit: Object, tuple: Object) -> Object {
     evolve_intrinsic2_step(this, limit, 1.into(), tuple);
@@ -72,7 +72,7 @@ fn evolve_intrinsic2_upto(this: Object, limit: Object, tuple: Object) -> Object 
 //   %ret = tail call fastcc { i64, ptr } @evolve.core.select(i1 %null, { i64, ptr } %step, { i64, ptr } %self)
 //   ret { i64, ptr } %ret
 // }
-#[export_name = "evolve.intrinsic2.downto!"]
+#[unsafe(export_name = "evolve.intrinsic2.downto!")]
 #[inline(always)]
 fn evolve_intrinsic2_downto(this: Object, limit: Object, tuple: Object) -> Object {
     evolve_intrinsic2_step(this, limit, Object::from_i64(-1), tuple);
@@ -87,7 +87,7 @@ fn evolve_intrinsic2_downto(this: Object, limit: Object, tuple: Object) -> Objec
 //   %step = tail call fastcc { i64, ptr } @"evolve.intrinsic2.step!"({ i64, ptr } %one, { i64, ptr } %limit, { i64, ptr } %one, { i64, ptr } %closure) #8
 //   ret { i64, ptr } %step
 // }
-#[export_name = "evolve.intrinsic2.loop!"]
+#[unsafe(export_name = "evolve.intrinsic2.loop!")]
 #[inline(always)]
 fn evolve_intrinsic2_loop(this: Object, tuple: Object) -> Object {
     evolve_intrinsic2_step(1.into(), i64::MAX.into(), 1.into(), tuple);
@@ -101,7 +101,7 @@ fn evolve_intrinsic2_loop(this: Object, tuple: Object) -> Object {
 // handling step_down:
 // - could transform to negatives if start > limit, but negatives are not safe so this is many extra checks
 // - since step is likely to be known at compile time we can check it
-#[export_name = "evolve.intrinsic2.step!"]
+#[unsafe(export_name = "evolve.intrinsic2.step!")]
 #[inline(always)]
 fn evolve_intrinsic2_step(this: Object, limit: Object, step: Object, closure: Object) -> Object {
     let raw_tuple = [Object::null(); 2];

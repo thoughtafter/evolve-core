@@ -7,7 +7,7 @@ mod tests;
 // use core::ptr;
 // use core::ptr::NonNull;
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // fn evolve_string_trim_end(value: &str) -> Object {
 //     let trimmed = value.trim_end(); // slice
 //     // str_to_safe_object(trimmed)
@@ -42,7 +42,7 @@ pub mod parse_f64 {
     /// could use nan to signal error
     /// or success bool to match similar calls
     /// better than strtod needing to check errno
-    #[export_name = "evolve_string_parse_f64"]
+    #[unsafe(export_name = "evolve_string_parse_f64")]
     pub fn string_parse_f64_core(text: &str) -> (OrderedFloat<f64>, bool) {
         // let parsed = value.parse::<f64>();
         let parsed = f64::from_str(text);
@@ -103,7 +103,7 @@ mod parse_i64 {
     /// return i64 from string
     /// replace strtoll, no errno
     ///
-    #[export_name = "evolve_string_parse_i64"]
+    #[unsafe(export_name = "evolve_string_parse_i64")]
     pub fn string_parse_i64_core(value: &str, radix: u32) -> (i64, bool) {
         let (value, radix) = if radix == 0 {
             auto_radix(value)
@@ -133,19 +133,19 @@ mod parse_i64 {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_string_trim_end(value: &str) -> Object {
     let trimmed = value.trim_end(); // slice
     trimmed.to_string().into()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_string_trim_start(value: &str) -> Object {
     let trimmed = value.trim_start(); // slice
     trimmed.to_string().into()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn new_string_repeat(value: &str, times: usize) -> Object {
     // let bytes = value.as_bytes();
     // let repeat = bytes.repeat(times);
@@ -156,39 +156,39 @@ fn new_string_repeat(value: &str, times: usize) -> Object {
     value.repeat(times).into()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 const fn evolve_string_is_ascii(value: &str) -> bool {
     value.is_ascii()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_string_is_blank(value: &str) -> bool {
     value.trim().is_empty()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_string_cmp(lhs: &str, rhs: &str) -> Ordering {
     let a = UniCase::new(lhs);
     let b = UniCase::new(rhs);
     a.cmp(&b)
 }
 
-#[export_name = "evolve.string.begins?"]
+#[unsafe(export_name = "evolve.string.begins?")]
 fn evolve_string_starts_with(lhs: &str, rhs: &str) -> bool {
     lhs.starts_with(rhs)
 }
 
-#[export_name = "evolve.string.ends?"]
+#[unsafe(export_name = "evolve.string.ends?")]
 fn evolve_string_ends_with(lhs: &str, rhs: &str) -> bool {
     lhs.ends_with(rhs)
 }
 
-#[export_name = "evolve.string.valid?"]
+#[unsafe(export_name = "evolve.string.valid?")]
 fn evolve_string_valid(lhs: &str) -> bool {
     core::str::from_utf8(lhs.as_bytes()).is_ok()
 }
 
-#[export_name = "evolve.string.chars"]
+#[unsafe(export_name = "evolve.string.chars")]
 fn evolve_string_chars(lhs: &str) -> usize {
     lhs.chars().count()
 }
@@ -214,7 +214,7 @@ mod i64 {
     }
 
     #[allow(dead_code)]
-    #[export_name = "evolve.string.from.i64"]
+    #[unsafe(export_name = "evolve.string.from.i64")]
     fn string_from_i64_lexical(value: i64) -> Object {
         lexical::to_string(value).into()
     }
@@ -240,7 +240,7 @@ pub mod f64 {
     }
 
     #[allow(dead_code)]
-    #[export_name = "evolve.string.from.f64"]
+    #[unsafe(export_name = "evolve.string.from.f64")]
     fn string_from_f64_lexical(value: f64) -> Object {
         lexical::to_string(value).into()
     }

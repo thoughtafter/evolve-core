@@ -3,18 +3,18 @@
 mod tests;
 
 use crate::class_ids::{CLOSURE_CLASS_ID, EVOLVE_CLOSURE_FUNCTION_POINTER_ID};
-use crate::object::{evolve_build_ptr, Object, Ptr};
+use crate::object::{Object, Ptr, evolve_build_ptr};
 use crate::tuple::evolve_from_ptr_tuple;
 use core::mem::transmute;
 
 type EvolveClosure = fn(Object, Object, Object) -> Object;
 
-// #[export_name = "evolve.from.ptr.closure"]
+// #[unsafe(export_name = "evolve.from.ptr.closure")]
 // fn evolve_from_ptr_closure(closure: Ptr) -> Object {
 //     evolve_build_ptr(CLOSURE_CLASS_ID, 0, closure)
 // }
 
-#[export_name = "evolve.from.ptr.closure2"]
+#[unsafe(export_name = "evolve.from.ptr.closure2")]
 #[inline(always)]
 /// create closure from data pointer (probably alloca), function_ptr, and param count
 fn evolve_from_ptr_closure2(
@@ -42,13 +42,13 @@ fn evolve_from_ptr_closure2(
 // }
 // TODO: write this
 // doing nothing should allow compilation with no closures working
-// #[export_name = "evolve.closure.call"]
+// #[unsafe(export_name = "evolve.closure.call")]
 
 /// # Safety
 /// calls function blindly
 #[inline(always)]
 // #[inline(never)]
-#[export_name = "evolve.closure.call"]
+#[unsafe(export_name = "evolve.closure.call")]
 pub unsafe fn evolve_closure_call(closure: Object, tuple: Object) -> Object {
     let closure_caller_self = evolve_closure_get_self(closure);
     let closure_fun = evolve_closure_get_fun(closure);
@@ -72,7 +72,7 @@ pub unsafe fn evolve_closure_call(closure: Object, tuple: Object) -> Object {
 //   %self = tail call fastcc { i64, ptr } @evolve.mem.load.object(ptr nocapture nonnull readonly %closure.ptr, i64 3)
 //   ret { i64, ptr } %self
 // }
-// #[export_name = "evolve.closure.get.self"]
+// #[unsafe(export_name = "evolve.closure.get.self")]
 #[inline(always)]
 pub fn evolve_closure_get_self(closure: Object) -> Object {
     closure.tuple_get(3)
@@ -85,7 +85,7 @@ pub fn evolve_closure_get_self(closure: Object) -> Object {
 //   %env.tuple = tail call fastcc { i64, ptr } @evolve.from.ptr.tuple(i64 %size.i64, ptr %closure.ptr)
 //   ret { i64, ptr } %env.tuple
 // }
-// #[export_name = "evolve.closure.get.env"]
+// #[unsafe(export_name = "evolve.closure.get.env")]
 #[inline(always)]
 pub fn evolve_closure_get_env(closure: Object) -> Object {
     let size = evolve_closure_get_size(closure);
@@ -99,12 +99,12 @@ pub fn evolve_closure_get_env(closure: Object) -> Object {
 //   %size.i64 = tail call fastcc i64 @evolve.extract.i64({ i64, ptr } %size)
 //   ret i64 %size.i64
 // }
-// #[export_name = "evolve.closure.get.size"]
+// #[unsafe(export_name = "evolve.closure.get.size")]
 pub fn evolve_closure_get_size(closure: Object) -> i64 {
     closure.tuple_get(2).extract_i64()
 }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 #[inline(always)]
 // TODO: when inlined this breaks things
 // #[inline(never)]
@@ -125,7 +125,7 @@ pub fn evolve_closure_function_pointer(ptr: Ptr) -> Object {
 /// # Safety
 /// calling this function is safe. Calling the return value requires that the correct object
 /// was sent
-// #[export_name = "evolve.closure.get.fun"]
+// #[unsafe(export_name = "evolve.closure.get.fun")]
 #[inline(always)]
 pub fn evolve_closure_get_fun(closure: Object) -> EvolveClosure {
     let fn_ptr = closure.tuple_get(1);

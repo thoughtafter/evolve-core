@@ -30,10 +30,10 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 mod debug {
     use crate::rustix::io::evolve_puts;
     use alloc::format;
-    use evolve_inner_core::object::{evolve_build_ptr, EvolveAuxData, EvolveClassId, Ptr};
+    use evolve_inner_core::object::{EvolveAuxData, EvolveClassId, Ptr, evolve_build_ptr};
     // use libc_print::libc_println;
 
-    #[no_mangle]
+    #[unsafe(no_mangle)]
     fn object_debug2(class_id: u64, aux4: u64, data: u64) {
         let object = evolve_build_ptr(
             class_id as EvolveClassId,
@@ -50,7 +50,7 @@ mod debug {
 // #[lang = "eh_personality"]
 // extern "C" fn rust_eh_personality() {}
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // extern "C" fn rust_eh_personality() {}
 
 #[cfg(test)]

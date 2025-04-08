@@ -3,7 +3,7 @@ use alloc::string::String;
 use alloc::vec::Vec;
 use evolve_inner_core::class_ids::REGEX_CLASS_ID;
 use evolve_inner_core::leak::leak_heap_ptr;
-use evolve_inner_core::object::{evolve_build_ptr, Object, Ptr};
+use evolve_inner_core::object::{Object, Ptr, evolve_build_ptr};
 use regex::Regex;
 
 #[allow(dead_code)]
@@ -14,7 +14,7 @@ trait RegexExt {
 }
 
 // TODO: deal with dropping
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_regex_from_string(string: &str) -> Object {
     let regex = Regex::new(string);
     match regex {
@@ -38,12 +38,12 @@ impl RegexExt for Object {
     }
 
     /// see if regex matches string
-    #[no_mangle]
+    #[unsafe(no_mangle)]
     fn evolve_regex_has_match(self, string: &str) -> bool {
         self.regex().is_match(string)
     }
 
-    #[no_mangle]
+    #[unsafe(no_mangle)]
     fn evolve_regex_to_s2(self) -> Object {
         Object::from_str(self.regex().as_str())
     }
@@ -79,12 +79,12 @@ fn evolve_regex_match_raw(regex: &Regex, string: &str) -> Vec<String> {
 //         .collect()
 // }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_regex_match(regex: &Regex, string: &str) -> Object {
     evolve_regex_match_raw(regex, string).into()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_regex_replace(regex: &Regex, haystack: &str, replacer: &str) -> Object {
     let replaced = regex.replace_all(haystack, replacer);
     match replaced {

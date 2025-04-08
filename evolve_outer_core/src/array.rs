@@ -1,13 +1,13 @@
-use evolve_inner_core::array::{adjusted_index, EvolveArray};
+use evolve_inner_core::array::{EvolveArray, adjusted_index};
 use evolve_inner_core::object::Object;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_array_mut_reserve(array: &mut EvolveArray, capacity: usize) {
     array.reserve(capacity);
 }
 
 // TODO: handle overflow, also, should 0 be 1 in this case?
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_array_mut_insert(array: &mut EvolveArray, index: usize, value: Object) {
     // if index > array.len() {
     //     array.resize(index + 1, Object::default());
@@ -16,37 +16,37 @@ fn evolve_array_mut_insert(array: &mut EvolveArray, index: usize, value: Object)
     array.insert(adjusted_index, value);
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_array_mut_remove(array: &mut EvolveArray, index: usize) -> Object {
     let adjusted_index = adjusted_index(index);
     array.remove(adjusted_index).unwrap_or_default()
 }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // #[inline(always)]
 // fn evolve_array_mut_push_front(array: &mut EvolveArray, value: Object) {
 //     array.push_front(value);
 // }
 //
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // #[inline(always)]
 // fn evolve_array_mut_push_back(array: &mut EvolveArray, value: Object) {
 //     array.push_back(value);
 // }
 //
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // #[inline(always)]
 // fn evolve_array_mut_pop_front(array: &mut EvolveArray) -> Object {
 //     array.pop_front().unwrap_or_default()
 // }
 //
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // #[inline(always)]
 // fn evolve_array_mut_pop_back(array: &mut EvolveArray) -> Object {
 //     array.pop_back().unwrap_or_default()
 // }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// reverse this array
 fn evolve_array_mut_reverse(array: &mut EvolveArray) {
     // let slice = array.make_contiguous();
@@ -56,12 +56,12 @@ fn evolve_array_mut_reverse(array: &mut EvolveArray) {
     array.make_contiguous().reverse()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_array_copy(array: &EvolveArray) -> Object {
     array.clone().into()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[inline(always)]
 /// put inbounds - suitable for initializer
 /// returns true if overflow / error
@@ -81,7 +81,7 @@ fn evolve_array_put_inbounds(array: &mut EvolveArray, index: usize, value: Objec
 //     //array.resize(index + 1, Object::default());
 //
 // }
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[inline(always)]
 /// put with resize
 /// returns true if overflow / error - which should not happen
@@ -94,7 +94,7 @@ fn evolve_array_put(array: &mut EvolveArray, index: usize, value: Object) -> boo
     evolve_array_put_inbounds(array, index, value)
 }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // #[inline(always)]
 // fn evolve_array_mut_resize(
 //     array: &mut EvolveArray,

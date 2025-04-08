@@ -32,7 +32,7 @@ mod mem {
         unsafe { alloc::alloc::dealloc(_ptr as *mut u8, layout) };
     }
 
-    #[no_mangle]
+    #[unsafe(no_mangle)]
     fn evolve_gmp_set_mem_func() {
         unsafe {
             gmp_mpfr_sys::gmp::set_memory_functions(
@@ -52,25 +52,25 @@ mod mpz {
 
     /// sign using converstion of macro by gmp_mpfr lib
     /// zero checking can use this
-    #[no_mangle]
+    #[unsafe(no_mangle)]
     fn evolve_mpz_sgn(op: mpz_srcptr) -> i64 {
         let signum = unsafe { mpz_sgn(op) };
         signum as i64
     }
 
-    #[no_mangle]
+    #[unsafe(no_mangle)]
     const fn evolve_mpz_odd_p(op: mpz_srcptr) -> bool {
         let odd = unsafe { mpz_odd_p(op) };
         odd != 0
     }
 
-    #[no_mangle]
+    #[unsafe(no_mangle)]
     fn evolve_mpz_even_p(op: mpz_srcptr) -> bool {
         let even = unsafe { mpz_even_p(op) };
         even != 0
     }
 
-    // #[no_mangle]
+    // #[unsafe(no_mangle)]
     // fn evolve_mpz_zero_p(op: mpz_srcptr) -> bool {
     //     let zero = unsafe { gmp::mpz_cmp_si(op, 0) };
     //     zero != 0
@@ -81,7 +81,7 @@ mod mpz {
     }
 
     // could call @int64.ffi-gmp.mpz_init_set_ui.1({ i64, ptr } %obj1, { i64, ptr } %obj1)
-    #[export_name = "evolve.int.new.u64"]
+    #[unsafe(export_name = "evolve.int.new.u64")]
     fn evolve_int_new_i64(value: i64) -> Object {
         if value >= 0 {
             value.into()
@@ -130,14 +130,14 @@ mod mpq {
     use evolve_inner_core::object::{Object, Ptr};
     use gmp_mpfr_sys::gmp::{mpq_denref_const, mpq_numref_const, mpq_srcptr};
 
-    #[no_mangle]
+    #[unsafe(no_mangle)]
     const fn evolve_mpq_numref(op: mpq_srcptr) -> Object {
         let num = unsafe { mpq_numref_const(op) };
         //evolve_big_int_from_srcptr(num)
         Object::with_aux(BIGINT_CLASS_ID, 16, num as Ptr)
     }
 
-    #[no_mangle]
+    #[unsafe(no_mangle)]
     const fn evolve_mpq_denref(op: mpq_srcptr) -> Object {
         let den = unsafe { mpq_denref_const(op) };
         //evolve_big_int_from_srcptr(den)

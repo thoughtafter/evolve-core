@@ -2,7 +2,7 @@ use crate::llvm::evolve_llvm_fptosi;
 use core::cmp::Ordering;
 use ordered_float::OrderedFloat;
 
-#[export_name = "evolve_f64_cmp"]
+#[unsafe(export_name = "evolve_f64_cmp")]
 #[inline(always)]
 // https://doc.rust-lang.org/std/primitive.f64.html#method.total_cmp
 // was evolve_math_cmp_f64
@@ -14,7 +14,7 @@ pub fn evolve_f64_cmp(value1: f64, value2: f64) -> Ordering {
     OrderedFloat(value1).cmp(&OrderedFloat(value2))
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// ordered equality - faster than cmp
 pub fn evolve_f64_eq(value1: f64, value2: f64) -> bool {
     OrderedFloat(value1).eq(&OrderedFloat(value2))
@@ -25,14 +25,14 @@ pub const fn evolve_f64_is_divisible(lhs: f64, rhs: f64) -> bool {
     (lhs % rhs) == 0.0
 }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // fn evolve_f64_signum(value: f64) -> i64 {
 //     // value.signum() as i64
 //     OrderedFloat(value).cmp(&OrderedFloat(0.0)) as i64
 // }
 
 // not needed with saturated fptosi
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // fn evolve_f64_fits_i64(value: f64) -> bool {
 //     (value <= i64::MAX as f64) && (value >= i64::MIN as f64)
 // }
@@ -44,7 +44,7 @@ pub const fn evolve_f64_is_divisible(lhs: f64, rhs: f64) -> bool {
 // - conforms with num_traits
 // - eliminates problems with positive and negative conversions not matching
 // the range is -9223372036854775808 to 9223372036854774784
-#[export_name = "evolve.f64.fptosi.checked"]
+#[unsafe(export_name = "evolve.f64.fptosi.checked")]
 #[inline(always)]
 // TODO: const
 pub fn evolve_f64_fptosi_checked(value: f64) -> (i64, bool) {

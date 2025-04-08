@@ -10,49 +10,49 @@ type EvolveHeap = MinMaxHeap<Object>;
 
 const MIN_CAPACITY: usize = 8;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_heap_new(capacity: usize) -> &'static mut EvolveHeap {
     let capacity = capacity.max(MIN_CAPACITY);
     let heap = EvolveHeap::with_capacity(capacity);
     leak_heap_ref_mut(heap)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_heap_size(heap: &EvolveHeap) -> usize {
     heap.len()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_heap_capacity(heap: &EvolveHeap) -> usize {
     heap.capacity()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_heap_peek_min(heap: &EvolveHeap) -> Object {
     *heap.peek_min().unwrap_or_default()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_heap_peek_max(heap: &EvolveHeap) -> Object {
     *heap.peek_max().unwrap_or_default()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_heap_pop_min(heap: &mut EvolveHeap) -> Object {
     heap.pop_min().unwrap_or_default()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_heap_pop_max(heap: &mut EvolveHeap) -> Object {
     heap.pop_max().unwrap_or_default()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_heap_push(heap: &mut EvolveHeap, value: Object) {
     heap.push(value);
 }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // fn evolve_heap_sorted(heap: &EvolveHeap) -> Object  {
 //     unsafe { *heap }.into_vec_asc().into()
 // }

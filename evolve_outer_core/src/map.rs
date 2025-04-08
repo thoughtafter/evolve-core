@@ -25,7 +25,7 @@ trait StringMapExt {
 }
 
 impl StringMapExt for Object {
-    #[no_mangle]
+    #[unsafe(no_mangle)]
     fn evolve_map_new(capacity: usize) -> Object {
         let map = evolve_map_new_raw(capacity);
         Self::from_ref(MAP_CLASS_ID, map)
@@ -65,7 +65,7 @@ impl StringMapExt for Object {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_map_new_raw(capacity: usize) -> &'static EvolveMap {
     let capacity = capacity.max(MIN_CAPACITY);
     let hash_builder = RandomState::with_seed(42);
@@ -73,43 +73,43 @@ fn evolve_map_new_raw(capacity: usize) -> &'static EvolveMap {
     leak_heap_ref(map)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_map_get(map: &EvolveMap, key: Object) -> Object {
     map.get(&key).copied().unwrap_or_default()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[inline]
 fn evolve_map_size(map: &EvolveMap) -> usize {
     map.len()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_map_capacity(map: &EvolveMap) -> usize {
     map.capacity()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_map_put(map: &mut EvolveMap, key: Object, value: Object) {
     map.insert(key, value);
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_map_eq(lhs: &EvolveMap, rhs: &EvolveMap) -> bool {
     lhs == rhs
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_map_keys(map: &EvolveMap) -> Object {
     EvolveArray::from_iter(map.keys().copied()).into()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_map_values(map: &EvolveMap) -> Object {
     EvolveArray::from_iter(map.values().copied()).into()
 }
 
-#[export_name = "evolve.map.get.index"]
+#[unsafe(export_name = "evolve.map.get.index")]
 fn evolve_map_get_index(map: &EvolveMap, index: usize, tuple: Object) {
     let pair = map.get_index(index - 1).unwrap_or_default();
     tuple.tuple_put(1, *(pair.0));

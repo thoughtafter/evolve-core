@@ -7,7 +7,7 @@ use crate::leak::leak_heap_ref;
 use crate::object::Object;
 use crate::object_from::evolve_from_string;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn new_string(value: &CStr) -> Object {
     value.into()
 }

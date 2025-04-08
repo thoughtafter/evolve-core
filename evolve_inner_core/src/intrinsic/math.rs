@@ -66,19 +66,19 @@ where
     Object::intrinsic_fail()
 }
 
-#[export_name = "evolve.intrinsic2.add"]
+#[unsafe(export_name = "evolve.intrinsic2.add")]
 #[inline(always)]
 fn evolve_intrinsic_add(left: Object, right: Object) -> Object {
     math_helper(left, right, i64::checked_add, f64::add)
 }
 
-#[export_name = "evolve.intrinsic2.sub"]
+#[unsafe(export_name = "evolve.intrinsic2.sub")]
 #[inline(always)]
 fn evolve_intrinsic_sub(left: Object, right: Object) -> Object {
     math_helper(left, right, i64::checked_sub, f64::sub)
 }
 
-#[export_name = "evolve.intrinsic2.mul"]
+#[unsafe(export_name = "evolve.intrinsic2.mul")]
 #[inline(always)]
 fn evolve_intrinsic_mul(left: Object, right: Object) -> Object {
     math_helper(left, right, i64::checked_mul, f64::mul)
@@ -108,7 +108,7 @@ fn evolve_intrinsic_mul(left: Object, right: Object) -> Object {
 //     }
 // }
 
-#[export_name = "evolve.intrinsic2.trem"]
+#[unsafe(export_name = "evolve.intrinsic2.trem")]
 #[inline(always)]
 /// truncated remainder
 fn evolve_intrinsic_trem(left: Object, right: Object) -> Object {
@@ -119,7 +119,7 @@ fn evolve_intrinsic_trem(left: Object, right: Object) -> Object {
     // math_helper(left, right, i64::checked_rem, f64::rem)
 }
 
-#[export_name = "evolve.intrinsic2.rem"]
+#[unsafe(export_name = "evolve.intrinsic2.rem")]
 #[inline(always)]
 /// euclidean remainder, aka mod
 /// uses num_traits because rem_euclid requires std
@@ -155,7 +155,7 @@ fn evolve_intrinsic_rem(left: Object, right: Object) -> Object {
 //     }
 // }
 
-#[export_name = "evolve.intrinsic2.div"]
+#[unsafe(export_name = "evolve.intrinsic2.div")]
 #[inline(always)]
 /// division
 /// f64 - exact, as expected
@@ -175,7 +175,7 @@ fn f64_tdiv(lhs: f64, rhs: f64) -> f64 {
     (lhs / rhs).trunc()
 }
 
-#[export_name = "evolve.intrinsic2.tdiv"]
+#[unsafe(export_name = "evolve.intrinsic2.tdiv")]
 #[inline(always)]
 fn evolve_intrinsic_tdiv(left: Object, right: Object) -> Object {
     if right.extract_raw_f64() == 0.0 {
@@ -190,7 +190,7 @@ fn evolve_intrinsic_divided_by(left: Object, right: Object) -> Object {
     evolve_intrinsic_zero(evolve_intrinsic_rem(left, right))
 }
 
-#[export_name = "evolve.intrinsic2.div?"]
+#[unsafe(export_name = "evolve.intrinsic2.div?")]
 #[inline(always)]
 const fn evolve_intrinsic_is_div(left: Object, right: Object) -> Object {
     let lhs_tag = left.tag();
@@ -223,7 +223,7 @@ const fn evolve_intrinsic_is_div(left: Object, right: Object) -> Object {
     }
 }
 
-#[export_name = "evolve.intrinsic2.zero?"]
+#[unsafe(export_name = "evolve.intrinsic2.zero?")]
 #[inline(always)]
 const fn evolve_intrinsic_zero(value: Object) -> Object {
     let tag = value.tag();
@@ -245,7 +245,7 @@ const fn evolve_intrinsic_zero(value: Object) -> Object {
 //     }
 // }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // #[inline(always)]
 // pub fn evolve_intrinsic_eq(left: Object, right: Object) -> Object {
 //     match (left.class_id(), right.class_id()) {

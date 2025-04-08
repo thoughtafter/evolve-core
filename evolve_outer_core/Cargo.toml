@@ -3,40 +3,40 @@
 
 [package]
 name = "evolve_outer_core"
-version = "0.1.0"
-edition = "2021"
+version = "1.0.0"
+edition = "2024"
 
 [dependencies]
 evolve_inner_core = { path = "../evolve_inner_core" }
 
 # no-std
-libc = { version = "^0.2", default-features = false, features = ["const-extern-fn"] }
-libc-print = {  version = "^0.1", default-features = false }
-rustix = { version = "^1.0", default-features = false, features = ["stdio", "time"] }
-gmp-mpfr-sys = { version = "^1.6", default-features = false, features = ["mpfr"] }
-ordered-float = { version = "5.0.0", default-features = false }
-smallvec = { version = "1.15.0", default-features = false }
-arrayvec = { version = "0.7.6", default-features = false }
+libc = { version = "0.2", default-features = false, features = ["const-extern-fn"] }
+libc-print = {  version = "0.1", default-features = false }
+rustix = { version = "1.0", default-features = false, features = ["stdio", "time"] }
+gmp-mpfr-sys = { version = "1.6", default-features = false, features = ["mpfr"] }
+ordered-float = { version = "5.0", default-features = false }
+smallvec = { version = "1.15", default-features = false }
+arrayvec = { version = "0.7", default-features = false }
 
 # data structures
-ahash = { version = "^0.8", default-features = false }
-hashbrown = { version = "^0.15", default-features = false }
-indexmap = { version = "^2.9",default-features = false }
-regex = { version = "^1.11", default-features = false, features = ["unicode-perl"] }
+ahash = { version = "0.8", default-features = false }
+hashbrown = { version = "0.15", default-features = false }
+indexmap = { version = "2.9",default-features = false }
+regex = { version = "1.11", default-features = false, features = ["unicode-perl"] }
 # min-max-heap = { version = "1.3.0",  default-features = false, optional = true }
 min-max-heap = { git = "https://github.com/thoughtafter/min-max-heap-rs", default-features = false, branch = "no_std-support"  }
-roaring = { version = "0.10.12",  default-features = false }
+roaring = { version = "0.10",  default-features = false }
 
 # strings
-lexical = {  version = "7.0.4", default-features = false, features = ["radix", "parse-floats", "parse-integers", "write-floats", "write-integers"] }
+lexical = {  version = "7.0", default-features = false, features = ["radix", "parse-floats", "parse-integers", "write-floats", "write-integers"] }
 #lexical-core = { version = "1.0.5", default-features = false, features = ["write-floats", "write-integers"] }
-ryu = { version = "1.0.20",  default-features = false }
-itoa = { version = "1.0.15",  default-features = false, features = ["no-panic"] }
-unicase = { version = "2.8.1",  default-features = false }
+ryu = { version = "1.0",  default-features = false }
+itoa = { version = "1.0",  default-features = false, features = ["no-panic"] }
+unicase = { version = "2.8",  default-features = false }
 
 # allocators
-bdwgc-alloc = { version = "0.6.9", default-features = false, features = ["cmake"], optional = true}
-libc_alloc = { version = "1.0.7", default-features = false, optional = true }
+bdwgc-alloc = { version = "0.6", default-features = false, features = ["cmake"], optional = true}
+libc_alloc = { version = "1.0", default-features = false, optional = true }
 
 #inject_global_allocator = { path = "../inject_global_allocator", optional = true }
 # std
@@ -44,13 +44,13 @@ libc_alloc = { version = "1.0.7", default-features = false, optional = true }
 # postgres = { version = "0.19.8", default-features = false }
 
 [dev-dependencies]
-ctor = { version = "^0.3", default-features = false }
-pretty_assertions = "^1.4"
-test-case = "^3.3"
-rug = "^1.27"
+ctor = { version = "0.3", default-features = false }
+pretty_assertions = "1.4"
+test-case = "3.3"
+rug = "1.27"
 
 # temporary, probably
-gmp-mpfr-sys = { version = "^1.6", default-features = false, features = ["mpfr"] }
+gmp-mpfr-sys = { version = "1.6", default-features = false, features = ["mpfr"] }
 
 [features]
 default = []

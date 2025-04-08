@@ -111,11 +111,11 @@ dependencies = [
 
 [[package]]
 name = "evolve-core"
-version = "0.3.0"
+version = "1.0.0"
 
 [[package]]
 name = "evolve_inner_core"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "num-traits",
  "ordered-float",
@@ -125,7 +125,7 @@ dependencies = [
 
 [[package]]
 name = "evolve_outer_core"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "ahash",
  "arrayvec",

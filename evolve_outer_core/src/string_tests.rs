@@ -1,11 +1,11 @@
 use super::*;
 use test_case::test_case;
 
+use Ordering::*;
 use alloc::borrow::ToOwned;
 use alloc::boxed::Box;
 use alloc::ffi::CString;
 use alloc::string::{String, ToString};
-use Ordering::*;
 
 #[test]
 fn test_lowlevel() {

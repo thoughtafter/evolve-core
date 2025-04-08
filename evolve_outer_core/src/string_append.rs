@@ -1,4 +1,4 @@
-// #[export_name = "evolve_string_new_append2"]
+// #[unsafe(export_name = "evolve_string_new_append2")]
 
 use alloc::string::{String, ToString};
 use evolve_inner_core::object::Object;
@@ -48,7 +48,7 @@ fn evolve_string_append_bytes(string1: &str, string2: &str) -> Object {
     unsafe { String::from_utf8_unchecked(c) }.into()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_string_new_append3(string1: &str, string2: &str, string3: &str) -> Object {
     let capacity = string1.len() + string2.len() + string3.len();
     let mut buffer = String::with_capacity(capacity);

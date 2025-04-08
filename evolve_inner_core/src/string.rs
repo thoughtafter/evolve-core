@@ -16,14 +16,14 @@ use core::str::from_utf8_unchecked;
 mod use_str;
 // mod use_cstr;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[inline(always)]
 /// compare bytes in str using memcmp
 fn evolve_string_bytes_cmp(value1: &str, value2: &str) -> i64 {
     value1.cmp(value2) as i64
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[inline(always)]
 /// compare bytes in str using memcmp
 pub fn evolve_string_bytes_eq(value1: &str, value2: &str) -> bool {
@@ -34,7 +34,7 @@ pub fn evolve_string_bytes_eq(value1: &str, value2: &str) -> bool {
 }
 
 impl Object {
-    #[export_name = "evolve_from_string"]
+    #[unsafe(export_name = "evolve_from_string")]
     #[inline(always)]
     pub const fn from_string(len: u32, ptr: Ptr) -> Self {
         Self::with_aux(STRING_CLASS_ID, len, ptr)
@@ -72,26 +72,26 @@ impl Object {
 //     evolve_from_string(len as u32, raw as Ptr)
 // }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // fn evolve_string_trim_end(value: &str) -> Object {
 //     let trimmed = value.trim_end(); // slice
 //                                     // str_to_safe_object(trimmed)
 //     trimmed.to_owned().into()
 // }
 //
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // fn evolve_string_trim_start(value: &str) -> Object {
 //     let trimmed = value.trim_start(); // slice
 //                                       // str_to_safe_object(trimmed)
 //     trimmed.to_owned().into()
 // }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // fn new_string_repeat(value: &str, times: usize) -> Object {
 //     value.repeat(times).into()
 // }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // pub fn evolve_string_extract(o: Object) -> &str {
 //   from_p o.ptr
 // }

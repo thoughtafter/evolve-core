@@ -1,8 +1,8 @@
 use crate::rustix::io::evolve_writev_first_5;
 use core::mem;
-use libc::{timeval, RUSAGE_SELF};
+use libc::{RUSAGE_SELF, timeval};
 use ryu::Buffer;
-// #[export_name = "evolve_puts2"]
+// #[unsafe(export_name = "evolve_puts2")]
 // /// puts 2 &str using writev
 // /// this is very efficient, assuming writev is efficient
 // /// writev is atomic
@@ -27,7 +27,7 @@ use ryu::Buffer;
 //     // count as u64
 // }
 
-// #[export_name = "evolve.puts"]
+// #[unsafe(export_name = "evolve.puts")]
 // // #[inline(always)]
 // fn evolve_puts(string: &str) -> u64 {
 //     // puts2_writev(string, "\n")
@@ -62,19 +62,19 @@ use ryu::Buffer;
 //     count as u64
 // }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // fn evolve_stdout() -> *mut FILE {
 //     let mode = c"w".as_ptr();
 //     unsafe { libc::fdopen(libc::STDOUT_FILENO, mode) }
 // }
 //
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // fn evolve_stderr() -> *mut FILE {
 //     let mode = c"w".as_ptr();
 //     unsafe { libc::fdopen(libc::STDERR_FILENO, mode) }
 // }
 //
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // fn evolve_stdin() -> *mut FILE {
 //     let mode = c"r".as_ptr();
 //     unsafe { libc::fdopen(libc::STDIN_FILENO, mode) }
@@ -84,7 +84,7 @@ const fn calc(tv: timeval) -> f64 {
     ((tv.tv_sec as f64 * 1_000_000.0) + tv.tv_usec as f64) / 1_000_000.0
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_write_resource_usage() {
     let mut usage: libc::rusage = unsafe { mem::zeroed() };
     unsafe {
@@ -112,7 +112,7 @@ fn evolve_write_resource_usage() {
 //         ts.tv_sec as f64 + (ts.tv_nsec as f64 * 1e-9)
 //     }
 //
-//     #[no_mangle]
+//     #[unsafe(no_mangle)]
 //     fn evolve_posix_clock_monotonic() -> f64 {
 //         let mut x = timespec {
 //             tv_sec: 0,
@@ -126,7 +126,7 @@ fn evolve_write_resource_usage() {
 //     }
 // }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // pub unsafe extern "C" fn __fprintf_chk(
 //     _file: *mut FILE,
 //     _flag: c_int,
@@ -135,14 +135,14 @@ fn evolve_write_resource_usage() {
 //     0
 // }
 //
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // pub extern "C" fn abort() -> ! {
 //     std::process::abort()
 // }
 //
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // pub static mut stdin: *mut FILE = ptr::null_mut();
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // pub static mut stdout: *mut FILE = ptr::null_mut();
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // pub static mut stderr: *mut FILE = ptr::null_mut();
