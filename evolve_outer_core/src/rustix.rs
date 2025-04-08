@@ -49,7 +49,7 @@ pub mod io {
         result.unwrap_or_default() as u64
     }
 
-    #[export_name = "evolve.puts"]
+    #[unsafe(export_name = "evolve.puts")]
     // #[inline(always)]
     pub fn evolve_puts(string: &str) -> u64 {
         // evolve_writev2(string, "\n")
@@ -57,20 +57,20 @@ pub mod io {
         evolve_writev_first_5(&[string, "\n"])
     }
 
-    #[export_name = "evolve.puts_only"]
+    #[unsafe(export_name = "evolve.puts_only")]
     pub fn evolve_puts_only(string: &str) -> u64 {
         // evolve_writev1(string)
         evolve_writev_first_5(&[string])
     }
 
-    #[export_name = "evolve.io.puts.i64"]
+    #[unsafe(export_name = "evolve.io.puts.i64")]
     pub fn evolve_io_puts_i64(value: i64) -> u64 {
         let mut buffer = itoa::Buffer::new();
         let stack_string = buffer.format(value);
         evolve_writev_first_5(&[stack_string, "\n"])
     }
 
-    #[export_name = "evolve.io.puts.f64"]
+    #[unsafe(export_name = "evolve.io.puts.f64")]
     pub fn evolve_io_puts_f64(value: f64) -> u64 {
         let mut buffer = ryu::Buffer::new();
         let stack_string = buffer.format(value);
@@ -85,7 +85,7 @@ mod time {
         ts.tv_sec as f64 + (ts.tv_nsec as f64 * 1e-9)
     }
 
-    // #[no_mangle]
+    // #[unsafe(no_mangle)]
     // fn evolve_posix_clock_monotonic() -> f64 {
     //     let mut x = timespec {
     //         tv_sec: 0,
@@ -98,7 +98,7 @@ mod time {
     //     timespec_to_f64(x)
     // }
 
-    #[no_mangle]
+    #[unsafe(no_mangle)]
     fn evolve_posix_clock_monotonic() -> f64 {
         let timespec = rustix::time::clock_gettime(ClockId::Monotonic);
         timespec_to_f64(timespec)

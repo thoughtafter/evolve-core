@@ -7,38 +7,38 @@ impl Object {
     }
 
     #[inline(always)]
-    #[export_name = "evolve.core.intrinsic.win?"]
+    #[unsafe(export_name = "evolve.core.intrinsic.win?")]
     pub(crate) const fn is_intrinsic_win(self) -> bool {
         self.tag() != EVOLVE_FAILED_INTRINSIC_ID as u64
     }
 }
 
 #[inline(always)]
-#[export_name = "evolve.intrinsic2.class_id"]
+#[unsafe(export_name = "evolve.intrinsic2.class_id")]
 pub const fn evolve_intrinsic_class_id(value: Object) -> u64 {
     value.class_id() as u64
 }
 
 #[inline(always)]
-#[export_name = "evolve.intrinsic2.is?"]
+#[unsafe(export_name = "evolve.intrinsic2.is?")]
 pub const fn evolve_intrinsic_is(left: Object, right: Object) -> bool {
     left.is_same(right)
 }
 
 #[inline(always)]
-#[export_name = "evolve.intrinsic2.is_not?"]
+#[unsafe(export_name = "evolve.intrinsic2.is_not?")]
 pub const fn evolve_intrinsic_is_not(left: Object, right: Object) -> bool {
     !left.is_same(right)
 }
 
 #[inline(always)]
-#[export_name = "evolve.intrinsic2.true?"]
+#[unsafe(export_name = "evolve.intrinsic2.true?")]
 pub const fn evolve_intrinsic_is_true(value: Object) -> bool {
     value.is_true()
 }
 
 #[inline(always)]
-#[export_name = "evolve.intrinsic2.false?"]
+#[unsafe(export_name = "evolve.intrinsic2.false?")]
 pub const fn evolve_intrinsic_is_false(value: Object) -> bool {
     !value.is_true()
 }
@@ -49,7 +49,7 @@ mod indexable {
     use crate::object::Object;
 
     #[inline(always)]
-    #[export_name = "evolve.intrinsic2.get"]
+    #[unsafe(export_name = "evolve.intrinsic2.get")]
     fn evolve_intrinsic_get(value: Object, index: Object) -> Object {
         if index.tag() != INT_CLASS_ID as u64 {
             return Object::intrinsic_fail();
@@ -82,7 +82,7 @@ mod closure {
     //   %common.ret.op = phi { i64, ptr } [ %object, %closurefoo ], [ zeroinitializer, %entry ]
     //   ret { i64, ptr } %common.ret.op
     // }
-    #[export_name = "evolve.intrinsic2.call!"]
+    #[unsafe(export_name = "evolve.intrinsic2.call!")]
     #[inline(always)]
     pub fn evolve_intrinsic_call(s: Object, tuple: Object) -> Object {
         let tag = s.tag();
@@ -100,7 +100,7 @@ mod convert {
     use crate::llvm::evolve_llvm_sitofp;
     use crate::object::Object;
 
-    #[export_name = "evolve.intrinsic2.to_i"]
+    #[unsafe(export_name = "evolve.intrinsic2.to_i")]
     #[inline(always)]
     // TODO: const
     pub fn evolve_intrinsic_to_i(value: Object) -> Object {
@@ -120,7 +120,7 @@ mod convert {
     }
 
     #[inline(always)]
-    #[export_name = "evolve.intrinsic2.to_f"]
+    #[unsafe(export_name = "evolve.intrinsic2.to_f")]
     pub const fn evolve_intrinsic_to_f(value: Object) -> Object {
         let tag = value.tag();
         match tag as u16 {
@@ -130,7 +130,7 @@ mod convert {
         }
     }
 
-    // #[export_name = "evolve.intrinsic2.to_s"]
+    // #[unsafe(export_name = "evolve.intrinsic2.to_s")]
     // #[inline(always)]
     // pub const fn evolve_intrinsic_to_s(value: Object) -> Object {
     //     let tag = value.tag();

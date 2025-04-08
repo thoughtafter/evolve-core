@@ -20,13 +20,13 @@ pub type EvolveTupleMut = &'static mut [Object];
 // }
 //
 // impl TupleExt for EvolveTuple3 {
-//     #[export_name = "evolve.tuple.get"]
+//     #[unsafe(export_name = "evolve.tuple.get")]
 //     fn get(tuple: EvolveTuple3, index: usize) -> Object {
 //         *(tuple.get(index).unwrap_or_default())
 //     }
 // }
 
-// #[export_name = "tuple.core.get"]
+// #[unsafe(export_name = "tuple.core.get")]
 // #[inline(always)]
 // pub unsafe fn evolve_tuple_get(tuple: EvolveTupleAsNonNullObjectPtr, index: usize) -> Object {
 //     let adjusted_index = index as isize; // adjusted_index(index) as isize;
@@ -34,7 +34,7 @@ pub type EvolveTupleMut = &'static mut [Object];
 //     evolve_mem_load_object(tuple.as_ptr() as Ptr, adjusted_index)
 // }
 //
-// #[export_name = "tuple.core.put"]
+// #[unsafe(export_name = "tuple.core.put")]
 // #[inline(always)]
 // pub unsafe fn evolve_tuple_put(tuple: EvolveTupleAsNonNullObjectPtr, index: usize, value: Object) {
 //     let adjusted_index = index as isize; // adjusted_index(index) as isize;
@@ -44,7 +44,7 @@ pub type EvolveTupleMut = &'static mut [Object];
 
 pub const EVOLVE_EMPTY_TUPLE: &Object = &Object::from_i64(0);
 
-#[export_name = "test_evolve.from.ptr.tuple"]
+#[unsafe(export_name = "test_evolve.from.ptr.tuple")]
 pub fn evolve_from_ptr_tuple(size: usize, ptr: Ptr) -> Object {
     if size > 0 {
         Object::with_aux(TUPLE_CLASS_ID, size as u32, ptr)
@@ -55,7 +55,7 @@ pub fn evolve_from_ptr_tuple(size: usize, ptr: Ptr) -> Object {
 
 /// allocate tuple of given size and return object
 /// allocated size is currently size + 1
-#[export_name = "evolve.alloc.tuple"]
+#[unsafe(export_name = "evolve.alloc.tuple")]
 pub fn evolve_tuple_alloc(size: usize) -> Object {
     if size > 0 {
         // let size = size + 1;
@@ -75,7 +75,7 @@ pub fn evolve_tuple_alloc(size: usize) -> Object {
     }
 }
 
-#[export_name = "evolve_tuple_alloc_test"]
+#[unsafe(export_name = "evolve_tuple_alloc_test")]
 pub fn evolve_tuple_alloc_test(size: usize) -> Result<Object, Object> {
     if size > 0 {
         let layout = Layout::from_size_align((size + 1) * 16, 16).unwrap();
@@ -92,7 +92,7 @@ pub fn evolve_tuple_alloc_test(size: usize) -> Result<Object, Object> {
     }
 }
 
-// #[export_name = "evolve_tuple_alloc_test_allocator"]
+// #[unsafe(unsafe(unsafe(unsafe(unsafe(unsafe(export_name = "evolve_tuple_alloc_test_allocator"))))))]
 // pub fn evolve_tuple_alloc_test_alloc<A>(size: usize) -> Result<Object, Object> {
 //     if size > 0 {
 //         let layout = Layout::from_size_align((size + 1) * 16, 16).unwrap();
@@ -114,7 +114,7 @@ pub fn evolve_tuple_alloc_test(size: usize) -> Result<Object, Object> {
 // }
 //
 // impl EvolveTupleExt for EvolveTuple {
-//     #[export_name = "evolve.tuple.get"]
+//     #[unsafe(export_name = "evolve.tuple.get")]
 //     #[inline(always)]
 //     fn get(self, index: usize) -> Object {
 //         *(self.get(index).unwrap_or_default())
@@ -123,13 +123,13 @@ pub fn evolve_tuple_alloc_test(size: usize) -> Result<Object, Object> {
 // }
 
 impl Object {
-    #[export_name = "evolve.tuple.get"]
+    #[unsafe(export_name = "evolve.tuple.get")]
     #[inline(always)]
     pub fn tuple_get(self, index: usize) -> Object {
         *(self.tuple().get(index).unwrap_or_default())
     }
 
-    #[export_name = "evolve.tuple.put!"]
+    #[unsafe(export_name = "evolve.tuple.put!")]
     #[inline(always)]
     pub fn tuple_put(mut self, index: usize, value: Object) -> bool {
         if index == 0 {

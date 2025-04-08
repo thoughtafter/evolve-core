@@ -2,13 +2,13 @@ use crate::object::Object;
 use alloc::string::String;
 // use core::str::from_raw_parts;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn new_string(value: &str) -> Object {
     // value.into()
     Object::from_str(value)
 }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // pub const fn evolve_extract_rust_str<'a>(self) -> &'a str {
 //     let len = self.evolve_core_aux();
 //     let ptr = self.evolve_extract_ptr();
@@ -25,14 +25,14 @@ impl From<Object> for &str {
 /// create object from &mut str
 /// has already been leaked
 impl From<&mut str> for Object {
-    #[export_name = "from_mut_str_to_object"]
+    #[unsafe(export_name = "from_mut_str_to_object")]
     fn from(value: &mut str) -> Self {
         Object::from_str(value)
     }
 }
 
 impl From<String> for Object {
-    #[export_name = "from_string_to_object"]
+    #[unsafe(export_name = "from_string_to_object")]
     fn from(value: String) -> Self {
         value.leak().into()
     }

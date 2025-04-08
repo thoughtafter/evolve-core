@@ -24,7 +24,7 @@ pub struct GC_stack_base {
 
 #[link(name = "gc", kind = "dylib")]
 #[allow(dead_code)]
-extern "C" {
+unsafe extern "C" {
 
     pub fn GC_memalign(align: usize, size: usize) -> *mut u8;
     pub fn GC_posix_memalign(ptr: &*mut u8, align: usize, size: usize) -> c_int;
@@ -209,7 +209,7 @@ pub fn get_stack_base() -> GC_stack_base {
     unsafe { stack_base.assume_init() }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_gc_summary() -> Object {
     let heap_usage = get_heap_usages();
     let summary = format!(

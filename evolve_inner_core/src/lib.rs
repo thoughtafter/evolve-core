@@ -27,12 +27,12 @@ mod tuple;
 
 pub mod object_from {
 
-    // #[no_mangle]
+    // #[unsafe(no_mangle)]
     // pub const fn evolve_from_i64(value: i64) -> Object {
     //     Object::new(INT_CLASS_ID, value as Ptr)
     // }
 
-    // #[no_mangle]
+    // #[unsafe(no_mangle)]
     // pub const fn evolve_from_f64(value: f64) -> Object {
     //     Object::new(FLOAT_CLASS_ID, value.to_bits() as Ptr)
     // }

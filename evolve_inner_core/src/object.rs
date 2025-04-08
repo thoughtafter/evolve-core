@@ -14,7 +14,7 @@ use core::ffi::CStr;
 use core::slice;
 // use crate::intrinsic;
 // use libc_print::libc_println;
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // pub static NULLTHING: Object = Object::null();
 
 // extern "C" {
@@ -43,7 +43,7 @@ pub struct Object {
 //     pub fn evolve_regex_from_string(string: &str) -> Object;
 // }
 
-// #[no_mangle]
+// #[unsafe(no_mangle)]
 // pub const fn evolve_big_int_from_srcptr(mpz: mpz_srcptr) -> Object {
 //     Object {
 //         tag: evolve_internal_build_tag(BIGINT_CLASS_ID, 16),
@@ -51,7 +51,7 @@ pub struct Object {
 //     }
 // }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub const fn evolve_build_ptr(class_id: EvolveClassId, aux4: EvolveAuxData, ptr: Ptr) -> Object {
     Object::with_aux(class_id, aux4, ptr)
 }
@@ -89,36 +89,36 @@ impl Object {
         Self::new(class_id, 0 as Ptr)
     }
 
-    #[export_name = "evolve_core_build_null"]
+    #[unsafe(export_name = "evolve_core_build_null")]
     pub const fn null() -> Self {
         Self::static_class(0)
     }
 
-    #[export_name = "evolve.core.tag"]
+    #[unsafe(export_name = "evolve.core.tag")]
     #[inline(always)]
     pub(crate) const fn tag(self) -> u64 {
         self.tag
     }
 
-    #[export_name = "evolve.core.class_id.u16"]
+    #[unsafe(export_name = "evolve.core.class_id.u16")]
     #[inline(always)]
     pub(crate) const fn class_id(self) -> EvolveClassId {
         self.tag as EvolveClassId
     }
 
-    #[export_name = "evolve.core.class_id"]
+    #[unsafe(export_name = "evolve.core.class_id")]
     #[inline(always)]
     pub(crate) const fn class_id_u64(self) -> u64 {
         self.class_id() as u64
     }
 
-    #[export_name = "evolve.core.aux4"]
+    #[unsafe(export_name = "evolve.core.aux4")]
     #[inline(always)]
     pub(crate) const fn aux(self) -> EvolveAuxData {
         (self.tag >> 32) as EvolveAuxData
     }
 
-    #[export_name = "evolve_core_class"]
+    #[unsafe(export_name = "evolve_core_class")]
     /// return the class object of the given object
     /// stateful instances are odd numbers, stateless are even
     /// class of odd is -1
@@ -141,7 +141,7 @@ impl Object {
         }
     }
 
-    #[export_name = "evolve.core.is?"]
+    #[unsafe(export_name = "evolve.core.is?")]
     #[inline(always)]
     pub(crate) const fn is_same(self, rhs: Object) -> bool {
         // if self.tag != rhs.tag {
@@ -158,24 +158,24 @@ impl Object {
         (self.tag == rhs.tag) && (self.extract_i64() == rhs.extract_i64())
     }
 
-    // #[export_name = "evolve_core_is_not"]
+    // #[unsafe(export_name = "evolve_core_is_not")]
     // const fn is_not_same(self, rhs: Object) -> bool {
     //     !self.is_same(rhs)
     // }
 
-    #[export_name = "evolve.core.null?"]
+    #[unsafe(export_name = "evolve.core.null?")]
     #[inline(always)]
     pub const fn is_null(self) -> bool {
         self.tag == 0
     }
 
-    // #[export_name = "evolve.core.intrinsic_fail?"]
+    // #[unsafe(export_name = "evolve.core.intrinsic_fail?")]
     // #[inline(always)]
     // pub const fn intrinsic_fail(self) -> bool {
     //     self.tag == EVOLVE_FAILED_INTRINSIC_ID as u64
     // }
 
-    // #[no_mangle]
+    // #[unsafe(no_mangle)]
     // pub const fn evolve_extract_rust_str<'a>(self) -> &'a str {
     //     let len = self.evolve_core_aux();
     //     let ptr = self.evolve_extract_ptr();
@@ -183,7 +183,7 @@ impl Object {
     //     // unsafe { core::slice::from_raw_parts(ptr, len as usize)  }
     // }
 
-    #[no_mangle]
+    #[unsafe(no_mangle)]
     pub const fn evolve_extract_rust_cstr<'a>(self) -> &'a CStr {
         let len = self.aux();
         let ptr = self.extract_ptr();
@@ -338,7 +338,7 @@ impl Ord for Object {
     }
 }
 
-#[export_name = "evolve.from.ptr.app"]
+#[unsafe(export_name = "evolve.from.ptr.app")]
 fn evolve_from_ptr_app(argc: u32, argv: Ptr) -> Object {
     evolve_build_ptr(APP_CLASS_ID, argc, argv)
 }

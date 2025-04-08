@@ -23,7 +23,7 @@
     }
 
     impl StringMapExt for Object {
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         fn evolve_stringmap_new(capacity: usize) -> Object {
             let capacity = capacity.max(Self::MIN_CAPACITY);
             let hash_builder = RandomState::with_seed(42);
@@ -48,29 +48,29 @@
             self.to_mut::<EvolveStringMap>()
         }
 
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         fn evolve_stringmap_size(self) -> usize {
             self.string_map().len()
         }
 
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         fn evolve_stringmap_capacity(self) -> usize {
             self.string_map().capacity()
         }
 
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         fn evolve_stringmap_get(self, key: &str) -> Object {
             let value = self.string_map().get(key).copied().unwrap_or_default();
             value
         }
 
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         fn evolve_stringmap_put(mut self, key: &str, value: Object) {
             self.string_map_mut().insert(key.into(), value);
         }
 
         // TODO: need to compare objects for equality
-        #[no_mangle]
+        #[unsafe(no_mangle)]
         fn evolve_stringmap_eq(self, _other: Object) -> bool {
             // let lhs = self.regex();
             // let rhs = other.regex();

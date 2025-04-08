@@ -10,7 +10,7 @@ fn get_layout_from_size(bytes: usize) -> Layout {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn malloc(bytes: usize) -> *mut u8 {
     // libc_println!("mallocating {} bytes", bytes);
     //let layout = get_layout_from_size(bytes);
@@ -34,7 +34,7 @@ extern "C" fn malloc(bytes: usize) -> *mut u8 {
     // }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn free(ptr: *mut u8) {
     // libc_println!("< {:?} free", ptr);
     let layout = Layout::new::<u8>();
@@ -50,7 +50,7 @@ extern "C" fn free(ptr: *mut u8) {
     // }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn realloc(p: *mut u8, bytes: size_t) -> *mut u8 {
     // libc_println!("< {:?} realloc, old", p);
     //let layout = Layout::from_size_align(size as usize, 1).expect("realloc layout fail");
@@ -64,7 +64,7 @@ extern "C" fn realloc(p: *mut u8, bytes: size_t) -> *mut u8 {
     ptr
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 extern "C" fn calloc(nobj: size_t, size: size_t) -> *mut u8 {
     // libc::calloc()
     let bytes = nobj * size;

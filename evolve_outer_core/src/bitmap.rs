@@ -3,7 +3,7 @@ use roaring::RoaringBitmap;
 
 // type EvolveBitmap = RoaringBitmap;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_bitmap_static_new_ptr() -> *const RoaringBitmap {
     let bitmap = RoaringBitmap::new();
     // bitmap.extend_reserve(size);
@@ -11,7 +11,7 @@ fn evolve_bitmap_static_new_ptr() -> *const RoaringBitmap {
     leak_heap_ptr::<RoaringBitmap>(bitmap)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_bitmap_static_new() -> &'static RoaringBitmap {
     let bitmap = RoaringBitmap::new();
     // bitmap.extend_reserve(size);
@@ -20,7 +20,7 @@ fn evolve_bitmap_static_new() -> &'static RoaringBitmap {
     leak_heap_ref::<RoaringBitmap>(bitmap)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 fn evolve_bitmap_is_empty(bitmap: &RoaringBitmap) -> bool {
     bitmap.is_empty()
 }
