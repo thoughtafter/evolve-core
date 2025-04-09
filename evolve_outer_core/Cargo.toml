@@ -62,3 +62,6 @@ redirect_malloc = []
 [profile.release]
 lto = "fat"
 panic = "abort"
+
+[lints]
+workspace = true

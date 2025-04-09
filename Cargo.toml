@@ -15,3 +15,30 @@ members = [
 [profile.release]
 lto = "fat"
 panic = "abort"
+
+[workspace.lints.rust]
+arithmetic_overflow = "deny"
+
+[workspace.lints.clippy]
+checked_conversions = "deny"
+cast_possible_wrap = "deny"
+integer_division = "deny"
+unchecked_duration_subtraction = "deny"
+expect_used = "deny"
+panicking_unwrap = "deny"
+option_env_unwrap = "deny"
+indexing_slicing = "deny"
+join_absolute_paths = "deny"
+serde_api_misuse = "deny"
+uninit_vec = "deny"
+transmute_int_to_char = "deny"
+transmute_int_to_float = "deny"
+transmute_ptr_to_ref = "deny"
+transmute_undefined_repr = "deny"
+
+# TODO
+unwrap_used = "allow"
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+cast_precision_loss = "allow"
+arithmetic_side_effects = "allow"
