@@ -200,10 +200,10 @@ mod tests {
         let map = Object::evolve_map_new(0);
         map.map_put_str("foo", 42.into());
         let a = &EvolveArray::from(vec![42.into()]);
-        let b = evolve_map_values(&map.map()).array();
+        let b = evolve_map_values(map.map()).array();
         assert_eq!(a, b);
         let c = &EvolveArray::from(vec!["foo".to_string().into()]);
-        let d = evolve_map_keys(&map.map()).array();
+        let d = evolve_map_keys(map.map()).array();
         assert_eq!(c, d);
         assert_ne!(vec![Object::from(1)], vec![Object::from(2)]);
         assert_eq!(

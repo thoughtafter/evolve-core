@@ -56,11 +56,11 @@ mod debug {
 #[cfg(test)]
 mod tests {
     use alloc::collections::VecDeque;
-    use alloc::vec;
+    // use alloc::vec;
 
     #[test]
     fn test_containers() {
-        let x = vec![1, 2, 3];
+        let x = [1, 2, 3];
         assert_eq!(3, x.len());
 
         let y = VecDeque::from([4, 5, 6]);

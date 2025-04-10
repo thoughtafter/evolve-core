@@ -13,6 +13,7 @@ pub const fn evolve_llvm_sitofp(value: i64) -> f64 {
 
 /// `fptosi double %value to i64`
 /// may be poison: https://llvm.org/docs/LangRef.html#fptosi-to-instruction
+///     value as i64 uses saturated
 #[unsafe(no_mangle)]
 #[inline(always)]
 // TODO: const

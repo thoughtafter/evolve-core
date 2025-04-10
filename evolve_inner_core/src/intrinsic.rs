@@ -51,7 +51,7 @@ mod indexable {
     #[inline(always)]
     #[unsafe(export_name = "evolve.intrinsic2.get")]
     fn evolve_intrinsic_get(value: Object, index: Object) -> Object {
-        if index.tag() != INT_CLASS_ID as u64 {
+        if index.tag() != u64::from(INT_CLASS_ID) {
             return Object::intrinsic_fail();
         }
 

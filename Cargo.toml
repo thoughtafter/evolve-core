@@ -20,6 +20,14 @@ panic = "abort"
 arithmetic_overflow = "deny"
 
 [workspace.lints.clippy]
+# see: https://doc.rust-lang.org/clippy/lints.html
+correctness = { level = "deny", priority = 2 }
+suspicious = { level = "deny", priority = 1 }
+complexity = { level = "deny", priority = -1 }
+perf = { level = "deny", priority = -2 }
+style = { level = "deny", priority = -3 }
+# pedantic = { level = "deny", priority = -4 }
+
 checked_conversions = "deny"
 cast_possible_wrap = "deny"
 integer_division = "deny"
@@ -36,9 +44,21 @@ transmute_int_to_float = "deny"
 transmute_ptr_to_ref = "deny"
 transmute_undefined_repr = "deny"
 
+ref_as_ptr = "deny"
+cast_lossless = "deny"
+ptr_as_ptr = "deny"
+
 # TODO
 unwrap_used = "allow"
 cast_possible_truncation = "allow"
 cast_sign_loss = "allow"
 cast_precision_loss = "allow"
 arithmetic_side_effects = "allow"
+cast_ptr_alignment = "allow"
+
+# Okay pedantic
+inline-always = "allow"
+no_mangle_with_rust_abi = "allow"
+doc_markdown = "allow"
+must_use_candidate = "allow"
+return_self_not_must_use = "allow"

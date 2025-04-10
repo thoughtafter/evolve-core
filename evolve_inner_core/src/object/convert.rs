@@ -89,6 +89,14 @@ mod ptr {
         }
 
         pub const fn extract_ptr_mut(self) -> PtrMut {
+            self.ptr as PtrMut
+        }
+
+        pub const fn extract_ptr_u8(self) -> *const u8 {
+            self.ptr.cast::<u8>()
+        }
+
+        pub const fn extract_ptr_mut_u8(self) -> *mut u8 {
             self.ptr as *mut u8
         }
     }
