@@ -59,6 +59,21 @@ pub fn evolve_f64_fptosi_checked(value: f64) -> (i64, bool) {
     }
 }
 
+// #[unsafe(export_name = "evolve.asinh.f64")]
+// pub const fn evolve_asinh_f64(value: f64) -> f64 {
+//     value.asinh()
+// }
+
+#[unsafe(export_name = "evolve.next_down")]
+pub const fn evolve_next_down(value: f64) -> f64 {
+    value.next_down()
+}
+
+#[unsafe(export_name = "evolve.next_up")]
+pub const fn evolve_next_up(value: f64) -> f64 {
+    value.next_up()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

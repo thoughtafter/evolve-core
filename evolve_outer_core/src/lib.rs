@@ -53,6 +53,11 @@ mod debug {
 // #[unsafe(no_mangle)]
 // extern "C" fn rust_eh_personality() {}
 
+// #[unsafe(export_name = "evolve.asinh.f64")]
+// pub fn evolve_asinh_f64(value: f64) -> f64 {
+//     value.asinh()
+// }
+
 #[cfg(test)]
 mod tests {
     use alloc::collections::VecDeque;
