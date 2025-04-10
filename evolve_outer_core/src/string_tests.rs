@@ -67,7 +67,7 @@ fn test_trim_end() {
     // assert_eq!(c"Hello, world!", extract);
     let extract = String::from(obj);
     assert_eq!("Hello, world!", extract);
-    assert_ne!(obj.extract_ptr(), str.as_ptr());
+    assert_ne!(obj.extract_ptr_u8(), str.as_ptr());
 }
 
 #[test]
@@ -184,7 +184,7 @@ mod parse_f64 {
         let parsed = string_parse_f64_core("NaN");
         libc_println!("{:?}", parsed);
         assert!(parsed.0.is_nan());
-        assert_eq!(parsed.1, false);
+        assert!(!parsed.1);
     }
 }
 

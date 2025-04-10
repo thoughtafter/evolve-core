@@ -8,6 +8,7 @@ use alloc::alloc::alloc_zeroed;
 use alloc::boxed::Box;
 use alloc::vec;
 use core::alloc::Layout;
+use core::ptr::from_ref;
 use core::slice::{from_raw_parts, from_raw_parts_mut};
 
 // pub type EvolveTupleAsNonNullObjectPtr = NonNull<Object>;
@@ -49,7 +50,8 @@ pub fn evolve_from_ptr_tuple(size: usize, ptr: Ptr) -> Object {
     if size > 0 {
         Object::with_aux(TUPLE_CLASS_ID, size as u32, ptr)
     } else {
-        Object::new(TUPLE_CLASS_ID, EVOLVE_EMPTY_TUPLE as *const Object as Ptr)
+        let ptr = from_ref::<Object>(EVOLVE_EMPTY_TUPLE);
+        Object::new(TUPLE_CLASS_ID, ptr)
     }
 }
 
@@ -71,7 +73,8 @@ pub fn evolve_tuple_alloc(size: usize) -> Object {
         // let tuple = unsafe { libc::malloc(size * 16) } as Ptr;
         evolve_from_ptr_tuple(size, Box::into_raw(tuple) as Ptr)
     } else {
-        Object::new(TUPLE_CLASS_ID, EVOLVE_EMPTY_TUPLE as *const Object as Ptr)
+        let ptr = from_ref::<Object>(EVOLVE_EMPTY_TUPLE);
+        Object::new(TUPLE_CLASS_ID, ptr)
     }
 }
 
@@ -79,16 +82,14 @@ pub fn evolve_tuple_alloc(size: usize) -> Object {
 pub fn evolve_tuple_alloc_test(size: usize) -> Result<Object, Object> {
     if size > 0 {
         let layout = Layout::from_size_align((size + 1) * 16, 16).unwrap();
-        let tuple = unsafe { alloc_zeroed(layout) };
+        let tuple = unsafe { alloc_zeroed(layout) } as Ptr;
         if tuple.is_null() {
             return Err(Object::null());
         }
         Ok(evolve_from_ptr_tuple(size, tuple))
     } else {
-        Ok(Object::new(
-            TUPLE_CLASS_ID,
-            EVOLVE_EMPTY_TUPLE as *const Object as Ptr,
-        ))
+        let ptr = from_ref::<Object>(EVOLVE_EMPTY_TUPLE);
+        Ok(Object::new(TUPLE_CLASS_ID, ptr))
     }
 }
 

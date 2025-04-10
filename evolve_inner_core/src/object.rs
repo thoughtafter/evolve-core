@@ -11,6 +11,7 @@ use crate::class_ids::*;
 // use crate::string::evolve_string_bytes_eq;
 use core::cmp::Ordering;
 use core::ffi::CStr;
+use core::ptr::from_ref;
 use core::slice;
 // use crate::intrinsic;
 // use libc_print::libc_println;
@@ -26,8 +27,8 @@ use core::slice;
 //     static FalseClassID: u32;
 // }
 
-pub type Ptr = *const u8;
-pub type PtrMut = *mut u8;
+pub type Ptr = *const Object;
+pub type PtrMut = *mut Object;
 pub type EvolveClassId = u16;
 pub type EvolveAuxData = u32;
 
@@ -59,7 +60,7 @@ pub const fn evolve_build_ptr(class_id: EvolveClassId, aux4: EvolveAuxData, ptr:
 impl Object {
     /// evaluate pointer as immutable reference of T
     pub fn to_ref<T>(&self) -> &'static T {
-        let const_ptr = self.ptr as *const T;
+        let const_ptr = self.ptr.cast::<T>();
         unsafe { &*const_ptr }
     }
 
@@ -70,7 +71,7 @@ impl Object {
     }
 
     pub const fn from_ref<T>(class_id: EvolveClassId, ref_t: &T) -> Self {
-        let ptr = ref_t as *const T as Ptr;
+        let ptr = from_ref::<T>(ref_t).cast::<Object>();
         Self::with_aux(class_id, 0, ptr)
     }
 
@@ -186,7 +187,7 @@ impl Object {
     #[unsafe(no_mangle)]
     pub const fn evolve_extract_rust_cstr<'a>(self) -> &'a CStr {
         let len = self.aux();
-        let ptr = self.extract_ptr();
+        let ptr = self.extract_ptr_u8();
         let bytes = unsafe { slice::from_raw_parts(ptr, len as usize + 1) };
         unsafe { CStr::from_bytes_with_nul_unchecked(bytes) }
         // unsafe { from_raw_parts(ptr, len as usize) }

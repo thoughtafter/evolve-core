@@ -12,7 +12,7 @@ mod mem {
         // unsafe { libc::malloc(alloc_size) }
         let layout = Layout::from_size_align(alloc_size, 8).unwrap();
         let ptr = unsafe { alloc::alloc::alloc(layout) };
-        ptr as *mut c_void
+        ptr.cast::<c_void>()
     }
 
     extern "C" fn evolve_gmp_reallocate(
@@ -23,13 +23,13 @@ mod mem {
         // unsafe { libc::realloc(ptr, new_size) }
         // should this be old_size or new_size? ie, same layout as initial or new?
         let layout = Layout::from_size_align(old_size, 8).unwrap();
-        let ptr = unsafe { alloc::alloc::realloc(ptr as *mut u8, layout, new_size) };
-        ptr as *mut c_void
+        let ptr = unsafe { alloc::alloc::realloc(ptr.cast::<u8>(), layout, new_size) };
+        ptr.cast::<c_void>()
     }
 
     extern "C" fn evolve_gmp_free(_ptr: *mut c_void, size: usize) {
         let layout = Layout::from_size_align(size, 8).unwrap();
-        unsafe { alloc::alloc::dealloc(_ptr as *mut u8, layout) };
+        unsafe { alloc::alloc::dealloc(_ptr.cast::<u8>(), layout) };
     }
 
     #[unsafe(no_mangle)]
@@ -55,7 +55,7 @@ mod mpz {
     #[unsafe(no_mangle)]
     fn evolve_mpz_sgn(op: mpz_srcptr) -> i64 {
         let signum = unsafe { mpz_sgn(op) };
-        signum as i64
+        i64::from(signum)
     }
 
     #[unsafe(no_mangle)]

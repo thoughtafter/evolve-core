@@ -22,7 +22,7 @@ fn evolve_intrinsic2_times(this: Object, tuple: Object) -> Object {
 #[inline(always)]
 #[allow(dead_code)]
 fn evolve_intrinsic2_times2(this: Object, closure: Object) -> Object {
-    if (this.tag(), closure.class_id()) != (INT_CLASS_ID as u64, CLOSURE_CLASS_ID) {
+    if (this.tag(), closure.class_id()) != (u64::from(INT_CLASS_ID), CLOSURE_CLASS_ID) {
         return Object::intrinsic_fail();
     }
 
@@ -107,9 +107,9 @@ fn evolve_intrinsic2_step(this: Object, limit: Object, step: Object, closure: Ob
     let raw_tuple = [Object::null(); 2];
     if (this.tag(), limit.tag(), step.tag(), closure.class_id())
         != (
-            INT_CLASS_ID as u64,
-            INT_CLASS_ID as u64,
-            INT_CLASS_ID as u64,
+            u64::from(INT_CLASS_ID),
+            u64::from(INT_CLASS_ID),
+            u64::from(INT_CLASS_ID),
             CLOSURE_CLASS_ID,
         )
     {

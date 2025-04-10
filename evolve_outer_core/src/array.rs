@@ -110,8 +110,8 @@ mod tests {
 
     #[test]
     fn test_put_get() {
-        let mut a = evolve_array_literal(10);
-        evolve_array_put(&mut a, 1, Object::from(42));
+        let a = evolve_array_literal(10);
+        evolve_array_put(a, 1, Object::from(42));
         let b = evolve_array_get(a, 1);
 
         assert_eq!(Object::from(42), b);

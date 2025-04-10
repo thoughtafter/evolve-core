@@ -42,8 +42,8 @@ fn test_get_oob() {
 
 #[test]
 fn test_put_get() {
-    let mut a = evolve_array_literal(10);
-    evolve_array_inbounds_push(&mut a, Object::from(42));
+    let a = evolve_array_literal(10);
+    evolve_array_inbounds_push(a, Object::from(42));
     let b = evolve_array_get(a, 1);
 
     assert_eq!(Object::from(42), b);

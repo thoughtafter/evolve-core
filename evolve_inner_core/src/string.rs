@@ -42,17 +42,17 @@ impl Object {
 
     #[inline(always)]
     pub const fn from_str(value: &str) -> Self {
-        Self::from_string(value.len() as u32, value.as_ptr())
+        Self::from_string(value.len() as u32, value.as_ptr().cast::<Object>())
     }
 
     // https://users.rust-lang.org/t/string-from-raw-parts/50578
     pub const fn extract_str(self) -> &'static str {
-        let len = self.aux();
-        let ptr = self.extract_ptr();
+        let len = self.aux() as usize;
+        let ptr = self.extract_ptr_u8();
         // unsafe { from_raw_parts(ptr, len as usize) }
         // unsafe { core::slice::from_raw_parts(ptr, len as usize)  }
         unsafe {
-            let slice = from_raw_parts(ptr, len as usize);
+            let slice = from_raw_parts(ptr, len);
             from_utf8_unchecked(slice)
         }
     }

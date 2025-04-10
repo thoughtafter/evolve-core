@@ -22,12 +22,12 @@ const fn evolve_mem_gep<T: Copy + Sized>(ptr: Ptr, offset: isize) -> *mut T {
 }
 
 #[unsafe(export_name = "evolve.mem.gep.byte")]
-const fn evolve_mem_gep_byte(ptr: Ptr, offset: isize) -> Ptr {
+const fn evolve_mem_gep_byte(ptr: Ptr, offset: isize) -> *const u8 {
     evolve_mem_gep::<u8>(ptr, offset)
 }
 
 #[unsafe(export_name = "evolve.mem.gep.object")]
-const fn evolve_mem_gep_object(ptr: Ptr, offset: isize) -> *const Object {
+const fn evolve_mem_gep_object(ptr: Ptr, offset: isize) -> Ptr {
     evolve_mem_gep::<Object>(ptr, offset)
 }
 
