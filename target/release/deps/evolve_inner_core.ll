@@ -1386,6 +1386,80 @@ start:
   ret { i64, i1 } %2
 }
 
+; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
+define noundef double @evolve.next_down(double noundef %value) unnamed_addr #9 {
+start:
+  %_2 = bitcast double %value to i64
+  %_3 = fcmp uno double %value, 0.000000e+00
+  %0 = icmp eq i64 %_2, -4503599627370496
+  %or.cond = or i1 %_3, %0
+  br i1 %or.cond, label %bb1, label %bb4
+
+bb4:                                              ; preds = %start
+  %1 = tail call double @llvm.fabs.f64(double %value)
+  %_4 = bitcast double %1 to i64
+  %2 = icmp eq i64 %_4, 0
+  br i1 %2, label %bb10, label %bb6
+
+bb6:                                              ; preds = %bb4
+  %_6 = icmp eq i64 %_2, %_4
+  br i1 %_6, label %bb7, label %bb8
+
+bb10:                                             ; preds = %bb4, %bb8, %bb7
+  %_5.sroa.0.0 = phi i64 [ %5, %bb7 ], [ %4, %bb8 ], [ -9223372036854775807, %bb4 ]
+  %3 = bitcast i64 %_5.sroa.0.0 to double
+  br label %bb1
+
+bb8:                                              ; preds = %bb6
+  %4 = add i64 %_2, 1
+  br label %bb10
+
+bb7:                                              ; preds = %bb6
+  %5 = add nsw i64 %_2, -1
+  br label %bb10
+
+bb1:                                              ; preds = %start, %bb10
+  %_0.sroa.0.0 = phi double [ %3, %bb10 ], [ %value, %start ]
+  ret double %_0.sroa.0.0
+}
+
+; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
+define noundef double @evolve.next_up(double noundef %value) unnamed_addr #9 {
+start:
+  %_2 = bitcast double %value to i64
+  %_3 = fcmp uno double %value, 0.000000e+00
+  %0 = icmp eq i64 %_2, 9218868437227405312
+  %or.cond = or i1 %_3, %0
+  br i1 %or.cond, label %bb1, label %bb4
+
+bb4:                                              ; preds = %start
+  %1 = tail call double @llvm.fabs.f64(double %value)
+  %_4 = bitcast double %1 to i64
+  %2 = icmp eq i64 %_4, 0
+  br i1 %2, label %bb10, label %bb6
+
+bb6:                                              ; preds = %bb4
+  %_6 = icmp eq i64 %_2, %_4
+  br i1 %_6, label %bb7, label %bb8
+
+bb10:                                             ; preds = %bb4, %bb8, %bb7
+  %_5.sroa.0.0 = phi i64 [ %5, %bb7 ], [ %4, %bb8 ], [ 1, %bb4 ]
+  %3 = bitcast i64 %_5.sroa.0.0 to double
+  br label %bb1
+
+bb8:                                              ; preds = %bb6
+  %4 = add i64 %_2, -1
+  br label %bb10
+
+bb7:                                              ; preds = %bb6
+  %5 = add i64 %_2, 1
+  br label %bb10
+
+bb1:                                              ; preds = %start, %bb10
+  %_0.sroa.0.0 = phi double [ %3, %bb10 ], [ %value, %start ]
+  ret double %_0.sroa.0.0
+}
+
 ; Function Attrs: alwaysinline mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
 define noundef range(i8 -1, 2) i8 @evolve_i64_cmp(i64 noundef %value1, i64 noundef %value2) unnamed_addr #12 {
 start:
