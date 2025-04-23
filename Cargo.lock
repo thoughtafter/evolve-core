@@ -117,6 +117,7 @@ version = "1.0.0"
 name = "evolve_inner_core"
 version = "1.0.0"
 dependencies = [
+ "libm",
  "num-traits",
  "ordered-float",
  "pretty_assertions",
