@@ -1,5 +1,6 @@
 use crate::llvm::evolve_llvm_fptosi;
 use core::cmp::Ordering;
+use libm::{erf, erfc, expm1, ilogb, j0, j1, jn, lgamma, log1p, tgamma, y0, y1, yn};
 use ordered_float::OrderedFloat;
 
 #[unsafe(export_name = "evolve_f64_cmp")]
@@ -72,6 +73,71 @@ pub const fn evolve_next_down(value: f64) -> f64 {
 #[unsafe(export_name = "evolve.next_up")]
 pub const fn evolve_next_up(value: f64) -> f64 {
     value.next_up()
+}
+
+#[unsafe(export_name = "evolve.libm.erf")]
+fn evolve_libm_erf(value: f64) -> f64 {
+    erf(value)
+}
+
+#[unsafe(export_name = "evolve.libm.erfc")]
+fn evolve_libm_erfc(value: f64) -> f64 {
+    erfc(value)
+}
+
+#[unsafe(export_name = "evolve.libm.expm1")]
+fn evolve_libm_expm1(value: f64) -> f64 {
+    expm1(value)
+}
+
+#[unsafe(export_name = "evolve.libm.log1p")]
+fn evolve_libm_log1p(value: f64) -> f64 {
+    log1p(value)
+}
+
+#[unsafe(export_name = "evolve.libm.tgamma")]
+fn evolve_libm_tgamma(value: f64) -> f64 {
+    tgamma(value)
+}
+
+#[unsafe(export_name = "evolve.libm.lgamma")]
+fn evolve_libm_lgamma(value: f64) -> f64 {
+    lgamma(value)
+}
+
+#[unsafe(export_name = "evolve.libm.ilogb")]
+fn evolve_libm_ilogb(value: f64) -> i32 {
+    ilogb(value)
+}
+
+#[unsafe(export_name = "evolve.libm.j0")]
+fn evolve_libm_j0(value: f64) -> f64 {
+    j0(value)
+}
+
+#[unsafe(export_name = "evolve.libm.j1")]
+fn evolve_libm_j1(value: f64) -> f64 {
+    j1(value)
+}
+
+#[unsafe(export_name = "evolve.libm.jn")]
+fn evolve_libm_jn(n: i32, value: f64) -> f64 {
+    jn(n, value)
+}
+
+#[unsafe(export_name = "evolve.libm.y0")]
+fn evolve_libm_y0(value: f64) -> f64 {
+    y0(value)
+}
+
+#[unsafe(export_name = "evolve.libm.y1")]
+fn evolve_libm_y1(value: f64) -> f64 {
+    y1(value)
+}
+
+#[unsafe(export_name = "evolve.libm.yn")]
+fn evolve_libm_yn(n: i32, value: f64) -> f64 {
+    yn(n, value)
 }
 
 #[cfg(test)]
