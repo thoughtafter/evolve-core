@@ -11,6 +11,7 @@ use crate::i64::{
 use crate::object::Object;
 use core::num::FpCategory;
 use core::ops::{Add, Div, Mul, Rem, Sub};
+use num_traits::Euclid;
 
 // for trunc()
 // clippy gets confused with trunc in std
@@ -130,7 +131,7 @@ fn evolve_intrinsic_rem(left: Object, right: Object) -> Object {
     // if right.extract_i64() == 0 {
     //     return Object::intrinsic_fail();
     // }
-    let f64_fun = |a, b| num_traits::ops::euclid::Euclid::rem_euclid(&a, &b);
+    let f64_fun = |a, b| Euclid::rem_euclid(&a, &b);
     math_helper(left, right, evolve_i64_safe_mod_option, f64_fun)
     // math_helper(left, right, i64::checked_rem_euclid, f64_fun)
     // let i64_fun = |a, b| num_traits::ops::euclid::CheckedEuclid::checked_rem_euclid(&a, &b);

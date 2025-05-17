@@ -18,6 +18,8 @@ pub fn evolve_f64_cmp(value1: f64, value2: f64) -> Ordering {
 /// ordered equality - faster than cmp
 pub fn evolve_f64_eq(value1: f64, value2: f64) -> bool {
     OrderedFloat(value1).eq(&OrderedFloat(value2))
+
+    // ideally this would produce the same IR but it does not:
     // evolve_f64_cmp(value1, value2) == Ordering::Equal
 }
 
