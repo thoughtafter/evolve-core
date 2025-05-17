@@ -65,8 +65,8 @@ fn evolve_regex_match_raw(regex: &Regex, string: &str) -> Vec<String> {
 
     if let Some(captures) = captures {
         let matches = captures.iter().flatten();
-        let strings = matches.into_iter().map(|c| c.as_str().into()).collect();
-        strings
+        let map = matches.into_iter().map(|c| c.as_str().into());
+        map.collect()
     } else {
         [].into()
     }

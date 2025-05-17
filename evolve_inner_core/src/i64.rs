@@ -135,63 +135,109 @@ const fn evolve_i64_nabs(value: i64) -> i64 {
     if value > 0 { -value } else { value }
 }
 
+// #[inline(always)]
+// /// shifter handling neg int
+// fn shifter2(shift: i64) -> u32 {
+//     u32::try_from(shift as u64).unwrap_or_default().min(64)
+// }
+//
+// /// shifter not handling neg int
+// fn shifter(shift: i64) -> u32 {
+//   (shift as u64).min(64) as u32
+// }
+//
+// fn shifter3(shift: i64) -> u32 {
+//     match shift {
+//         0..64 => shift as u32,
+//         64..=i64::MAX => 64,
+//         i64::MIN..0 => 0,
+//     }
+// }
+
 /// signed shift right - llvm ashr
 /// - https://llvm.org/docs/LangRef.html#ashr-instruction
-// lhs.unbounded_shr(rhs)
-// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-// define noundef i64 @evolve_i64_ashr(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 {
-// start:
-//   %narrow = tail call i32 @llvm.umin.i32(i32 %rhs, i32 63)
-//   %.pn = zext nneg i32 %narrow to i64
-//   %_0.sroa.0.0 = ashr i64 %lhs, %.pn
-//   ret i64 %_0.sroa.0.0
-// }
-// current
-// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-// define noundef i64 @evolve.i64.signed-shift-right(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 personality ptr @rust_eh_personality {
-// start:
-//   %_0.sroa.0.0.sroa.speculated.i = tail call noundef i32 @llvm.umin.i32(i32 %rhs, i32 63)
-//   %0 = zext nneg i32 %_0.sroa.0.0.sroa.speculated.i to i64
-//   %_0 = ashr i64 %lhs, %0
-//   ret i64 %_0
-// }
 #[unsafe(export_name = "evolve.i64.signed-shift-right")]
-fn evolve_i64_ashr(lhs: i64, rhs: u32) -> i64 {
-    // if stabilized:
-    // lhs.unbounded_shr(rhs)
+fn evolve_i64_ashr(lhs: i64, rhs: i64) -> i64 {
+    // lhs.unbounded_shr((rhs as u64).min(64) as u32)
+    // lhs.unbounded_shr(shifter2(rhs))
+    // match rhs {
+    //     0..64 => lhs >> rhs,
+    //     64..=i64::MAX => 0,
+    //     i64::MIN..0 => lhs,
+    // }
+    // if rhs > 0 {
+    //     lhs.unbounded_shr(rhs.min(64) as u32)
+    // }
+    // else {
+    //     lhs
+    // }
+    // 7 lines
+    // match rhs {
+    //     0..64 => lhs >> rhs,
+    //     64..=i64::MAX => lhs >> 63,
+    //     i64::MIN..0 => lhs,
+    // }
+    // match rhs {
+    //     0..64 => lhs.unbounded_shr(rhs as u32),
+    //     64..=i64::MAX => lhs.unbounded_shr(64),
+    //     i64::MIN..0 => lhs,
+    // }
+    // match rhs {
+    //     0..64 => lhs >> rhs,
+    //     64..=i64::MAX => if lhs > 0 { 0 } else { -1 },
+    //     i64::MIN..0 => lhs,
+    // }
+    // match rhs {
+    //         0..=i64::MAX => lhs >> rhs.min(63),
+    //         i64::MIN..0 => lhs,
+    //     }
 
-    let rhs = rhs.min(63);
-    lhs.checked_shr(rhs).unwrap_or_default()
+    // 5 lines but not const
+    if rhs > 0 { lhs >> rhs.min(63) } else { lhs }
 }
 
 /// unsigned shift right - llvm lshr - note lhs is u64, but accepts i64
 /// - https://llvm.org/docs/LangRef.html#lshr-instruction
-// lhs.unbounded_shr(rhs)
-// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-// define noundef i64 @evolve_i64_lshr(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 {
-// start:
-//   %_3 = icmp ult i32 %rhs, 64
-//   %0 = zext nneg i32 %rhs to i64
-//   %1 = lshr i64 %lhs, %0
-//   %_0.sroa.0.0 = select i1 %_3, i64 %1, i64 0
-//   ret i64 %_0.sroa.0.0
-// }
-// current:
-// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-// define noundef i64 @evolve.i64.unsigned-shift-right(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 personality ptr @rust_eh_personality {
-// start:
-//   %_0.sroa.0.0.sroa.speculated.i = tail call noundef i32 @llvm.umin.i32(i32 %rhs, i32 63)
-//   %0 = zext nneg i32 %_0.sroa.0.0.sroa.speculated.i to i64
-//   %_6 = lshr i64 %lhs, %0
-//   ret i64 %_6
-// }
 #[unsafe(export_name = "evolve.i64.unsigned-shift-right")]
-fn evolve_i64_lshr(lhs: u64, rhs: u32) -> u64 {
-    // if stabilized:
-    // lhs.unbounded_shr(rhs)
+#[allow(clippy::cast_possible_wrap)]
+const fn evolve_i64_lshr(lhs: i64, rhs: i64) -> i64 {
+    // (lhs as u64).unbounded_shr(shifter2(rhs)) as i64
 
-    let rhs = rhs.min(63);
-    lhs.checked_shr(rhs).unwrap_or_default()
+    // works 5 lines of ir
+    match rhs {
+        0..64 => ((lhs as u64) >> rhs) as i64,
+        64..=i64::MAX => 0,
+        i64::MIN..0 => lhs,
+    }
+
+    // works, suboptimal llvm ir
+    // if rhs > 0 {
+    //     (lhs as u64).unbounded_shr(rhs.min(64) as u32) as i64
+    // } else {
+    //     lhs
+    // }
+
+    // works, suboptimal llvm ir
+    // if rhs > 0 {
+    //     (lhs as u64)
+    //         .checked_shr(rhs.min(64) as u32)
+    //         .unwrap_or_default() as i64
+    // } else {
+    //     lhs
+    // }
+
+    // works, suboptimal llvm ir
+    // match rhs {
+    //     0..64 => i64::try_from((lhs as u64) >> rhs).unwrap_or_default(),
+    //     64..=i64::MAX => 0,
+    //     i64::MIN..0 => lhs,
+    // }
+}
+
+#[unsafe(export_name = "evolve.i64.shl")]
+/// unbounded shift left - signedness of the operand does not matter
+fn evolve_i64_unbounded_shl(lhs: i64, rhs: u32) -> i64 {
+    lhs.unbounded_shl(rhs)
 }
 
 // overflowing_shl - checks for overflow of bits, not result
@@ -270,42 +316,46 @@ fn evolve_i64_overflowing_shl(lhs: i64, rhs: u32) -> (i64, bool) {
     (shl, lhs != shr)
 }
 
-// lhs.unbounded_shl(rhs)
-// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-// define noundef i64 @evolve_i64_unbounded_shl(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 {
-// start:
-//   %_3 = icmp ult i32 %rhs, 64
-//   %0 = zext nneg i32 %rhs to i64
-//   %1 = shl i64 %lhs, %0
-//   %_0.sroa.0.0 = select i1 %_3, i64 %1, i64 0
-//   ret i64 %_0.sroa.0.0
-// }
-// current:
-// ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-// define noundef i64 @evolve_i64_unbounded_shl(i64 noundef %lhs, i32 noundef %rhs) unnamed_addr #10 personality ptr @rust_eh_personality {
-// start:
-//   %_0.sroa.0.0.sroa.speculated.i = tail call noundef i32 @llvm.umin.i32(i32 %rhs, i32 63)
-//   %0 = zext nneg i32 %_0.sroa.0.0.sroa.speculated.i to i64
-//   %_6 = shl i64 %lhs, %0
-//   ret i64 %_6
-// }
-#[unsafe(no_mangle)]
-fn evolve_i64_unbounded_shl(lhs: i64, rhs: u32) -> i64 {
-    // lhs.unbounded_shl(rhs)
-    let rhs = rhs.min(63);
-    lhs.checked_shl(rhs).unwrap_or_default()
-}
-
-#[unsafe(no_mangle)]
-fn evolve_i64_unbounded_shr(lhs: i64, rhs: u32) -> i64 {
-    // lhs.unbounded_shl(rhs)
-    let rhs = rhs.min(63);
-    lhs.checked_shr(rhs).unwrap_or_default()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test_case::test_case;
+
+    #[test_case(0, i64::MAX, 64)]
+    #[test_case(0, i64::MAX, 63)]
+    #[test_case(1, i64::MAX, 62)]
+    #[test_case(3, i64::MAX, 61)]
+    #[test_case(-1, -i64::MAX, 64; "-max >> 64")]
+    #[test_case(-1, -i64::MAX, 63; "-max >> 63")]
+    #[test_case(-2, -i64::MAX, 62; "-max >> 62")]
+    #[test_case(-4, -i64::MAX, 61; "-max >> 61")]
+    #[test_case(-1, i64::MIN, 64)]
+    #[test_case(-1, i64::MIN, 63)]
+    #[test_case(-2, i64::MIN, 62)]
+    #[test_case(-4, i64::MIN, 61)]
+    #[test_case(1, 1, 0)]
+    #[test_case(1, 1, -1)]
+    fn test_evolve_i64_ashr(result: i64, lhs: i64, rhs: i64) {
+        assert_eq!(result, evolve_i64_ashr(lhs, rhs));
+    }
+
+    #[test_case(0, i64::MAX, 64)]
+    #[test_case(0, i64::MAX, 63)]
+    #[test_case(1, i64::MAX, 62)]
+    #[test_case(3, i64::MAX, 61)]
+    #[test_case(0, -i64::MAX, 64; "-max >> 64")]
+    #[test_case(1, -i64::MAX, 63; "-max >> 63")]
+    #[test_case(2, -i64::MAX, 62; "-max >> 62")]
+    #[test_case(4, -i64::MAX, 61; "-max >> 61")]
+    #[test_case(0, i64::MIN, 64)]
+    #[test_case(1, i64::MIN, 63)]
+    #[test_case(2, i64::MIN, 62)]
+    #[test_case(4, i64::MIN, 61)]
+    #[test_case(1, 1, 0)]
+    #[test_case(1, 1, -1)]
+    fn test_evolve_i64_lshr(result: i64, lhs: i64, rhs: i64) {
+        assert_eq!(result, evolve_i64_lshr(lhs, rhs));
+    }
 
     #[test]
     fn test_unbounded_shl() {
@@ -320,6 +370,8 @@ mod tests {
 
         assert_eq!(2, evolve_i64_unbounded_shl(1, 1));
         assert_eq!(-2, evolve_i64_unbounded_shl(-1, 1));
+
+        assert_eq!(-10, evolve_i64_unbounded_shl(-5, 1));
     }
 
     #[test]
