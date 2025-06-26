@@ -12,10 +12,8 @@ evolve_inner_core = { path = "../evolve_inner_core" }
 # no-std
 libc = { version = "0.2", default-features = false, features = ["const-extern-fn"] }
 libc-print = {  version = "0.1", default-features = false }
-rustix = { version = "1.0", default-features = false, features = ["stdio", "time"] }
 gmp-mpfr-sys = { version = "1.6", default-features = false, features = ["mpfr"] }
 ordered-float = { version = "5.0", default-features = false }
-smallvec = { version = "1.15", default-features = false }
 arrayvec = { version = "0.7", default-features = false }
 
 # data structures

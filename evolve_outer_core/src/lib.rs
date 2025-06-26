@@ -14,7 +14,8 @@ pub mod libc_helpers;
 mod map;
 mod misc;
 mod regex;
-mod rustix;
+// mod rustix;
+mod puts;
 mod set;
 mod string;
 // mod string_append;
@@ -28,7 +29,8 @@ fn panic(_info: &core::panic::PanicInfo) -> ! {
 }
 
 mod debug {
-    use crate::rustix::io::evolve_puts;
+    // use crate::rustix::io::evolve_puts;
+    use crate::puts::evolve_puts;
     use alloc::format;
     use evolve_inner_core::object::{EvolveAuxData, EvolveClassId, Ptr, evolve_build_ptr};
     // use libc_print::libc_println;
