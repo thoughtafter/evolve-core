@@ -18,6 +18,7 @@ panic = "abort"
 
 [workspace.lints.rust]
 arithmetic_overflow = "forbid"
+unnecessary_transmutes = "forbid"
 
 [workspace.lints.clippy]
 # see: https://doc.rust-lang.org/clippy/lints.html
@@ -37,11 +38,10 @@ arithmetic_side_effects = "allow"
 cast_ptr_alignment = "allow"
 cast_possible_wrap = "deny"
 
-# Okay pedantic
+# Allowed pedantic
 inline-always = "allow"
 no_mangle_with_rust_abi = "allow"
 doc_markdown = "allow"
 must_use_candidate = "allow"
 return_self_not_must_use = "allow"
-uninlined-format-args = "allow"
 similar_names = "allow"

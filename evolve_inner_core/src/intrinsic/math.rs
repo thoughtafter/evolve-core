@@ -36,6 +36,8 @@ const fn valid_f64_return2(value: f64) -> bool {
 }
 
 #[inline(always)]
+/// template for math intrinsics
+// inline is probably unnecessary
 // const fn math_helper(left: Object, right: Object, int_fn: (const fn)(i64, i64) -> Option<i64>, float_fn: fn(f64, f64) -> f64) -> Object
 fn math_helper<I, F>(left: Object, right: Object, int_fn: I, float_fn: F) -> Object
 where
@@ -67,19 +69,16 @@ where
 }
 
 #[unsafe(export_name = "evolve.intrinsic2.add")]
-#[inline(always)]
 fn evolve_intrinsic_add(left: Object, right: Object) -> Object {
     math_helper(left, right, i64::checked_add, f64::add)
 }
 
 #[unsafe(export_name = "evolve.intrinsic2.sub")]
-#[inline(always)]
 fn evolve_intrinsic_sub(left: Object, right: Object) -> Object {
     math_helper(left, right, i64::checked_sub, f64::sub)
 }
 
 #[unsafe(export_name = "evolve.intrinsic2.mul")]
-#[inline(always)]
 fn evolve_intrinsic_mul(left: Object, right: Object) -> Object {
     math_helper(left, right, i64::checked_mul, f64::mul)
 }
@@ -109,7 +108,6 @@ fn evolve_intrinsic_mul(left: Object, right: Object) -> Object {
 // }
 
 #[unsafe(export_name = "evolve.intrinsic2.trem")]
-#[inline(always)]
 /// truncated remainder
 fn evolve_intrinsic_trem(left: Object, right: Object) -> Object {
     if right.extract_raw_f64() == 0.0 {
@@ -125,7 +123,6 @@ fn evolve_intrinsic_trem(left: Object, right: Object) -> Object {
 }
 
 #[unsafe(export_name = "evolve.intrinsic2.rem")]
-#[inline(always)]
 /// euclidean remainder, aka mod
 /// uses num_traits because rem_euclid requires std
 fn evolve_intrinsic_rem(left: Object, right: Object) -> Object {
@@ -141,8 +138,7 @@ fn evolve_intrinsic_rem(left: Object, right: Object) -> Object {
     // let i64_fun = |a, b| num_traits::ops::euclid::CheckedEuclid::checked_rem_euclid(&a, &b);
     // math_helper(left, right, i64_fun, f64_fun)
 }
-// #[inline(always)]
-// #[allow(dead_code)]
+// // #[allow(dead_code)]
 // const fn evolve_div_exact(lhs: i64, rhs: i64) -> Option<i64> {
 //     let math = lhs.checked_rem(rhs);
 //     match math {
@@ -151,8 +147,7 @@ fn evolve_intrinsic_rem(left: Object, right: Object) -> Object {
 //     }
 // }
 
-// #[inline(always)]
-// fn evolve_div_exact2(lhs: i64, rhs: i64) -> Option<i64> {
+// // fn evolve_div_exact2(lhs: i64, rhs: i64) -> Option<i64> {
 //     let math = i64::checked_div_rem_euclid(&lhs, &rhs);
 //     match math {
 //         Some((dividend, 0)) => Some(dividend),
@@ -161,7 +156,6 @@ fn evolve_intrinsic_rem(left: Object, right: Object) -> Object {
 // }
 
 #[unsafe(export_name = "evolve.intrinsic2.div")]
-#[inline(always)]
 /// division
 /// f64 - exact, as expected
 /// i64 - exact and falling back to create rationals
@@ -172,16 +166,15 @@ fn evolve_intrinsic_div(left: Object, right: Object) -> Object {
     math_helper(left, right, evolve_i64_div_exact, f64::div)
 }
 
-#[inline(always)]
 // alternative implementations:
 // f64::trunc(lhs / rhs)
 // *OrderedFloat(lhs / rhs).trunc()
+#[inline(always)]
 fn f64_tdiv(lhs: f64, rhs: f64) -> f64 {
     (lhs / rhs).trunc()
 }
 
 #[unsafe(export_name = "evolve.intrinsic2.tdiv")]
-#[inline(always)]
 fn evolve_intrinsic_tdiv(left: Object, right: Object) -> Object {
     if right.extract_raw_f64() == 0.0 {
         return Object::intrinsic_fail();
@@ -189,14 +182,12 @@ fn evolve_intrinsic_tdiv(left: Object, right: Object) -> Object {
     math_helper(left, right, i64::checked_div, f64_tdiv)
 }
 
-#[inline(always)]
 #[allow(dead_code)]
 fn evolve_intrinsic_divided_by(left: Object, right: Object) -> Object {
     evolve_intrinsic_zero(evolve_intrinsic_rem(left, right))
 }
 
 #[unsafe(export_name = "evolve.intrinsic2.div?")]
-#[inline(always)]
 const fn evolve_intrinsic_is_div(left: Object, right: Object) -> Object {
     let lhs_tag = left.tag();
     let rhs_tag = right.tag();
@@ -229,7 +220,6 @@ const fn evolve_intrinsic_is_div(left: Object, right: Object) -> Object {
 }
 
 #[unsafe(export_name = "evolve.intrinsic2.zero?")]
-#[inline(always)]
 const fn evolve_intrinsic_zero(value: Object) -> Object {
     let tag = value.tag();
     match tag as u16 {
@@ -251,8 +241,7 @@ const fn evolve_intrinsic_zero(value: Object) -> Object {
 // }
 
 // #[unsafe(no_mangle)]
-// #[inline(always)]
-// pub fn evolve_intrinsic_eq(left: Object, right: Object) -> Object {
+// // pub fn evolve_intrinsic_eq(left: Object, right: Object) -> Object {
 //     match (left.class_id(), right.class_id()) {
 //         (INT_CLASS_ID, INT_CLASS_ID) => {
 //             let x = left.extract_i64() == right.extract_i64();

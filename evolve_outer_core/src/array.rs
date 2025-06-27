@@ -23,26 +23,22 @@ fn evolve_array_mut_remove(array: &mut EvolveArray, index: usize) -> Object {
 }
 
 // #[unsafe(no_mangle)]
-// #[inline(always)]
-// fn evolve_array_mut_push_front(array: &mut EvolveArray, value: Object) {
+// // fn evolve_array_mut_push_front(array: &mut EvolveArray, value: Object) {
 //     array.push_front(value);
 // }
 //
 // #[unsafe(no_mangle)]
-// #[inline(always)]
-// fn evolve_array_mut_push_back(array: &mut EvolveArray, value: Object) {
+// // fn evolve_array_mut_push_back(array: &mut EvolveArray, value: Object) {
 //     array.push_back(value);
 // }
 //
 // #[unsafe(no_mangle)]
-// #[inline(always)]
-// fn evolve_array_mut_pop_front(array: &mut EvolveArray) -> Object {
+// // fn evolve_array_mut_pop_front(array: &mut EvolveArray) -> Object {
 //     array.pop_front().unwrap_or_default()
 // }
 //
 // #[unsafe(no_mangle)]
-// #[inline(always)]
-// fn evolve_array_mut_pop_back(array: &mut EvolveArray) -> Object {
+// // fn evolve_array_mut_pop_back(array: &mut EvolveArray) -> Object {
 //     array.pop_back().unwrap_or_default()
 // }
 
@@ -62,7 +58,6 @@ fn evolve_array_copy(array: &EvolveArray) -> Object {
 }
 
 #[unsafe(no_mangle)]
-#[inline(always)]
 /// put inbounds - suitable for initializer
 /// returns true if overflow / error
 fn evolve_array_put_inbounds(array: &mut EvolveArray, index: usize, value: Object) -> bool {
@@ -75,14 +70,12 @@ fn evolve_array_put_inbounds(array: &mut EvolveArray, index: usize, value: Objec
     }
 }
 
-// #[inline(always)]
-// fn resize(array: &mut EvolveArray, index: usize)
+// // fn resize(array: &mut EvolveArray, index: usize)
 // {
 //     //array.resize(index + 1, Object::default());
 //
 // }
 #[unsafe(no_mangle)]
-#[inline(always)]
 /// put with resize
 /// returns true if overflow / error - which should not happen
 fn evolve_array_put(array: &mut EvolveArray, index: usize, value: Object) -> bool {
@@ -95,8 +88,7 @@ fn evolve_array_put(array: &mut EvolveArray, index: usize, value: Object) -> boo
 }
 
 // #[unsafe(no_mangle)]
-// #[inline(always)]
-// fn evolve_array_mut_resize(
+// // fn evolve_array_mut_resize(
 //     array: &mut EvolveArray,
 //     size: usize,
 // )  {

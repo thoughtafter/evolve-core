@@ -7,6 +7,8 @@ use crate::object::Object;
 use ordered_float::OrderedFloat;
 
 #[inline(always)]
+/// template for cmp functions
+/// always inline probably unneccessary
 fn cmp_helper<I, F>(lhs: Object, rhs: Object, int_fn: I, float_fn: F) -> Object
 where
     I: FnOnce(&i64, &i64) -> bool,
@@ -47,7 +49,6 @@ fn evolve_eq(lhs: Object, rhs: Object) -> Option<bool> {
 }
 
 /// partial_cmp is slower than necessary for floats
-#[inline(always)]
 #[unsafe(export_name = "evolve.intrinsic2.eq?")]
 pub fn evolve_intrinsic_eq(left: Object, right: Object) -> Object {
     // let cmp = left.partial_cmp(&right);
@@ -66,7 +67,6 @@ pub fn evolve_intrinsic_eq(left: Object, right: Object) -> Object {
     // }
 }
 
-#[inline(always)]
 #[unsafe(export_name = "evolve.intrinsic2.ne?")]
 fn evolve_intrinsic_ne(left: Object, right: Object) -> Object {
     // let cmp = left.partial_cmp(&right);
@@ -85,39 +85,33 @@ fn evolve_intrinsic_ne(left: Object, right: Object) -> Object {
     // }
 }
 
-#[inline(always)]
 #[unsafe(export_name = "evolve.intrinsic2.lt?")]
 fn evolve_intrinsic_lt(left: Object, right: Object) -> Object {
     cmp_helper(left, right, i64::lt, OrderedFloat::lt)
 }
 
-#[inline(always)]
 #[unsafe(export_name = "evolve.intrinsic2.ge?")]
 fn evolve_intrinsic_ge(left: Object, right: Object) -> Object {
     cmp_helper(left, right, i64::ge, OrderedFloat::ge)
 }
 
-#[inline(always)]
 #[unsafe(export_name = "evolve.intrinsic2.gt?")]
 fn evolve_intrinsic_gt(left: Object, right: Object) -> Object {
     cmp_helper(left, right, i64::gt, OrderedFloat::gt)
 }
 
-#[inline(always)]
 #[unsafe(export_name = "evolve.intrinsic2.le?")]
 fn evolve_intrinsic_le(left: Object, right: Object) -> Object {
     cmp_helper(left, right, i64::le, OrderedFloat::le)
 }
 
-#[inline(always)]
 #[unsafe(export_name = "evolve.intrinsic2.in?")]
 // useful for case statements
 fn evolve_intrinsic_in(lhs: Object, rhs: Object) -> Object {
     evolve_intrinsic_eq(lhs, rhs)
 }
 
-// #[inline(always)]
-// #[unsafe(export_name = "evolve.intrinsic2.cmp")]
+// // #[unsafe(export_name = "evolve.intrinsic2.cmp")]
 // pub fn evolve_intrinsic_cmp(lhs: Object, rhs: Object) -> Object {
 //     let lhs_tag = lhs.tag();
 //     let rhs_tag = rhs.tag();

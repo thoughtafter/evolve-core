@@ -126,7 +126,7 @@ mod rusage {
     fn evolve_write_resource_usage() {
         let mut usage: libc::rusage = unsafe { mem::zeroed() };
         unsafe {
-            getrusage(RUSAGE_SELF, &mut usage);
+            getrusage(RUSAGE_SELF, &raw mut usage);
         }
         let utime = calc(usage.ru_utime);
         let stime = calc(usage.ru_stime);
@@ -159,7 +159,7 @@ pub mod time {
         };
 
         unsafe {
-            clock_gettime(CLOCK_MONOTONIC, &mut x);
+            clock_gettime(CLOCK_MONOTONIC, &raw mut x);
         }
         timespec_to_f64(x)
     }

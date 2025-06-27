@@ -28,16 +28,14 @@ pub type EvolveTupleMut = &'static mut [Object];
 // }
 
 // #[unsafe(export_name = "tuple.core.get")]
-// #[inline(always)]
-// pub unsafe fn evolve_tuple_get(tuple: EvolveTupleAsNonNullObjectPtr, index: usize) -> Object {
+// // pub unsafe fn evolve_tuple_get(tuple: EvolveTupleAsNonNullObjectPtr, index: usize) -> Object {
 //     let adjusted_index = index as isize; // adjusted_index(index) as isize;
 //                                          // tuple.offset(adjusted_index).read()
 //     evolve_mem_load_object(tuple.as_ptr() as Ptr, adjusted_index)
 // }
 //
 // #[unsafe(export_name = "tuple.core.put")]
-// #[inline(always)]
-// pub unsafe fn evolve_tuple_put(tuple: EvolveTupleAsNonNullObjectPtr, index: usize, value: Object) {
+// // pub unsafe fn evolve_tuple_put(tuple: EvolveTupleAsNonNullObjectPtr, index: usize, value: Object) {
 //     let adjusted_index = index as isize; // adjusted_index(index) as isize;
 //                                          // tuple.offset(adjusted_index).write(value);
 //     evolve_mem_store_object(tuple.as_ptr() as Ptr, value, adjusted_index);
@@ -116,8 +114,7 @@ pub fn evolve_tuple_alloc_test(size: usize) -> Result<Object, Object> {
 //
 // impl EvolveTupleExt for EvolveTuple {
 //     #[unsafe(export_name = "evolve.tuple.get")]
-//     #[inline(always)]
-//     fn get(self, index: usize) -> Object {
+//     //     fn get(self, index: usize) -> Object {
 //         *(self.get(index).unwrap_or_default())
 //     }
 //
@@ -125,13 +122,11 @@ pub fn evolve_tuple_alloc_test(size: usize) -> Result<Object, Object> {
 
 impl Object {
     #[unsafe(export_name = "evolve.tuple.get")]
-    #[inline(always)]
     pub fn tuple_get(self, index: usize) -> Object {
         *(self.tuple().get(index).unwrap_or_default())
     }
 
     #[unsafe(export_name = "evolve.tuple.put!")]
-    #[inline(always)]
     pub fn tuple_put(mut self, index: usize, value: Object) -> bool {
         if index == 0 {
             return true;

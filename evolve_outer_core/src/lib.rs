@@ -44,7 +44,7 @@ mod debug {
         );
         // libc_println!("{:?}", object);
 
-        let debug = format!("{:?}", object);
+        let debug = format!("{object:?}");
         evolve_puts(&debug);
     }
 }
