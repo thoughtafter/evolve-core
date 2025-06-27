@@ -4,7 +4,6 @@ mod bool {
 
     impl Object {
         #[unsafe(export_name = "evolve_build_true")]
-        #[inline(always)]
         const fn build_true() -> Self {
             Self::static_class(TRUE_CLASS_ID)
         }
@@ -39,7 +38,6 @@ mod bool {
         // }
 
         #[unsafe(export_name = "evolve_from_i1")]
-        #[inline(always)]
         pub(crate) const fn from_i1(value: bool) -> Self {
             if value {
                 Object::build_true()
@@ -49,7 +47,6 @@ mod bool {
         }
 
         #[unsafe(export_name = "evolve.core.true?")]
-        #[inline(always)]
         /// truthy value of object
         /// can use tag because u64 comparison and no falsy value currently uses aux4
         pub(crate) const fn is_true(self) -> bool {
@@ -75,7 +72,6 @@ mod ptr {
     use crate::object::{Object, Ptr, PtrMut};
 
     impl Object {
-        #[inline(always)]
         #[unsafe(export_name = "evolve_from_ptr")]
         pub(crate) const fn from_ptr(value: Ptr) -> Object {
             Object::new(POINTER_CLASS_ID, value)
@@ -83,7 +79,6 @@ mod ptr {
 
         /// extract ptr value
         #[unsafe(export_name = "evolve.extract.ptr")]
-        #[inline(always)]
         pub const fn extract_ptr(self) -> Ptr {
             self.ptr
         }
@@ -121,7 +116,6 @@ mod i64 {
 
     impl Object {
         #[unsafe(export_name = "evolve_from_i64")]
-        #[inline(always)]
         // needed by tuple
         pub const fn from_i64(value: i64) -> Object {
             Object::new(INT_CLASS_ID, value as Ptr)
@@ -142,7 +136,6 @@ mod i64 {
     impl From<Object> for i64 {
         /// extract ptr value as i64
         #[unsafe(export_name = "evolve.extract.i64")]
-        #[inline(always)]
         fn from(value: Object) -> i64 {
             value.extract_i64()
         }
@@ -156,7 +149,6 @@ mod f64 {
 
     impl Object {
         #[unsafe(export_name = "evolve_from_f64")]
-        #[inline(always)]
         pub(crate) const fn from_f64(value: f64) -> Object {
             Object::new(FLOAT_CLASS_ID, value.to_bits() as Ptr)
         }
@@ -179,7 +171,6 @@ mod f64 {
     impl From<Object> for f64 {
         /// extract ptr value as f64
         #[unsafe(export_name = "evolve.extract.f64")]
-        #[inline(always)]
         fn from(value: Object) -> f64 {
             f64::from_bits(value.ptr as u64)
         }

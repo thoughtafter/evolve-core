@@ -1,14 +1,12 @@
 use crate::object::{Object, Ptr};
 
 // #[unsafe(no_mangle)]
-// #[inline(always)]
-// fn evolve_mem_malloc(bytes: usize) -> *mut c_void {
+// // fn evolve_mem_malloc(bytes: usize) -> *mut c_void {
 //     unsafe { libc::malloc(bytes) }
 // }
 //
 // #[unsafe(no_mangle)]
-// #[inline(always)]
-// fn evolve_mem_calloc(nobj: usize, size: usize) -> *mut c_void {
+// // fn evolve_mem_calloc(nobj: usize, size: usize) -> *mut c_void {
 //     unsafe { libc::calloc(nobj, size) }
 // }
 

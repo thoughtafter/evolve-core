@@ -17,14 +17,12 @@ mod use_str;
 // mod use_cstr;
 
 #[unsafe(no_mangle)]
-#[inline(always)]
 /// compare bytes in str using memcmp
 fn evolve_string_bytes_cmp(value1: &str, value2: &str) -> i64 {
     value1.cmp(value2) as i64
 }
 
 #[unsafe(no_mangle)]
-#[inline(always)]
 /// compare bytes in str using memcmp
 pub fn evolve_string_bytes_eq(value1: &str, value2: &str) -> bool {
     if value1.len() != value2.len() {
@@ -35,7 +33,6 @@ pub fn evolve_string_bytes_eq(value1: &str, value2: &str) -> bool {
 
 impl Object {
     #[unsafe(export_name = "evolve_from_string")]
-    #[inline(always)]
     pub const fn from_string(len: u32, ptr: Ptr) -> Self {
         Self::with_aux(STRING_CLASS_ID, len, ptr)
     }
