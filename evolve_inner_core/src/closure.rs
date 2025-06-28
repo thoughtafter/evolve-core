@@ -15,7 +15,6 @@ type EvolveClosure = fn(Object, Object, Object) -> Object;
 // }
 
 #[unsafe(export_name = "evolve.from.ptr.closure2")]
-#[inline(always)]
 /// create closure from data pointer (probably alloca), function_ptr, and param count
 fn evolve_from_ptr_closure2(
     closure_data_ptr: Ptr,
@@ -46,7 +45,6 @@ fn evolve_from_ptr_closure2(
 
 /// # Safety
 /// calls function blindly
-#[inline(always)]
 // #[inline(never)]
 #[unsafe(export_name = "evolve.closure.call")]
 pub unsafe fn evolve_closure_call(closure: Object, tuple: Object) -> Object {
@@ -105,9 +103,9 @@ pub fn evolve_closure_get_size(closure: Object) -> i64 {
 }
 
 // #[unsafe(no_mangle)]
-#[inline(always)]
 // TODO: when inlined this breaks things
 // #[inline(never)]
+#[inline(always)]
 pub fn evolve_closure_function_pointer(ptr: Ptr) -> Object {
     // libc_println!("Creating closure function pointer from {:?}", ptr);
     // Object::new(EVOLVE_CLOSURE_FUNCTION_POINTER_ID, test_close as Ptr)
@@ -146,8 +144,7 @@ pub fn evolve_closure_get_fun(closure: Object) -> EvolveClosure {
     // test_close
 }
 
-// #[inline(always)]
-// #[allow(dead_code)]
+// // #[allow(dead_code)]
 // fn test_close(this: Object, tuple: Object, env: Object) -> Object {
 //     let index = tuple.tuple_get(1).extract_i64();
 //     // if index % 10_000_000 == 0 {

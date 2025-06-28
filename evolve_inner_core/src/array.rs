@@ -15,7 +15,6 @@ pub type EvolveArray = VecDeque<Object>;
 const MIN_CAPACITY: usize = 8;
 
 #[unsafe(no_mangle)]
-#[inline(always)]
 /// creates array literal
 // does not need to be resized if create uses inbounds_push
 pub fn evolve_array_literal(size: usize) -> &'static mut EvolveArray {
@@ -25,7 +24,6 @@ pub fn evolve_array_literal(size: usize) -> &'static mut EvolveArray {
 }
 
 #[unsafe(no_mangle)]
-#[inline(always)]
 // extend_one_unchecked is the public function for unchecked addition
 // perhaps push_back is fine because the compiler will check the bounds
 fn evolve_array_inbounds_push(array: &mut EvolveArray, value: Object) {
@@ -34,20 +32,17 @@ fn evolve_array_inbounds_push(array: &mut EvolveArray, value: Object) {
 }
 
 #[unsafe(no_mangle)]
-#[inline(always)]
 pub fn evolve_array_get(array: &EvolveArray, index: usize) -> Object {
     let adjusted_index = adjusted_index(index);
     *(array.get(adjusted_index).unwrap_or_default())
 }
 
 #[unsafe(no_mangle)]
-#[inline(always)]
 fn evolve_array_size(array: &EvolveArray) -> usize {
     array.len()
 }
 
 #[unsafe(no_mangle)]
-#[inline(always)]
 fn evolve_array_capacity(array: &EvolveArray) -> usize {
     array.capacity()
 }

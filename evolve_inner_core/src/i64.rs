@@ -13,7 +13,6 @@ use core::cmp::Ordering;
 // }
 
 #[unsafe(export_name = "evolve_i64_cmp")]
-#[inline(always)]
 /// cmp for ints, will be optimized for other specific operations
 pub fn evolve_i64_cmp(value1: i64, value2: i64) -> Ordering {
     value1.cmp(&value2)

@@ -6,38 +6,32 @@ impl Object {
         Self::static_class(EVOLVE_FAILED_INTRINSIC_ID)
     }
 
-    #[inline(always)]
     #[unsafe(export_name = "evolve.core.intrinsic.win?")]
     pub(crate) const fn is_intrinsic_win(self) -> bool {
         self.tag() != EVOLVE_FAILED_INTRINSIC_ID as u64
     }
 }
 
-#[inline(always)]
 #[unsafe(export_name = "evolve.intrinsic2.class_id")]
 pub const fn evolve_intrinsic_class_id(value: Object) -> u64 {
     value.class_id() as u64
 }
 
-#[inline(always)]
 #[unsafe(export_name = "evolve.intrinsic2.is?")]
 pub const fn evolve_intrinsic_is(left: Object, right: Object) -> bool {
     left.is_same(right)
 }
 
-#[inline(always)]
 #[unsafe(export_name = "evolve.intrinsic2.is_not?")]
 pub const fn evolve_intrinsic_is_not(left: Object, right: Object) -> bool {
     !left.is_same(right)
 }
 
-#[inline(always)]
 #[unsafe(export_name = "evolve.intrinsic2.true?")]
 pub const fn evolve_intrinsic_is_true(value: Object) -> bool {
     value.is_true()
 }
 
-#[inline(always)]
 #[unsafe(export_name = "evolve.intrinsic2.false?")]
 pub const fn evolve_intrinsic_is_false(value: Object) -> bool {
     !value.is_true()
@@ -48,7 +42,6 @@ mod indexable {
     use crate::class_ids::{ARRAY_CLASS_ID, INT_CLASS_ID, TUPLE_CLASS_ID};
     use crate::object::Object;
 
-    #[inline(always)]
     #[unsafe(export_name = "evolve.intrinsic2.get")]
     fn evolve_intrinsic_get(value: Object, index: Object) -> Object {
         if index.tag() != u64::from(INT_CLASS_ID) {
@@ -83,7 +76,6 @@ mod closure {
     //   ret { i64, ptr } %common.ret.op
     // }
     #[unsafe(export_name = "evolve.intrinsic2.call!")]
-    #[inline(always)]
     pub fn evolve_intrinsic_call(s: Object, tuple: Object) -> Object {
         let tag = s.tag();
         if tag as u16 == CLOSURE_CLASS_ID {
@@ -101,7 +93,6 @@ mod convert {
     use crate::object::Object;
 
     #[unsafe(export_name = "evolve.intrinsic2.to_i")]
-    #[inline(always)]
     // TODO: const
     pub fn evolve_intrinsic_to_i(value: Object) -> Object {
         let tag = value.tag();
@@ -119,7 +110,6 @@ mod convert {
         }
     }
 
-    #[inline(always)]
     #[unsafe(export_name = "evolve.intrinsic2.to_f")]
     pub const fn evolve_intrinsic_to_f(value: Object) -> Object {
         let tag = value.tag();
@@ -131,8 +121,7 @@ mod convert {
     }
 
     // #[unsafe(export_name = "evolve.intrinsic2.to_s")]
-    // #[inline(always)]
-    // pub const fn evolve_intrinsic_to_s(value: Object) -> Object {
+    //     // pub const fn evolve_intrinsic_to_s(value: Object) -> Object {
     //     let tag = value.tag();
     //     match tag as u16 {
     //         STRING_CLASS_ID => value,

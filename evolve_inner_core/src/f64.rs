@@ -3,7 +3,6 @@ use core::cmp::Ordering;
 use ordered_float::OrderedFloat;
 
 #[unsafe(export_name = "evolve_f64_cmp")]
-#[inline(always)]
 // https://doc.rust-lang.org/std/primitive.f64.html#method.total_cmp
 // was evolve_math_cmp_f64
 pub fn evolve_f64_cmp(value1: f64, value2: f64) -> Ordering {
@@ -47,7 +46,6 @@ pub const fn evolve_f64_is_divisible(lhs: f64, rhs: f64) -> bool {
 // - eliminates problems with positive and negative conversions not matching
 // the range is -9223372036854775808 to 9223372036854774784
 #[unsafe(export_name = "evolve.f64.fptosi.checked")]
-#[inline(always)]
 // TODO: const
 pub fn evolve_f64_fptosi_checked(value: f64) -> (i64, bool) {
     if value >= i64::MIN as f64 && value < i64::MAX as f64 {
