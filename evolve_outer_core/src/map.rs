@@ -52,7 +52,7 @@ impl StringMapExt for Object {
     }
 
     fn map_put(mut self, key: Object, value: Object) {
-        evolve_map_put(self.map_mut(), key, value)
+        evolve_map_put(self.map_mut(), key, value);
     }
 
     fn map_get_str(self, key: &str) -> Object {
@@ -61,7 +61,7 @@ impl StringMapExt for Object {
 
     #[allow(unused_mut)]
     fn map_put_str(mut self, key: &str, value: Object) {
-        self.map_put(key.to_string().into(), value)
+        self.map_put(key.to_string().into(), value);
     }
 }
 
@@ -101,12 +101,12 @@ fn evolve_map_eq(lhs: &EvolveMap, rhs: &EvolveMap) -> bool {
 
 #[unsafe(no_mangle)]
 fn evolve_map_keys(map: &EvolveMap) -> Object {
-    EvolveArray::from_iter(map.keys().copied()).into()
+    map.keys().copied().collect::<EvolveArray>().into()
 }
 
 #[unsafe(no_mangle)]
 fn evolve_map_values(map: &EvolveMap) -> Object {
-    EvolveArray::from_iter(map.values().copied()).into()
+    map.values().copied().collect::<EvolveArray>().into()
 }
 
 #[unsafe(export_name = "evolve.map.get.index")]

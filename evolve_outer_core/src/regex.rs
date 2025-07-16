@@ -85,8 +85,8 @@ fn evolve_regex_match(regex: &Regex, string: &str) -> Object {
 }
 
 #[unsafe(no_mangle)]
-fn evolve_regex_replace(regex: &Regex, haystack: &str, replacer: &str) -> Object {
-    let replaced = regex.replace_all(haystack, replacer);
+fn evolve_regex_replace(regex: &Regex, haystack: &str, replace_with: &str) -> Object {
+    let replaced = regex.replace_all(haystack, replace_with);
     match replaced {
         Cow::Borrowed(_) => Object::from_str(haystack),
         Cow::Owned(changed) => changed.into(),

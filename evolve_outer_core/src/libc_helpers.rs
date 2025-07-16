@@ -65,7 +65,7 @@ use libc::{
 // }
 
 pub mod io {
-    use super::*;
+    use super::{STDOUT_FILENO, iovec, writev};
     use arrayvec::ArrayVec;
     use core::ffi::{c_int, c_void};
 
@@ -73,6 +73,8 @@ pub mod io {
 
     #[inline(always)]
     /// using arrayvec
+    /// # Panics
+    /// will panic if WRITEV_LIMIT does not fit into i32
     pub fn evolve_writev_first_5(strings: &[&str]) -> u64 {
         if strings.is_empty() {
             return 0;
@@ -111,7 +113,7 @@ pub mod io {
 // }
 
 mod rusage {
-    use super::*;
+    use super::{RUSAGE_SELF, getrusage, timeval};
     use crate::libc_helpers::io::evolve_writev_first_5;
     use core::mem;
     use ryu::Buffer;
@@ -143,7 +145,7 @@ mod rusage {
 }
 
 pub mod time {
-    use super::*;
+    use super::{CLOCK_MONOTONIC, clock_gettime, timespec};
 
     fn timespec_to_f64(ts: timespec) -> f64 {
         ts.tv_sec as f64 + (ts.tv_nsec as f64 * 1e-9)

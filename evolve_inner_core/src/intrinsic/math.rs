@@ -5,8 +5,7 @@ mod tests;
 use crate::class_ids::{FLOAT_CLASS_ID, INT_CLASS_ID};
 use crate::f64::evolve_f64_is_divisible;
 use crate::i64::{
-    evolve_i64_div_exact, evolve_i64_divisible_by, evolve_i64_safe_mod_option,
-    evolve_i64_safe_rem_option,
+    evolve_i64_div_exact, evolve_i64_divisible_by, evolve_i64_safe_mod, evolve_i64_safe_rem,
 };
 use crate::object::Object;
 use core::num::FpCategory;
@@ -116,7 +115,12 @@ fn evolve_intrinsic_trem(left: Object, right: Object) -> Object {
     if right.extract_raw_f64() == 0.0 {
         return Object::intrinsic_fail();
     }
-    math_helper(left, right, evolve_i64_safe_rem_option, f64::rem)
+    math_helper(
+        left,
+        right,
+        |l, r| Some(evolve_i64_safe_rem(l, r)),
+        f64::rem,
+    )
     // math_helper(left, right, i64::checked_rem, f64::rem)
 }
 
@@ -132,7 +136,7 @@ fn evolve_intrinsic_rem(left: Object, right: Object) -> Object {
     //     return Object::intrinsic_fail();
     // }
     let f64_fun = |a, b| Euclid::rem_euclid(&a, &b);
-    math_helper(left, right, evolve_i64_safe_mod_option, f64_fun)
+    math_helper(left, right, |l, r| Some(evolve_i64_safe_mod(l, r)), f64_fun)
     // math_helper(left, right, i64::checked_rem_euclid, f64_fun)
     // let i64_fun = |a, b| num_traits::ops::euclid::CheckedEuclid::checked_rem_euclid(&a, &b);
     // math_helper(left, right, i64_fun, f64_fun)

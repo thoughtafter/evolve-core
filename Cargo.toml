@@ -17,36 +17,16 @@ lto = "fat"
 panic = "abort"
 
 [workspace.lints.rust]
-arithmetic_overflow = "deny"
+arithmetic_overflow = "forbid"
 
 [workspace.lints.clippy]
 # see: https://doc.rust-lang.org/clippy/lints.html
-correctness = { level = "deny", priority = 2 }
-suspicious = { level = "deny", priority = 1 }
-complexity = { level = "deny", priority = -1 }
-perf = { level = "deny", priority = -2 }
-style = { level = "deny", priority = -3 }
-# pedantic = { level = "deny", priority = -4 }
-
-checked_conversions = "deny"
-cast_possible_wrap = "deny"
-integer_division = "deny"
-unchecked_duration_subtraction = "deny"
-expect_used = "deny"
-panicking_unwrap = "deny"
-option_env_unwrap = "deny"
-indexing_slicing = "deny"
-join_absolute_paths = "deny"
-serde_api_misuse = "deny"
-uninit_vec = "deny"
-transmute_int_to_char = "deny"
-transmute_int_to_float = "deny"
-transmute_ptr_to_ref = "deny"
-transmute_undefined_repr = "deny"
-
-ref_as_ptr = "deny"
-cast_lossless = "deny"
-ptr_as_ptr = "deny"
+correctness = { level = "forbid", priority = 1 }
+suspicious = { level = "forbid", priority = 1 }
+complexity = { level = "forbid", priority = 1 }
+perf = { level = "forbid", priority = 1 }
+style = { level = "forbid", priority = 1 }
+pedantic = { level = "warn", priority = -1 }
 
 # TODO
 unwrap_used = "allow"
@@ -55,6 +35,7 @@ cast_sign_loss = "allow"
 cast_precision_loss = "allow"
 arithmetic_side_effects = "allow"
 cast_ptr_alignment = "allow"
+cast_possible_wrap = "deny"
 
 # Okay pedantic
 inline-always = "allow"
@@ -62,3 +43,5 @@ no_mangle_with_rust_abi = "allow"
 doc_markdown = "allow"
 must_use_candidate = "allow"
 return_self_not_must_use = "allow"
+uninlined-format-args = "allow"
+similar_names = "allow"

@@ -53,7 +53,7 @@ fn evolve_array_mut_reverse(array: &mut EvolveArray) {
     // let skip: &mut[Object] = slice.iter().skip(1).into();
     // skip.reverse()
     // array.make_contiguous()[1..].reverse()
-    array.make_contiguous().reverse()
+    array.make_contiguous().reverse();
 }
 
 #[unsafe(no_mangle)]

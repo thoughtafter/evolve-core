@@ -94,7 +94,7 @@ mod parse_i64 {
         if let Some(hex) = hex {
             // libc_println!("found hex: {}", hex);
             return (hex, 16);
-        };
+        }
 
         // need + removed
         (trimmed, 10)
