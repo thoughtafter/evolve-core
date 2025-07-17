@@ -79,7 +79,6 @@ fn evolve_map_get(map: &EvolveMap, key: Object) -> Object {
 }
 
 #[unsafe(no_mangle)]
-#[inline]
 fn evolve_map_size(map: &EvolveMap) -> usize {
     map.len()
 }

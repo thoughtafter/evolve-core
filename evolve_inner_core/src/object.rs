@@ -96,25 +96,21 @@ impl Object {
     }
 
     #[unsafe(export_name = "evolve.core.tag")]
-    #[inline(always)]
     pub(crate) const fn tag(self) -> u64 {
         self.tag
     }
 
     #[unsafe(export_name = "evolve.core.class_id.u16")]
-    #[inline(always)]
     pub(crate) const fn class_id(self) -> EvolveClassId {
         self.tag as EvolveClassId
     }
 
     #[unsafe(export_name = "evolve.core.class_id")]
-    #[inline(always)]
     pub(crate) const fn class_id_u64(self) -> u64 {
         self.class_id() as u64
     }
 
     #[unsafe(export_name = "evolve.core.aux4")]
-    #[inline(always)]
     pub(crate) const fn aux(self) -> EvolveAuxData {
         (self.tag >> 32) as EvolveAuxData
     }
@@ -143,7 +139,6 @@ impl Object {
     }
 
     #[unsafe(export_name = "evolve.core.is?")]
-    #[inline(always)]
     pub(crate) const fn is_same(self, rhs: Object) -> bool {
         // if self.tag != rhs.tag {
         //     return false;
@@ -165,14 +160,12 @@ impl Object {
     // }
 
     #[unsafe(export_name = "evolve.core.null?")]
-    #[inline(always)]
     pub const fn is_null(self) -> bool {
         self.tag == 0
     }
 
     // #[unsafe(export_name = "evolve.core.intrinsic_fail?")]
-    // #[inline(always)]
-    // pub const fn intrinsic_fail(self) -> bool {
+    //     // pub const fn intrinsic_fail(self) -> bool {
     //     self.tag == EVOLVE_FAILED_INTRINSIC_ID as u64
     // }
 

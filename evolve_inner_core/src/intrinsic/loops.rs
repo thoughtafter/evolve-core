@@ -13,13 +13,11 @@ use crate::tuple::evolve_from_ptr_tuple;
 //   ret { i64, ptr } %ret
 // }
 #[unsafe(export_name = "evolve.intrinsic2.times!")]
-#[inline(always)]
 fn evolve_intrinsic2_times(this: Object, tuple: Object) -> Object {
     evolve_intrinsic2_step(1.into(), this, 1.into(), tuple);
     this
 }
 
-#[inline(always)]
 #[allow(dead_code)]
 fn evolve_intrinsic2_times2(this: Object, closure: Object) -> Object {
     if (this.tag(), closure.class_id()) != (u64::from(INT_CLASS_ID), CLOSURE_CLASS_ID) {
@@ -56,7 +54,6 @@ fn evolve_intrinsic2_times2(this: Object, closure: Object) -> Object {
 //   ret { i64, ptr } %ret
 // }
 #[unsafe(export_name = "evolve.intrinsic2.upto!")]
-#[inline(always)]
 fn evolve_intrinsic2_upto(this: Object, limit: Object, tuple: Object) -> Object {
     evolve_intrinsic2_step(this, limit, 1.into(), tuple);
     this
@@ -73,7 +70,6 @@ fn evolve_intrinsic2_upto(this: Object, limit: Object, tuple: Object) -> Object 
 //   ret { i64, ptr } %ret
 // }
 #[unsafe(export_name = "evolve.intrinsic2.downto!")]
-#[inline(always)]
 fn evolve_intrinsic2_downto(this: Object, limit: Object, tuple: Object) -> Object {
     evolve_intrinsic2_step(this, limit, Object::from_i64(-1), tuple);
     this
@@ -88,7 +84,6 @@ fn evolve_intrinsic2_downto(this: Object, limit: Object, tuple: Object) -> Objec
 //   ret { i64, ptr } %step
 // }
 #[unsafe(export_name = "evolve.intrinsic2.loop!")]
-#[inline(always)]
 fn evolve_intrinsic2_loop(this: Object, tuple: Object) -> Object {
     evolve_intrinsic2_step(1.into(), i64::MAX.into(), 1.into(), tuple);
     // unsafe { assume(this.is_intrinsic_win()); }
@@ -102,7 +97,6 @@ fn evolve_intrinsic2_loop(this: Object, tuple: Object) -> Object {
 // - could transform to negatives if start > limit, but negatives are not safe so this is many extra checks
 // - since step is likely to be known at compile time we can check it
 #[unsafe(export_name = "evolve.intrinsic2.step!")]
-#[inline(always)]
 fn evolve_intrinsic2_step(this: Object, limit: Object, step: Object, closure: Object) -> Object {
     let raw_tuple = [Object::null(); 2];
     if (this.tag(), limit.tag(), step.tag(), closure.class_id())
