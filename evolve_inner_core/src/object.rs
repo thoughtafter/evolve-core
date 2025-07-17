@@ -3,7 +3,7 @@ mod debug;
 mod default;
 mod hash;
 
-use crate::class_ids::*;
+use crate::class_ids::{APP_CLASS_ID, FLOAT_CLASS_ID, INT_CLASS_ID, STRING_CLASS_ID};
 // use alloc::string::String;
 // use crate::f64::evolve_f64_cmp;
 // use crate::i64::evolve_i64_cmp;

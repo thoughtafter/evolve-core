@@ -39,11 +39,7 @@ const fn evolve_i64_checked_div(lhs: i64, rhs: i64) -> (i64, bool) {
 
 #[unsafe(no_mangle)]
 const fn evolve_i64_checked_rem(lhs: i64, rhs: i64) -> (i64, bool) {
-    if let Some(rem) = evolve_i64_safe_rem_option(lhs, rhs) {
-        (rem, false)
-    } else {
-        (0, true)
-    }
+    (evolve_i64_safe_rem(lhs, rhs), false)
 }
 
 /// safe rem - no checking needed
@@ -51,7 +47,7 @@ const fn evolve_i64_checked_rem(lhs: i64, rhs: i64) -> (i64, bool) {
 /// x / 0 = x, can be checked or used
 #[unsafe(no_mangle)]
 #[allow(dead_code)]
-const fn evolve_i64_safe_rem(lhs: i64, rhs: i64) -> i64 {
+pub const fn evolve_i64_safe_rem(lhs: i64, rhs: i64) -> i64 {
     match rhs {
         0 => lhs,
         -1 => 0,
@@ -59,29 +55,15 @@ const fn evolve_i64_safe_rem(lhs: i64, rhs: i64) -> i64 {
     }
 }
 
-/// since checked div already checks for this, this seems
-/// to perform better and is more inclusive
-pub const fn evolve_i64_safe_rem_option(lhs: i64, rhs: i64) -> Option<i64> {
-    // match rhs {
-    //     -1 => Some(0),
-    //     _ => lhs.checked_rem(rhs),
-    // }
-    Some(evolve_i64_safe_rem(lhs, rhs))
-}
-
 /// safe mod - no checking needed
 /// min / -1 = 0, though overflow there is no remainder
 /// x / 0 = x, can be checked or used
-const fn evolve_i64_safe_mod(lhs: i64, rhs: i64) -> i64 {
+pub const fn evolve_i64_safe_mod(lhs: i64, rhs: i64) -> i64 {
     match rhs {
         0 => lhs.abs(),
         -1 => 0,
         _ => lhs.rem_euclid(rhs),
     }
-}
-
-pub const fn evolve_i64_safe_mod_option(lhs: i64, rhs: i64) -> Option<i64> {
-    Some(evolve_i64_safe_mod(lhs, rhs))
 }
 
 #[unsafe(no_mangle)]

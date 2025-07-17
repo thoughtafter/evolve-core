@@ -1,4 +1,4 @@
-use super::*;
+use super::{FLOAT_CLASS_ID, INT_CLASS_ID, Object, STRING_CLASS_ID};
 use core::hash::{Hash, Hasher};
 
 impl Hash for Object {
@@ -19,7 +19,7 @@ impl Hash for Object {
                 // libc_println!("CANNOT HASH THIS TYPE: {}", class_id);
                 class_id.hash(state);
             }
-        };
+        }
         // libc_println!("Done Hashing: {}", class_id);
     }
 }

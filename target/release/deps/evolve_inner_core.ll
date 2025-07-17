@@ -1439,21 +1439,21 @@ bb1:                                              ; preds = %start, %bb2, %bb7
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
 define { i64, i1 } @evolve_i64_checked_rem(i64 noundef %lhs, i64 noundef %rhs) unnamed_addr #9 {
 start:
-  switch i64 %rhs, label %bb5.i.i [
-    i64 0, label %_ZN17evolve_inner_core3i6426evolve_i64_safe_rem_option17h9c35821960c8387aE.exit
-    i64 -1, label %bb2.i.i
+  switch i64 %rhs, label %bb5.i [
+    i64 0, label %evolve_i64_safe_rem.exit
+    i64 -1, label %bb2.i
   ]
 
-bb2.i.i:                                          ; preds = %start
-  br label %_ZN17evolve_inner_core3i6426evolve_i64_safe_rem_option17h9c35821960c8387aE.exit
+bb2.i:                                            ; preds = %start
+  br label %evolve_i64_safe_rem.exit
 
-bb5.i.i:                                          ; preds = %start
+bb5.i:                                            ; preds = %start
   %0 = srem i64 %lhs, %rhs
-  br label %_ZN17evolve_inner_core3i6426evolve_i64_safe_rem_option17h9c35821960c8387aE.exit
+  br label %evolve_i64_safe_rem.exit
 
-_ZN17evolve_inner_core3i6426evolve_i64_safe_rem_option17h9c35821960c8387aE.exit: ; preds = %start, %bb2.i.i, %bb5.i.i
-  %_0.sroa.0.0.i.i = phi i64 [ %0, %bb5.i.i ], [ 0, %bb2.i.i ], [ %lhs, %start ]
-  %1 = insertvalue { i64, i1 } poison, i64 %_0.sroa.0.0.i.i, 0
+evolve_i64_safe_rem.exit:                         ; preds = %start, %bb2.i, %bb5.i
+  %_0.sroa.0.0.i = phi i64 [ %0, %bb5.i ], [ 0, %bb2.i ], [ %lhs, %start ]
+  %1 = insertvalue { i64, i1 } poison, i64 %_0.sroa.0.0.i, 0
   %2 = insertvalue { i64, i1 } %1, i1 false, 1
   ret { i64, i1 } %2
 }
@@ -1476,28 +1476,6 @@ bb6:                                              ; preds = %start, %bb5, %bb2
 bb5:                                              ; preds = %start
   %0 = srem i64 %lhs, %rhs
   br label %bb6
-}
-
-; evolve_inner_core::i64::evolve_i64_safe_rem_option
-; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-define { i64, i64 } @_ZN17evolve_inner_core3i6426evolve_i64_safe_rem_option17h9c35821960c8387aE(i64 noundef %lhs, i64 noundef %rhs) unnamed_addr #9 {
-start:
-  switch i64 %rhs, label %bb5.i [
-    i64 0, label %evolve_i64_safe_rem.exit
-    i64 -1, label %bb2.i
-  ]
-
-bb2.i:                                            ; preds = %start
-  br label %evolve_i64_safe_rem.exit
-
-bb5.i:                                            ; preds = %start
-  %0 = srem i64 %lhs, %rhs
-  br label %evolve_i64_safe_rem.exit
-
-evolve_i64_safe_rem.exit:                         ; preds = %start, %bb2.i, %bb5.i
-  %_0.sroa.0.0.i = phi i64 [ %0, %bb5.i ], [ 0, %bb2.i ], [ %lhs, %start ]
-  %1 = insertvalue { i64, i64 } { i64 1, i64 poison }, i64 %_0.sroa.0.0.i, 1
-  ret { i64, i64 } %1
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
@@ -2651,9 +2629,9 @@ bb4.i:                                            ; preds = %start
 
 bb6.i:                                            ; preds = %bb4.i
   %cond = icmp eq ptr %right.1, inttoptr (i64 -1 to ptr)
-  br i1 %cond, label %bb3, label %bb5.i.i.i
+  br i1 %cond, label %bb3, label %bb5.i.i
 
-bb5.i.i.i:                                        ; preds = %bb6.i
+bb5.i.i:                                          ; preds = %bb6.i
   %_12.i = ptrtoint ptr %left.1 to i64
   %1 = srem i64 %_12.i, %_6
   %2 = inttoptr i64 %1 to ptr
@@ -2678,9 +2656,9 @@ bb5.i:                                            ; preds = %bb4.i
   %spec.select2 = select i1 %_29.not.i, i64 5, i64 257
   br label %bb3
 
-bb3:                                              ; preds = %bb4.i, %bb5.i, %bb6.i, %bb5.i.i.i, %start
-  %_0.sroa.3.0 = phi ptr [ null, %start ], [ null, %bb4.i ], [ %spec.select1, %bb5.i ], [ %2, %bb5.i.i.i ], [ null, %bb6.i ]
-  %_0.sroa.0.0 = phi i64 [ 257, %start ], [ 257, %bb4.i ], [ %spec.select2, %bb5.i ], [ 4, %bb5.i.i.i ], [ 4, %bb6.i ]
+bb3:                                              ; preds = %bb4.i, %bb5.i, %bb6.i, %bb5.i.i, %start
+  %_0.sroa.3.0 = phi ptr [ null, %start ], [ null, %bb4.i ], [ %spec.select1, %bb5.i ], [ %2, %bb5.i.i ], [ null, %bb6.i ]
+  %_0.sroa.0.0 = phi i64 [ 257, %start ], [ 257, %bb4.i ], [ %spec.select2, %bb5.i ], [ 4, %bb5.i.i ], [ 4, %bb6.i ]
   %6 = insertvalue { i64, ptr } poison, i64 %_0.sroa.0.0, 0
   %7 = insertvalue { i64, ptr } %6, ptr %_0.sroa.3.0, 1
   ret { i64, ptr } %7
@@ -2705,16 +2683,16 @@ bb4.i:                                            ; preds = %start
 
 bb6.i:                                            ; preds = %bb4.i
   %cond = icmp eq ptr %right.1, inttoptr (i64 -1 to ptr)
-  br i1 %cond, label %bb3, label %"_ZN4core3num21_$LT$impl$u20$i64$GT$10rem_euclid17h05695ee9ae7005cfE.exit.i.i.i"
+  br i1 %cond, label %bb3, label %"_ZN4core3num21_$LT$impl$u20$i64$GT$10rem_euclid17h05695ee9ae7005cfE.exit.i.i"
 
-"_ZN4core3num21_$LT$impl$u20$i64$GT$10rem_euclid17h05695ee9ae7005cfE.exit.i.i.i": ; preds = %bb6.i
+"_ZN4core3num21_$LT$impl$u20$i64$GT$10rem_euclid17h05695ee9ae7005cfE.exit.i.i": ; preds = %bb6.i
   %_12.i = ptrtoint ptr %left.1 to i64
-  %r.i.i.i.i = srem i64 %_12.i, %_6
-  %_8.i.i.i.i = icmp slt i64 %r.i.i.i.i, 0
-  %rhs1.sroa.0.0.i.i.i.i = tail call i64 @llvm.abs.i64(i64 %_6, i1 false)
-  %1 = select i1 %_8.i.i.i.i, i64 %rhs1.sroa.0.0.i.i.i.i, i64 0
-  %_0.sroa.0.0.i.i.i.i = add i64 %1, %r.i.i.i.i
-  %2 = inttoptr i64 %_0.sroa.0.0.i.i.i.i to ptr
+  %r.i.i.i = srem i64 %_12.i, %_6
+  %_8.i.i.i = icmp slt i64 %r.i.i.i, 0
+  %rhs1.sroa.0.0.i.i.i = tail call i64 @llvm.abs.i64(i64 %_6, i1 false)
+  %1 = select i1 %_8.i.i.i, i64 %rhs1.sroa.0.0.i.i.i, i64 0
+  %_0.sroa.0.0.i.i.i = add i64 %1, %r.i.i.i
+  %2 = inttoptr i64 %_0.sroa.0.0.i.i.i to ptr
   br label %bb3
 
 bb5.i:                                            ; preds = %bb4.i
@@ -2725,10 +2703,10 @@ bb5.i:                                            ; preds = %bb4.i
   %_5.i.i = fcmp olt double %_4.i.i, 0.000000e+00
   %_0.sroa.0.0.i.i.i1 = tail call double @llvm.fabs.f64(double %_20.i)
   %3 = fadd double %_4.i.i, %_0.sroa.0.0.i.i.i1
-  %_0.sroa.0.0.i.i = select i1 %_5.i.i, double %3, double %_4.i.i
-  %4 = tail call double @llvm.fabs.f64(double %_0.sroa.0.0.i.i)
+  %_0.sroa.0.0.i.i2 = select i1 %_5.i.i, double %3, double %_4.i.i
+  %4 = tail call double @llvm.fabs.f64(double %_0.sroa.0.0.i.i2)
   %_30.i = fcmp une double %4, 0x7FF0000000000000
-  %_36.i = bitcast double %_0.sroa.0.0.i.i to i64
+  %_36.i = bitcast double %_0.sroa.0.0.i.i2 to i64
   %_37.i = and i64 %_36.i, 4503599627370495
   %5 = icmp eq i64 %_37.i, 0
   %_38.i = and i64 %_36.i, 9218868437227405312
@@ -2738,13 +2716,13 @@ bb5.i:                                            ; preds = %bb4.i
   %spec.select = select i1 %not.or.cond4.i, i1 true, i1 %5
   %_29.not.i = and i1 %_30.i, %spec.select
   %_2.i5.i = inttoptr i64 %_36.i to ptr
-  %spec.select2 = select i1 %_29.not.i, ptr %_2.i5.i, ptr null
-  %spec.select3 = select i1 %_29.not.i, i64 5, i64 257
+  %spec.select3 = select i1 %_29.not.i, ptr %_2.i5.i, ptr null
+  %spec.select4 = select i1 %_29.not.i, i64 5, i64 257
   br label %bb3
 
-bb3:                                              ; preds = %bb4.i, %bb5.i, %bb6.i, %"_ZN4core3num21_$LT$impl$u20$i64$GT$10rem_euclid17h05695ee9ae7005cfE.exit.i.i.i", %start
-  %_0.sroa.3.0 = phi ptr [ null, %start ], [ null, %bb4.i ], [ %spec.select2, %bb5.i ], [ %2, %"_ZN4core3num21_$LT$impl$u20$i64$GT$10rem_euclid17h05695ee9ae7005cfE.exit.i.i.i" ], [ null, %bb6.i ]
-  %_0.sroa.0.0 = phi i64 [ 257, %start ], [ 257, %bb4.i ], [ %spec.select3, %bb5.i ], [ 4, %"_ZN4core3num21_$LT$impl$u20$i64$GT$10rem_euclid17h05695ee9ae7005cfE.exit.i.i.i" ], [ 4, %bb6.i ]
+bb3:                                              ; preds = %bb4.i, %bb5.i, %bb6.i, %"_ZN4core3num21_$LT$impl$u20$i64$GT$10rem_euclid17h05695ee9ae7005cfE.exit.i.i", %start
+  %_0.sroa.3.0 = phi ptr [ null, %start ], [ null, %bb4.i ], [ %spec.select3, %bb5.i ], [ %2, %"_ZN4core3num21_$LT$impl$u20$i64$GT$10rem_euclid17h05695ee9ae7005cfE.exit.i.i" ], [ null, %bb6.i ]
+  %_0.sroa.0.0 = phi i64 [ 257, %start ], [ 257, %bb4.i ], [ %spec.select4, %bb5.i ], [ 4, %"_ZN4core3num21_$LT$impl$u20$i64$GT$10rem_euclid17h05695ee9ae7005cfE.exit.i.i" ], [ 4, %bb6.i ]
   %6 = insertvalue { i64, ptr } poison, i64 %_0.sroa.0.0, 0
   %7 = insertvalue { i64, ptr } %6, ptr %_0.sroa.3.0, 1
   ret { i64, ptr } %7

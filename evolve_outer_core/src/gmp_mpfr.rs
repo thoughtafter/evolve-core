@@ -27,9 +27,9 @@ mod mem {
         ptr.cast::<c_void>()
     }
 
-    extern "C" fn evolve_gmp_free(_ptr: *mut c_void, size: usize) {
+    extern "C" fn evolve_gmp_free(ptr: *mut c_void, size: usize) {
         let layout = Layout::from_size_align(size, 8).unwrap();
-        unsafe { alloc::alloc::dealloc(_ptr.cast::<u8>(), layout) };
+        unsafe { alloc::alloc::dealloc(ptr.cast::<u8>(), layout) };
     }
 
     #[unsafe(no_mangle)]

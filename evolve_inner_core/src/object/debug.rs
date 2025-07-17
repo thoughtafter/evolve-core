@@ -1,6 +1,9 @@
 use core::fmt::{Debug, Formatter};
 
-use crate::class_ids::*;
+use crate::class_ids::{
+    APP_CLASS_ID, CLOSURE_CLASS_ID, FALSE_CLASS_ID, FLOAT_CLASS_ID, INT_CLASS_ID, NULL_CLASS_ID,
+    POINTER_CLASS_ID, STRING_CLASS_ID, TRUE_CLASS_ID, TUPLE_CLASS_ID,
+};
 use crate::object::Object;
 
 impl Debug for Object {
