@@ -2720,70 +2720,70 @@ start:
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-define noundef i64 @evolve_llvm_fptosi(double noundef %value) unnamed_addr #7 {
+define noundef i64 @evolve.llvm.fptosi(double noundef %value) unnamed_addr #7 {
 start:
   %0 = fptosi double %value to i64
   ret i64 %0
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-define noundef i64 @evolve_llvm_and(i64 noundef %lhs, i64 noundef %rhs) unnamed_addr #7 {
+define noundef i64 @evolve.llvm.and(i64 noundef %lhs, i64 noundef %rhs) unnamed_addr #7 {
 start:
   %_0 = and i64 %rhs, %lhs
   ret i64 %_0
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-define noundef i64 @evolve_llvm_or(i64 noundef %lhs, i64 noundef %rhs) unnamed_addr #7 {
+define noundef i64 @evolve.llvm.or(i64 noundef %lhs, i64 noundef %rhs) unnamed_addr #7 {
 start:
   %_0 = or i64 %rhs, %lhs
   ret i64 %_0
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-define noundef i64 @evolve_llvm_xor(i64 noundef %lhs, i64 noundef %rhs) unnamed_addr #7 {
+define noundef i64 @evolve.llvm.xor(i64 noundef %lhs, i64 noundef %rhs) unnamed_addr #7 {
 start:
   %_0 = xor i64 %rhs, %lhs
   ret i64 %_0
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-define noundef double @evolve_llvm_fneg(double noundef %value) unnamed_addr #7 {
+define noundef double @evolve.llvm.fneg(double noundef %value) unnamed_addr #7 {
 start:
   %_0 = fneg double %value
   ret double %_0
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-define noundef double @evolve_llvm_fadd(double noundef %lhs, double noundef %rhs) unnamed_addr #7 {
+define noundef double @evolve.llvm.fadd(double noundef %lhs, double noundef %rhs) unnamed_addr #7 {
 start:
   %_0 = fadd double %lhs, %rhs
   ret double %_0
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-define noundef double @evolve_llvm_fsub(double noundef %lhs, double noundef %rhs) unnamed_addr #7 {
+define noundef double @evolve.llvm.fsub(double noundef %lhs, double noundef %rhs) unnamed_addr #7 {
 start:
   %_0 = fsub double %lhs, %rhs
   ret double %_0
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-define noundef double @evolve_llvm_fmul(double noundef %lhs, double noundef %rhs) unnamed_addr #7 {
+define noundef double @evolve.llvm.fmul(double noundef %lhs, double noundef %rhs) unnamed_addr #7 {
 start:
   %_0 = fmul double %lhs, %rhs
   ret double %_0
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-define noundef double @evolve_llvm_fdiv(double noundef %lhs, double noundef %rhs) unnamed_addr #7 {
+define noundef double @evolve.llvm.fdiv(double noundef %lhs, double noundef %rhs) unnamed_addr #7 {
 start:
   %_0 = fdiv double %lhs, %rhs
   ret double %_0
 }
 
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind nonlazybind willreturn memory(none)
-define noundef double @evolve_llvm_frem(double noundef %lhs, double noundef %rhs) unnamed_addr #7 {
+define noundef double @evolve.llvm.frem(double noundef %lhs, double noundef %rhs) unnamed_addr #7 {
 start:
   %_0 = frem double %lhs, %rhs
   ret double %_0

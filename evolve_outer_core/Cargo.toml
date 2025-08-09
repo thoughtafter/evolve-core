@@ -5,6 +5,7 @@
 name = "evolve_outer_core"
 version = "1.0.0"
 edition = "2024"
+rust-version = "1.89"
 
 [dependencies]
 evolve_inner_core = { path = "../evolve_inner_core" }
