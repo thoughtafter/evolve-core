@@ -52,20 +52,21 @@ mod mpz {
 
     /// sign using converstion of macro by gmp_mpfr lib
     /// zero checking can use this
-    #[unsafe(no_mangle)]
-    fn evolve_mpz_sgn(op: mpz_srcptr) -> i64 {
+    #[unsafe(export_name = "evolve.mpz.sgn")]
+    const fn evolve_mpz_sgn(op: mpz_srcptr) -> i64 {
         let signum = unsafe { mpz_sgn(op) };
-        i64::from(signum)
+        // i64::from(signum)
+        signum as i64
     }
 
-    #[unsafe(no_mangle)]
+    #[unsafe(export_name = "evolve.mpz.odd")]
     const fn evolve_mpz_odd_p(op: mpz_srcptr) -> bool {
         let odd = unsafe { mpz_odd_p(op) };
         odd != 0
     }
 
-    #[unsafe(no_mangle)]
-    fn evolve_mpz_even_p(op: mpz_srcptr) -> bool {
+    #[unsafe(export_name = "evolve.mpz.even")]
+    const fn evolve_mpz_even_p(op: mpz_srcptr) -> bool {
         let even = unsafe { mpz_even_p(op) };
         even != 0
     }
@@ -76,7 +77,7 @@ mod mpz {
     //     zero != 0
     // }
 
-    fn object_from_mpz(mpz: mpz_srcptr) -> Object {
+    const fn object_from_mpz(mpz: mpz_srcptr) -> Object {
         Object::new(BIGINT_CLASS_ID, mpz as Ptr)
     }
 
@@ -130,14 +131,14 @@ mod mpq {
     use evolve_inner_core::object::{Object, Ptr};
     use gmp_mpfr_sys::gmp::{mpq_denref_const, mpq_numref_const, mpq_srcptr};
 
-    #[unsafe(no_mangle)]
+    #[unsafe(export_name = "evolve.mpq.numref")]
     const fn evolve_mpq_numref(op: mpq_srcptr) -> Object {
         let num = unsafe { mpq_numref_const(op) };
         //evolve_big_int_from_srcptr(num)
         Object::with_aux(BIGINT_CLASS_ID, 16, num as Ptr)
     }
 
-    #[unsafe(no_mangle)]
+    #[unsafe(export_name = "evolve.mpq.denref")]
     const fn evolve_mpq_denref(op: mpq_srcptr) -> Object {
         let den = unsafe { mpq_denref_const(op) };
         //evolve_big_int_from_srcptr(den)
